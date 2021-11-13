@@ -37,12 +37,19 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
+	bool				m_ControlsInitialized;
 
 	CMenu				m_Menu;
+	CButton*			m_ButtonLoadHeightMap;
+	CButton*			m_ButtonErode;
 	CSliderCtrl*		m_BrushSizeSlider;
 	CEdit*				m_BrushSizeTextbox;
 	CEdit*				m_HeightMapFileName;
 	CComboBox*			m_BrushComboBox;
+	CStatic*			m_ErodeIterationText;
+	CStatic*			m_BrushTypeText;
+	CStatic*			m_RenderBox;
+
 	CString				m_BrushSizeSliderVal;
 
 public:
@@ -63,4 +70,6 @@ public:
 private:
 	bool InitializeControls();
 
+public:
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 };

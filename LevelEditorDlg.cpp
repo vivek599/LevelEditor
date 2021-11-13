@@ -56,6 +56,15 @@ CLevelEditorDlg::CLevelEditorDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_LEVELEDITOR_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_ControlsInitialized = false;
+	m_ButtonLoadHeightMap = nullptr;
+	m_ButtonErode = nullptr;
+	m_BrushSizeSlider = nullptr;
+	m_BrushSizeTextbox = nullptr;
+	m_HeightMapFileName = nullptr;
+	m_BrushComboBox = nullptr;
+	m_ErodeIterationText = nullptr;
+	m_BrushTypeText		= nullptr;
 }
 
 void CLevelEditorDlg::DoDataExchange(CDataExchange* pDX)
@@ -75,6 +84,7 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_BRUSHSIZETEXTBOX, &CLevelEditorDlg::OnEnChangeBrushsizetextbox)
 	ON_CBN_SELENDOK(IDC_COMBO_BRUSHTYPE, &CLevelEditorDlg::OnCbnSelendokComboBrushtype)
 	ON_BN_CLICKED(IDC_BUTTON_ERODE, &CLevelEditorDlg::OnBnClickedButtonErode)
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 
@@ -86,24 +96,6 @@ BOOL CLevelEditorDlg::OnInitDialog()
 
 	// Add "About..." menu item to system menu.
 
-	// IDM_ABOUTBOX must be in the system command range.
-	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
-	ASSERT(IDM_ABOUTBOX < 0xF000);
-
-	CMenu* pSysMenu = GetSystemMenu(FALSE);
-	if (pSysMenu != nullptr)
-	{
-		BOOL bNameValid;
-		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
-		if (!strAboutMenu.IsEmpty())
-		{
-			pSysMenu->AppendMenu(MF_SEPARATOR);
-			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
-	}
-
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
@@ -111,7 +103,7 @@ BOOL CLevelEditorDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 
-	InitializeControls();
+	m_ControlsInitialized = InitializeControls();
 
 
 
@@ -313,15 +305,27 @@ bool CLevelEditorDlg::InitializeControls()
 	m_Menu.LoadMenuW(MAKEINTRESOURCE(IDR_MENU1));
 	this->SetMenu(&m_Menu);
 
+	m_ErodeIterationText	= (CStatic*)(GetDlgItem(IDC_STATIC_ITER));
+	m_ButtonLoadHeightMap	= (CButton*)(GetDlgItem(IDC_LOADHEIGHTMAP));
+	m_ButtonErode			= (CButton*)(GetDlgItem(IDC_BUTTON_ERODE));
 	m_BrushSizeSlider	= (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSIZESLIDER));
 	m_BrushSizeTextbox	= (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
 	m_BrushComboBox		= (CComboBox*)GetDlgItem(IDC_COMBO_BRUSHTYPE);
 	m_HeightMapFileName = (CEdit*)GetDlgItem(IDC_HMFILENAME);
+	m_BrushTypeText			= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
+	m_RenderBox				= (CStatic*)GetDlgItem(IDC_RENDERBOX);
+
+
 
 	m_BrushSizeSlider->SetRange(0, 100, TRUE);
 	m_BrushSizeSlider->SetPos(0);
 	m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
+
+	CRect rect;
+	GetWindowRect(&rect);
+
+	m_ButtonLoadHeightMap->MoveWindow(rect.right - 200, rect.top + 50, 100, 25, TRUE);
 
 	return true;
 }
@@ -385,4 +389,31 @@ BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 	Render();
 
 	return TRUE;
+}
+
+
+void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	if (m_ControlsInitialized)
+	{
+		int hspacing = 0;
+		int vspacing = 30;
+		m_ButtonLoadHeightMap->SetWindowPos(nullptr, cx - 250 - hspacing, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_HeightMapFileName->SetWindowPos(nullptr, cx - 250 - hspacing, 50 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 257 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushSizeTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushComboBox->SetWindowPos(nullptr, cx - 185 - hspacing, 110 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushTypeText->SetWindowPos(nullptr, cx - 250 - hspacing, 115 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 135 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_RenderBox->SetWindowPos(nullptr, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
+		m_RenderBox->Invalidate();
+		m_RenderBox->RedrawWindow();
+		m_RenderBox->UpdateWindow();
+	}
+
+
+	// TODO: Add your message handler code here
 }
