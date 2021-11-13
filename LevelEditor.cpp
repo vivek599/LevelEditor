@@ -2,7 +2,6 @@
 // LevelEditor.cpp : Defines the class behaviors for the application.
 //
 
-#include "pch.h"
 #include "framework.h"
 #include "LevelEditor.h"
 #include "LevelEditorDlg.h"

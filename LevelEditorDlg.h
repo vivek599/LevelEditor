@@ -52,6 +52,8 @@ protected:
 
 	CString				m_BrushSizeSliderVal;
 
+	CBitmap m_bmpBitmap;
+	BITMAP bm;
 public:
 	afx_msg void OnFileExit();
 	afx_msg void OnBnClickedCancel();

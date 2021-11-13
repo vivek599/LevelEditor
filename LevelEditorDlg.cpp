@@ -2,7 +2,6 @@
 // LevelEditorDlg.cpp : implementation file
 //
 
-#include "pch.h"
 #include "framework.h"
 #include "LevelEditor.h"
 #include "LevelEditorDlg.h"
@@ -129,6 +128,7 @@ void CLevelEditorDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CLevelEditorDlg::OnPaint()
 {
+ 
 
 	if (IsIconic())
 	{
@@ -150,11 +150,6 @@ void CLevelEditorDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-
-		//Update();
-		//Render();
-
-		//Invalidate(FALSE);
 	}
 
 }
@@ -207,6 +202,17 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 	fileName.ReleaseBuffer();
 
 	m_HeightMapFileName->SetWindowTextW(p);
+
+	HBITMAP hBitmap = (HBITMAP) ::LoadImage(nullptr, p, IMAGE_BITMAP, 256, 256, LR_LOADFROMFILE );
+
+	// Do we have a valid handle for the loaded image?
+	if (hBitmap)
+	{
+		m_RenderBox->ModifyStyle(0xF, SS_BITMAP);
+		m_RenderBox->SetBitmap(hBitmap);
+		m_RenderBox->UpdateData(FALSE);
+	}
+
 
 }
 
@@ -385,6 +391,8 @@ LRESULT CLevelEditorDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 {
+
+
 	Update();
 	Render();
 
