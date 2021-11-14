@@ -22,6 +22,9 @@
 #include <d3dcompiler.h>
 #include <thread>
 #include <future>
+#include <queue>
+#include <chrono>   
+using namespace std::chrono;
 
 #include <WICTextureLoader.h>
 

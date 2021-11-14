@@ -1,8 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="LevelEditor.cpp" />
-    <ClCompile Include="LevelEditorDlg.cpp" />
     <ClCompile Include="Graphics\ADXTime.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
@@ -27,13 +25,17 @@
     <ClCompile Include="Graphics\ATexture.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="UI\LevelEditor.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\LevelEditorDlg.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\CPictureControl.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="LevelEditor.h" />
-    <ClInclude Include="LevelEditorDlg.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="Graphics\ADXTime.h">
       <Filter>Graphics</Filter>
     </ClInclude>
@@ -64,19 +66,47 @@
     <ClInclude Include="Graphics\ATexture.h">
       <Filter>Graphics</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="LevelEditor.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="res\LevelEditor.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="res\LevelEditor.rc2" />
+    <ClInclude Include="UI\framework.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\LevelEditor.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\LevelEditorDlg.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\resource.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\targetver.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\CPictureControl.h">
+      <Filter>UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Graphics">
       <UniqueIdentifier>{eea2ff12-d639-42f0-bfcf-7ce758e7fbe5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{2c636bdd-7753-47f6-8889-7d12db20edb0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\LevelEditor.ico">
+      <Filter>UI</Filter>
+    </Image>
+    <Image Include="UI\res\LevelEditor.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\LevelEditor.rc2">
+      <Filter>UI</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="UI\LevelEditor.rc">
+      <Filter>UI</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

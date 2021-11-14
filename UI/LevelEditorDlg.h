@@ -26,6 +26,8 @@ public:
 	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 	virtual BOOL OnIdle(LONG lCount);
 
+	void CalculateFps();
+
 // Implementation
 protected:
 	HICON m_hIcon;
@@ -48,12 +50,13 @@ protected:
 	CComboBox*			m_BrushComboBox;
 	CStatic*			m_ErodeIterationText;
 	CStatic*			m_BrushTypeText;
-	CStatic*			m_RenderBox;
-
+	class CPictureControl*			m_RenderBox;
+	CStatic*			m_FpsText;
+	CFont				m_FpsFont;
 	CString				m_BrushSizeSliderVal;
 
-	CBitmap m_bmpBitmap;
-	BITMAP bm;
+	float				m_deltaTime;
+	int					m_frameCounter;
 public:
 	afx_msg void OnFileExit();
 	afx_msg void OnBnClickedCancel();
@@ -74,4 +77,5 @@ private:
 
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 };

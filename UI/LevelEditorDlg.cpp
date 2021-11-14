@@ -6,6 +6,8 @@
 #include "LevelEditor.h"
 #include "LevelEditorDlg.h"
 #include "afxdialogex.h"
+#include "../ui/CPictureControl.h"
+#include "../Graphics/ACommonIncludes.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +66,7 @@ CLevelEditorDlg::CLevelEditorDlg(CWnd* pParent /*=nullptr*/)
 	m_BrushComboBox = nullptr;
 	m_ErodeIterationText = nullptr;
 	m_BrushTypeText		= nullptr;
+	m_frameCounter		= 0;
 }
 
 void CLevelEditorDlg::DoDataExchange(CDataExchange* pDX)
@@ -84,6 +87,7 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_CBN_SELENDOK(IDC_COMBO_BRUSHTYPE, &CLevelEditorDlg::OnCbnSelendokComboBrushtype)
 	ON_BN_CLICKED(IDC_BUTTON_ERODE, &CLevelEditorDlg::OnBnClickedButtonErode)
 	ON_WM_SIZE()
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 
@@ -318,34 +322,41 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushSizeTextbox	= (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
 	m_BrushComboBox		= (CComboBox*)GetDlgItem(IDC_COMBO_BRUSHTYPE);
 	m_HeightMapFileName = (CEdit*)GetDlgItem(IDC_HMFILENAME);
-	m_BrushTypeText			= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
-	m_RenderBox				= (CStatic*)GetDlgItem(IDC_RENDERBOX);
-
-
+	m_BrushTypeText		= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
+	m_RenderBox			= (CPictureControl*)GetDlgItem(IDC_RENDERBOX);
+	m_FpsText			= (CStatic*)GetDlgItem(IDC_STATIC_FPS);
+	
+	m_FpsText->LockWindowUpdate();
 
 	m_BrushSizeSlider->SetRange(0, 100, TRUE);
 	m_BrushSizeSlider->SetPos(0);
 	m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
-	CRect rect;
-	GetWindowRect(&rect);
+	m_FpsFont.CreateFont(
+		24,                        // nHeight
+		0,                         // nWidth
+		0,                         // nEscapement
+		0,                         // nOrientation
+		FW_NORMAL,                 // nWeight
+		FALSE,                     // bItalic
+		FALSE,                     // bUnderline
+		0,                         // cStrikeOut
+		ANSI_CHARSET,              // nCharSet
+		OUT_DEFAULT_PRECIS,        // nOutPrecision
+		CLIP_DEFAULT_PRECIS,       // nClipPrecision
+		DEFAULT_QUALITY,           // nQuality
+		DEFAULT_PITCH | FF_SWISS,  // nPitchAndFamily
+		_T("Agency FB"));                 // lpszFacename
 
-	m_ButtonLoadHeightMap->MoveWindow(rect.right - 200, rect.top + 50, 100, 25, TRUE);
+	m_FpsText->SetFont(&m_FpsFont);
 
 	return true;
 }
 
 bool CLevelEditorDlg::Update()
 {
-	static int frames = 0;
 
-	CString frameStr;
-	frameStr.Format(_T("%d"), frames);
-
-	this->SetWindowTextW(frameStr.GetBuffer());
-
-	frames++;
 
 	return true;
 }
@@ -396,9 +407,44 @@ BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 	Update();
 	Render();
 
+	CalculateFps();
+
 	return TRUE;
 }
 
+
+void CLevelEditorDlg::CalculateFps()
+{
+	static const int NUM_SAMPLES = 100;
+	static float frameTimes[NUM_SAMPLES] = {};
+	static time_point<system_clock> prevTick = system_clock::now();
+	time_point<system_clock> currentTick = system_clock::now();
+
+	duration<double> elapsed_seconds = currentTick - prevTick;
+	prevTick = currentTick;
+
+	m_deltaTime = elapsed_seconds.count();
+
+	frameTimes[m_frameCounter % NUM_SAMPLES] = m_deltaTime;
+
+	int count = __min(NUM_SAMPLES, m_frameCounter);
+
+	float avgFrameTime = 0.0f;
+	for (int i = 0; i < count; i++)
+	{
+		avgFrameTime += frameTimes[i];
+	}
+	avgFrameTime /= count;
+
+	int Fps = avgFrameTime > 0?  int(1.0f / avgFrameTime) : 60;
+
+	m_frameCounter++;
+
+	CString frameStr;
+	frameStr.Format(_T("%d"), Fps);
+	m_FpsText->SetWindowTextW(frameStr.GetBuffer());
+	m_FpsText->UpdateWindow();
+}
 
 void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 {
@@ -417,11 +463,23 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 135 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_RenderBox->SetWindowPos(nullptr, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
-		m_RenderBox->Invalidate();
-		m_RenderBox->RedrawWindow();
-		m_RenderBox->UpdateWindow();
+		m_RenderBox->OnSize(nType, cx, cy);
+		//m_RenderBox->Invalidate();
+		//m_RenderBox->RedrawWindow();
+		//m_RenderBox->UpdateWindow();
+		m_FpsText->SetWindowPos(nullptr, 35, 60, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
 	}
 
 
 	// TODO: Add your message handler code here
+}
+
+
+BOOL CLevelEditorDlg::OnEraseBkgnd(CDC* pDC)
+{
+	// TODO: Add your message handler code here and/or call default
+
+
+	return CDialogEx::OnEraseBkgnd(pDC);
 }
