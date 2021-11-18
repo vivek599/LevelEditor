@@ -34,7 +34,7 @@ AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabl
 	m_OrthoFar	=	100.0f;
 	m_OrthoMatrix	 = XMMatrixOrthographicLH( (float)screenWidth, (float)screenHeight, m_OrthoNear, m_OrthoFar );
 
-
+	m_ResizeSuccess = true;
 
 }
 
@@ -45,21 +45,24 @@ AGraphic::~AGraphic()
 
 void AGraphic::BeginScene(float r, float g, float b, float a)
 {
-	float color[4];
+	if (m_ResizeSuccess)
+	{
+		float color[4];
 
-	// Setup the color to clear the buffer to.
-	color[0] = r;
-	color[1] = g;
-	color[2] = b;
-	color[3] = a;
+		// Setup the color to clear the buffer to.
+		color[0] = r;
+		color[1] = g;
+		color[2] = b;
+		color[3] = a;
 
-	// Clear the back buffer.
-	m_DeviceContext->ClearRenderTargetView(m_RenderDevice->GetRenderTargetView().Get(), color);
+		// Clear the back buffer.
+		m_DeviceContext->ClearRenderTargetView(m_RenderDevice->GetRenderTargetView().Get(), color);
 
-	// Clear the depth buffer.
-	//m_DeviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		// Clear the depth buffer.
+		//m_DeviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	m_RenderDevice->BeginFrame();
+		m_RenderDevice->BeginFrame();
+	}
 }
 
 bool AGraphic::Update(float deltaTime)
@@ -70,16 +73,35 @@ bool AGraphic::Update(float deltaTime)
 
 bool AGraphic::Render()
 {
-	m_DeviceContext->RSSetState(m_RenderDevice->GetRSCullBackFace());
-
-	m_DeviceContext->RSSetViewports(1, &m_Viewport);
+	if (m_ResizeSuccess)
+	{
+		m_DeviceContext->RSSetState(m_RenderDevice->GetRSCullBackFace());
+		m_DeviceContext->OMSetRenderTargets(1, m_RenderDevice->GetRenderTargetView().GetAddressOf(), NULL);
+		m_DeviceContext->RSSetViewports(1, &m_Viewport);
+	}
 
 	return true;
 }
 
 void AGraphic::EndScene()
 {
-	m_RenderDevice->EndFrame();
+	if (m_ResizeSuccess)
+	{
+		m_RenderDevice->EndFrame();
+	}
+}
+
+void AGraphic::Resize(int width, int height)
+{
+	m_ResizeSuccess = m_RenderDevice->ResizeSwapChainBuffers(width, height);
+
+	// Set up the viewport.
+	m_Viewport.Width = width;
+	m_Viewport.Height = height;
+	m_Viewport.MinDepth = 0.0f;
+	m_Viewport.MaxDepth = 1.0f;
+	m_Viewport.TopLeftX = 0;
+	m_Viewport.TopLeftY = 0;
 }
 
 Matrix AGraphic::GetProjectionMatrix()

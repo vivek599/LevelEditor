@@ -89,6 +89,7 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_ERODE, &CLevelEditorDlg::OnBnClickedButtonErode)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
+	ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 
@@ -468,12 +469,13 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
+
+		m_Graphic->Resize(cx, cy);
 	}
 
 
 	// TODO: Add your message handler code here
 }
-
 
 BOOL CLevelEditorDlg::OnEraseBkgnd(CDC* pDC)
 {
@@ -481,4 +483,12 @@ BOOL CLevelEditorDlg::OnEraseBkgnd(CDC* pDC)
 
 
 	return CDialogEx::OnEraseBkgnd(pDC);
+}
+
+void CLevelEditorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	lpMMI->ptMinTrackSize.x = 640;
+	lpMMI->ptMinTrackSize.y = 480;
+
+	CDialogEx::OnGetMinMaxInfo(lpMMI);
 }

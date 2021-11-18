@@ -13,7 +13,8 @@ ARenderDevice::ARenderDevice(const InitialisationParams& initParams) :
 	m_SwapChain(initParams.dxgiSwapChain),
 	m_Device(initParams.d3dDevice),
 	m_DeviceContext(initParams.d3dDeviceContext),
-	m_RenderTargetView(initParams.d3dRenderTargetView)
+	m_RenderTargetView(initParams.d3dRenderTargetView),
+	m_SwapChainDesc(initParams.swapChainDesc)
 {
 	InitCommonPipeLineStates();
 
@@ -75,8 +76,8 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	AHRASSERT(hr);
 
 	ComPtr<ID3D11Resource> backBuffer;
-	HRESULT getBackBuffer = dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
-	if (FAILED(getBackBuffer))
+	hr = dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
+	if (FAILED(hr))
 	{
 		d3dDeviceContext->Release();
 		d3dDevice->Release();
@@ -85,7 +86,7 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	}
 
 	D3D11_RENDER_TARGET_VIEW_DESC viewDesc = {}; 
-	viewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	viewDesc.Format = swapChainDesc.BufferDesc.Format;
 	viewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	viewDesc.Texture2D.MipSlice = 0;
 
@@ -101,7 +102,8 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	gfxParams.dxgiSwapChain				= dxgiSwapChain;
 	gfxParams.d3dDevice					= d3dDevice;
 	gfxParams.d3dDeviceContext			= d3dDeviceContext;
-	gfxParams.d3dRenderTargetView		= d3dRenderTargetView; 
+	gfxParams.d3dRenderTargetView		= d3dRenderTargetView;
+	gfxParams.swapChainDesc				= swapChainDesc;
 	 
 	ARenderDevice* newDevice = new ARenderDevice(gfxParams); 
 
@@ -196,15 +198,45 @@ ID3D11SamplerState* ARenderDevice::GetSampleMirrorOnce()
 	return m_SampleStateMirrorOnce.Get();
 }
 
-void ARenderDevice::OnResize()
+bool ARenderDevice::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 {
+	if (m_SwapChain)
+	{
+		HRESULT hr = S_OK;
 
-}
+		m_DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 
-void ARenderDevice::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
-{
+		// Release all outstanding references to the swap chain's buffers.
+		m_RenderTargetView->Release();
 
-}
+		// Preserve the existing buffer count and format.
+		// Automatically choose the width and height to match the client rect for HWNDs.
+		hr = m_SwapChain->ResizeBuffers(m_SwapChainDesc.BufferCount, width, height, m_SwapChainDesc.BufferDesc.Format, m_SwapChainDesc.Flags);
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		// Get buffer and create a render-target-view.
+		ID3D11Texture2D* pBuffer;
+		hr = m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBuffer));
+		if (FAILED(hr))
+		{
+			return false;
+		}
+
+		hr = m_Device->CreateRenderTargetView(pBuffer, nullptr, &m_RenderTargetView);
+		if (FAILED(hr))
+		{
+			pBuffer->Release();
+			return false;
+		}
+
+		pBuffer->Release();
+	}
+
+	return true;
+} 
 
 void ARenderDevice::InitCommonPipeLineStates()
 {

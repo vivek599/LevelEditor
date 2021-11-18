@@ -15,6 +15,7 @@ public:
 	bool Update(float deltaTime);
 	bool Render();
 	void EndScene();
+	void Resize(int width, int height);
 
 	Matrix GetProjectionMatrix();
 	Matrix GetWorldMatrix();
@@ -37,5 +38,7 @@ private:
 	float					m_Far;
 	float					m_OrthoNear;
 	float					m_OrthoFar;
+
+	bool					m_ResizeSuccess;
 };
 

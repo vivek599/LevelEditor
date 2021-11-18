@@ -33,6 +33,7 @@ public:
 	ID3D11SamplerState*			GetSampleMirrorOnce();
 
 	void InitCommonPipeLineStates();
+	bool ResizeSwapChainBuffers(uint32_t width, uint32_t height);
 
 private:
 
@@ -47,6 +48,7 @@ private:
 		IDXGISwapChain*					dxgiSwapChain;
 		ID3D11DeviceContext*			d3dDeviceContext;
 		ID3D11RenderTargetView*			d3dRenderTargetView;
+		DXGI_SWAP_CHAIN_DESC			swapChainDesc;
 	};
 
 	ARenderDevice(const InitialisationParams& initParams);
@@ -58,17 +60,16 @@ private:
 	ComPtr<ID3D11Device>				m_Device;
 	ComPtr<ID3D11DeviceContext>			m_DeviceContext;
 	ComPtr<IDXGISwapChain>				m_SwapChain;
-	ComPtr<ID3D11RenderTargetView>		m_RenderTargetView;
+	ID3D11RenderTargetView*				m_RenderTargetView;
 
 	HWND							m_Window;
 	bool							m_VsyncEnabled;
 	bool							m_FullScreen;
 	uint32_t						m_ScreenWidth;
 	uint32_t						m_ScreenHeight;
+	DXGI_SWAP_CHAIN_DESC			m_SwapChainDesc;
 
-	void OnResize( );
 
-	void ResizeSwapChainBuffers(uint32_t width, uint32_t height);
 
 
 	bool CreateBlendStates();
