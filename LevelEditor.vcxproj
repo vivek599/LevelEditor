@@ -204,11 +204,13 @@
     <ClInclude Include="Graphics\ACommonIncludes.h" />
     <ClInclude Include="Graphics\AConstantBuffer.h" />
     <ClInclude Include="Graphics\ADXTime.h" />
+    <ClInclude Include="Graphics\AGraphic.h" />
     <ClInclude Include="Graphics\ALogger.h" />
     <ClInclude Include="Graphics\ARenderDevice.h" />
     <ClInclude Include="Graphics\ARenderSystem.h" />
     <ClInclude Include="Graphics\ARenderTarget.h" />
     <ClInclude Include="Graphics\AShaderCache.h" />
+    <ClInclude Include="Graphics\ATerrain.h" />
     <ClInclude Include="Graphics\ATexture.h" />
     <ClInclude Include="UI\CPictureControl.h" />
     <ClInclude Include="UI\framework.h" />
@@ -220,11 +222,13 @@
   <ItemGroup>
     <ClCompile Include="Graphics\AConstantBuffer.cpp" />
     <ClCompile Include="Graphics\ADXTime.cpp" />
+    <ClCompile Include="Graphics\AGraphic.cpp" />
     <ClCompile Include="Graphics\ALogger.cpp" />
     <ClCompile Include="Graphics\ARenderDevice.cpp" />
     <ClCompile Include="Graphics\ARenderSystem.cpp" />
     <ClCompile Include="Graphics\ARenderTarget.cpp" />
     <ClCompile Include="Graphics\AShaderCache.cpp" />
+    <ClCompile Include="Graphics\ATerrain.cpp" />
     <ClCompile Include="Graphics\ATexture.cpp" />
     <ClCompile Include="UI\CPictureControl.cpp" />
     <ClCompile Include="UI\LevelEditor.cpp" />

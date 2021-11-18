@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "../ui/CPictureControl.h"
 #include "../Graphics/ACommonIncludes.h"
+#include "../Graphics/AGraphic.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -108,7 +109,14 @@ BOOL CLevelEditorDlg::OnInitDialog()
 
 	m_ControlsInitialized = InitializeControls();
 
+	if (m_ControlsInitialized)
+	{
+		CRect rect;
+		m_RenderBox->GetWindowRect(rect);
+		m_RenderBox->ScreenToClient(&rect);
+		m_Graphic.reset(new AGraphic( m_RenderBox->m_hWnd,rect.Width(), rect.Height(), false, false));
 
+	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -207,15 +215,6 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_HeightMapFileName->SetWindowTextW(p);
 
-	HBITMAP hBitmap = (HBITMAP) ::LoadImage(nullptr, p, IMAGE_BITMAP, 256, 256, LR_LOADFROMFILE );
-
-	// Do we have a valid handle for the loaded image?
-	if (hBitmap)
-	{
-		m_RenderBox->ModifyStyle(0xF, SS_BITMAP);
-		m_RenderBox->SetBitmap(hBitmap);
-		m_RenderBox->UpdateData(FALSE);
-	}
 
 
 }
@@ -325,7 +324,8 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushTypeText		= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
 	m_RenderBox			= (CPictureControl*)GetDlgItem(IDC_RENDERBOX);
 	m_FpsText			= (CStatic*)GetDlgItem(IDC_STATIC_FPS);
-	
+	m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
+
 	m_FpsText->LockWindowUpdate();
 
 	m_BrushSizeSlider->SetRange(0, 100, TRUE);
@@ -403,9 +403,13 @@ LRESULT CLevelEditorDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 {
 
-
-	Update();
-	Render();
+	if (m_Graphic)
+	{
+		m_Graphic->BeginScene(0.0f, 0.0f, 1.0f, 1.0f);
+		m_Graphic->Update(m_deltaTime);
+		m_Graphic->Render();
+		m_Graphic->EndScene();
+	}
 
 	CalculateFps();
 
@@ -462,13 +466,8 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		m_BrushTypeText->SetWindowPos(nullptr, cx - 250 - hspacing, 115 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 135 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_RenderBox->SetWindowPos(nullptr, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
-		m_RenderBox->OnSize(nType, cx, cy);
-		//m_RenderBox->Invalidate();
-		//m_RenderBox->RedrawWindow();
-		//m_RenderBox->UpdateWindow();
-		m_FpsText->SetWindowPos(nullptr, 35, 60, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-
+		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
+		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
 	}
 
 

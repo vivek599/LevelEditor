@@ -4,6 +4,10 @@
 
 #pragma once
 
+#include <memory>
+
+class AGraphic;
+using namespace std;
 
 #define WM_IDLE WM_USER + 1
 
@@ -57,6 +61,9 @@ protected:
 
 	float				m_deltaTime;
 	int					m_frameCounter;
+
+	unique_ptr<AGraphic> m_Graphic;
+
 public:
 	afx_msg void OnFileExit();
 	afx_msg void OnBnClickedCancel();

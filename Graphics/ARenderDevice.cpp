@@ -105,6 +105,7 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	 
 	ARenderDevice* newDevice = new ARenderDevice(gfxParams); 
 
+
 	return newDevice;
 }
 
@@ -207,7 +208,10 @@ void ARenderDevice::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 
 void ARenderDevice::InitCommonPipeLineStates()
 {
-
+	CreateBlendStates();
+	CreateDepthStates();
+	CreateRasterizerStates();
+	CreateSamplerStates();
 }
 
 bool ARenderDevice::CreateBlendStates()

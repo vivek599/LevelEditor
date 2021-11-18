@@ -32,6 +32,8 @@ public:
 	ID3D11SamplerState*			GetSampleClamp();
 	ID3D11SamplerState*			GetSampleMirrorOnce();
 
+	void InitCommonPipeLineStates();
+
 private:
 
 	struct InitialisationParams
@@ -56,7 +58,7 @@ private:
 	ComPtr<ID3D11Device>				m_Device;
 	ComPtr<ID3D11DeviceContext>			m_DeviceContext;
 	ComPtr<IDXGISwapChain>				m_SwapChain;
-	ComPtr < ID3D11RenderTargetView>	m_RenderTargetView;
+	ComPtr<ID3D11RenderTargetView>		m_RenderTargetView;
 
 	HWND							m_Window;
 	bool							m_VsyncEnabled;
@@ -68,7 +70,6 @@ private:
 
 	void ResizeSwapChainBuffers(uint32_t width, uint32_t height);
 
-	void InitCommonPipeLineStates(); 
 
 	bool CreateBlendStates();
 	bool CreateDepthStates();

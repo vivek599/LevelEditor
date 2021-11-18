@@ -34,6 +34,12 @@
     <ClCompile Include="UI\CPictureControl.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\AGraphic.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ATerrain.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -83,6 +89,12 @@
     </ClInclude>
     <ClInclude Include="UI\CPictureControl.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\AGraphic.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ATerrain.h">
+      <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

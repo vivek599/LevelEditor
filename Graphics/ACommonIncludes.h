@@ -35,7 +35,7 @@ using namespace std::chrono;
 #pragma comment(lib, "D3DCompiler.lib") 
 #pragma comment(lib, "d2d1.lib" )
 #pragma comment(lib, "dwrite.lib" )
-//#pragma comment(lib, "DirectXTK.lib" )
+#pragma comment(lib, "DirectXTK.lib" )
 //#pragma comment(lib, "assimp-vc142-mtd.lib" )
 #pragma comment(lib, "dxguid.lib")
 
