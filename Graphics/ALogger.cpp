@@ -20,11 +20,11 @@ void ALogger::log(string str)
 }
 
 // log a variable number of arguments
-void ALogger::log( const char* str, va_list list)
+void ALogger::log( const wchar_t* str, va_list list)
 {
-	char buffer[260];
+	wchar_t buffer[260];
 
-	vsnprintf(buffer, 260, str, list);
+	_vsnwprintf_s( buffer,260,str, list);
 
 	m_stream << "Log: " << buffer << endl;
 
@@ -49,7 +49,7 @@ void ALOG(string str)
 //#endif
 }
 
-void ALOG( const char* str, ...)
+void ALOG( const wchar_t* str, ...)
 {
 //#ifdef _DEBUG
 	va_list args;

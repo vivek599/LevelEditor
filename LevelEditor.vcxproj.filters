@@ -104,6 +104,9 @@
     <Filter Include="UI">
       <UniqueIdentifier>{2c636bdd-7753-47f6-8889-7d12db20edb0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graphics\Shaders">
+      <UniqueIdentifier>{ee085196-a591-4f7b-8731-f0b4c86b267f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\LevelEditor.ico">
@@ -120,5 +123,13 @@
     <ResourceCompile Include="UI\LevelEditor.rc">
       <Filter>UI</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="BINx64\Data\Shaders\terrain_ps.hlsl">
+      <Filter>Graphics\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BINx64\Data\Shaders\terrain_vs.hlsl">
+      <Filter>Graphics\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

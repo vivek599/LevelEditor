@@ -1,14 +1,18 @@
 
 #include "AGraphic.h"
 #include "ARenderDevice.h"
+#include "ATerrain.h"
 
 
-AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen)
+AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen) :
+	m_ResizeSuccess(true),
+	m_TerrainInitilized(false)
 {
 	m_RenderDevice = ARenderDevice::CreateDevice(hwnd, screenWidth, screenHeight, vsyncEnabled, full_screen);
 
 	m_RenderDevice->InitCommonPipeLineStates();
- 
+	m_RenderDevice->InitDepthBuffers();
+
 	m_Device		= m_RenderDevice->GetDevice();
 	m_DeviceContext	= m_RenderDevice->GetContext();
 
@@ -32,9 +36,10 @@ AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabl
 	// Create an orthographic projection matrix for 2D rendering.
 	m_OrthoNear	=	0.1f;
 	m_OrthoFar	=	100.0f;
-	m_OrthoMatrix	 = XMMatrixOrthographicLH( (float)screenWidth, (float)screenHeight, m_OrthoNear, m_OrthoFar );
 
-	m_ResizeSuccess = true;
+	m_OrthoMatrix	= XMMatrixOrthographicLH( (float)screenWidth, (float)screenHeight, m_OrthoNear, m_OrthoFar );
+	m_ViewMatrix	= XMMatrixLookAtLH( Vector3(0.0f, 50.0f, -10.0f), Vector3(512, 0.0f, 512.0f), Vector3(0.0f, 1.0f, 0.0f));
+
 
 }
 
@@ -43,23 +48,31 @@ AGraphic::~AGraphic()
 	ARenderDevice::DestroyDevice(m_RenderDevice);
 }
 
-void AGraphic::BeginScene(float r, float g, float b, float a)
+bool AGraphic::InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath)
+{
+	m_Terrain.reset(new ATerrain());
+	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, heightMapFilePath, pixelShaderFilePath, vertexShaderFilePath);
+
+	return true;
+}
+
+void AGraphic::BeginScene(Color color)
 {
 	if (m_ResizeSuccess)
 	{
-		float color[4];
+		float c[4];
 
 		// Setup the color to clear the buffer to.
-		color[0] = r;
-		color[1] = g;
-		color[2] = b;
-		color[3] = a;
-
+		c[0] = color.R();
+		c[1] = color.G();
+		c[2] = color.B();
+		c[3] = color.A();
+		 
 		// Clear the back buffer.
-		m_DeviceContext->ClearRenderTargetView(m_RenderDevice->GetRenderTargetView().Get(), color);
+		m_DeviceContext->ClearRenderTargetView(m_RenderDevice->GetRenderTargetView().Get(), c);
 
 		// Clear the depth buffer.
-		//m_DeviceContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+		m_DeviceContext->ClearDepthStencilView(m_RenderDevice->GetDepthStencilView().Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 		m_RenderDevice->BeginFrame();
 	}
@@ -76,9 +89,24 @@ bool AGraphic::Render()
 	if (m_ResizeSuccess)
 	{
 		m_DeviceContext->RSSetState(m_RenderDevice->GetRSCullBackFace());
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderDevice->GetRenderTargetView().GetAddressOf(), NULL);
+		m_DeviceContext->OMSetRenderTargets(1, m_RenderDevice->GetRenderTargetView().GetAddressOf(), m_RenderDevice->GetDepthStencilView().Get());
 		m_DeviceContext->RSSetViewports(1, &m_Viewport);
 	}
+	else
+	{
+		return false;
+	}
+
+	if (m_TerrainInitilized)
+	{
+		m_Terrain->Render(m_RenderDevice->GetContext().Get(), m_WorldMatrix, m_ViewMatrix, m_ProjectionMatrix);
+	}
+
+
+
+
+
+
 
 	return true;
 }

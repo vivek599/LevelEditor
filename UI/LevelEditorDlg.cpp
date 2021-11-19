@@ -216,6 +216,9 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_HeightMapFileName->SetWindowTextW(p);
 
+	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"));
+
+
 
 
 }
@@ -403,10 +406,9 @@ LRESULT CLevelEditorDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 {
-
 	if (m_Graphic)
 	{
-		m_Graphic->BeginScene(0.0f, 0.0f, 1.0f, 1.0f);
+		m_Graphic->BeginScene(ArgbToColor(ColorARGB::Blue));
 		m_Graphic->Update(m_deltaTime);
 		m_Graphic->Render();
 		m_Graphic->EndScene();
@@ -416,7 +418,6 @@ BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 
 	return TRUE;
 }
-
 
 void CLevelEditorDlg::CalculateFps()
 {

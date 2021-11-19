@@ -10,8 +10,8 @@ public:
 	AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen);
 	~AGraphic();
 
-
-	void BeginScene(float r, float g, float b, float a);
+	bool InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath );
+	void BeginScene(Color color);
 	bool Update(float deltaTime);
 	bool Render();
 	void EndScene();
@@ -26,6 +26,7 @@ private:
 	Matrix m_ProjectionMatrix;
 	Matrix m_WorldMatrix;
 	Matrix m_OrthoMatrix;
+	Matrix m_ViewMatrix;
 
 	class ARenderDevice*	m_RenderDevice;
 
@@ -40,5 +41,8 @@ private:
 	float					m_OrthoFar;
 
 	bool					m_ResizeSuccess;
+	bool					m_TerrainInitilized;
+
+	unique_ptr<class ATerrain> m_Terrain;
 };
 

@@ -91,7 +91,7 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	viewDesc.Texture2D.MipSlice = 0;
 
 	ID3D11RenderTargetView* d3dRenderTargetView;
-	HRESULT createRenderTargetView = d3dDevice->CreateRenderTargetView( backBuffer.Get(), &viewDesc, &d3dRenderTargetView);
+	hr = d3dDevice->CreateRenderTargetView( backBuffer.Get(), &viewDesc, &d3dRenderTargetView);
 
 	//  Create our graphics device
 	InitialisationParams gfxParams;
@@ -104,6 +104,7 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 	gfxParams.d3dDeviceContext			= d3dDeviceContext;
 	gfxParams.d3dRenderTargetView		= d3dRenderTargetView;
 	gfxParams.swapChainDesc				= swapChainDesc;
+	
 	 
 	ARenderDevice* newDevice = new ARenderDevice(gfxParams); 
 
@@ -146,6 +147,11 @@ ComPtr<ID3D11DeviceContext> ARenderDevice::GetContext()
 ComPtr<ID3D11RenderTargetView> ARenderDevice::GetRenderTargetView()
 {
 	return m_RenderTargetView;
+}
+
+ComPtr<ID3D11DepthStencilView> ARenderDevice::GetDepthStencilView()
+{
+	return m_DepthStencilView;
 }
 
 ID3D11RasterizerState* ARenderDevice::GetRSWireFrame()
@@ -198,8 +204,59 @@ ID3D11SamplerState* ARenderDevice::GetSampleMirrorOnce()
 	return m_SampleStateMirrorOnce.Get();
 }
 
+void ARenderDevice::InitDepthBuffers()
+{
+	HRESULT hr = S_OK;
+
+	D3D11_TEXTURE2D_DESC depthBufferDesc;
+	// Initialize the description of the depth buffer.
+	ZeroMemory(&depthBufferDesc, sizeof(depthBufferDesc));
+
+	// Set up the description of the depth buffer.
+	depthBufferDesc.Width = m_ScreenWidth;
+	depthBufferDesc.Height = m_ScreenHeight;
+	depthBufferDesc.MipLevels = 1;
+	depthBufferDesc.ArraySize = 1;
+	depthBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthBufferDesc.SampleDesc.Count = 1;
+	depthBufferDesc.SampleDesc.Quality = 0;
+	depthBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthBufferDesc.CPUAccessFlags = 0;
+	depthBufferDesc.MiscFlags = 0;
+
+	// Create the texture for the depth buffer using the filled out description.
+	hr = m_Device->CreateTexture2D(&depthBufferDesc, NULL, m_DepthStencilBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		throw;
+	}
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+
+	// Initailze the depth stencil view.
+	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
+
+	// Set up the depth stencil view description.
+	depthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	depthStencilViewDesc.Texture2D.MipSlice = 0;
+
+	// Create the depth stencil view.
+	hr = m_Device->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &depthStencilViewDesc, m_DepthStencilView.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		throw;
+	}
+}
+
 bool ARenderDevice::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 {
+	m_ScreenWidth = width;
+	m_ScreenHeight = height;
+
+	InitDepthBuffers();
+
 	if (m_SwapChain)
 	{
 		HRESULT hr = S_OK;

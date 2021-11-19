@@ -24,6 +24,7 @@
 #include <future>
 #include <queue>
 #include <chrono>   
+#include <thread>   
 using namespace std::chrono;
 
 #include <WICTextureLoader.h>
@@ -65,6 +66,8 @@ using namespace DirectX::SimpleMath;
 
 typedef Matrix Mat4;
 
+#define SAFERELEASE(ppT) { if(ppT) { (ppT)->Release(); (ppT) = nullptr; } }
+#define SAFEDELETE(ppT) { if(ppT) { delete [] (ppT); (ppT) = nullptr; } }
 
 //#include <vld.h>
 

@@ -20,6 +20,7 @@ public:
 	ComPtr<ID3D11DeviceContext> GetContext();
 
 	ComPtr<ID3D11RenderTargetView> GetRenderTargetView();
+	ComPtr<ID3D11DepthStencilView> GetDepthStencilView();
 
 	ID3D11RasterizerState*		GetRSWireFrame();
 	ID3D11RasterizerState*		GetRSCullBackFace();
@@ -32,6 +33,7 @@ public:
 	ID3D11SamplerState*			GetSampleClamp();
 	ID3D11SamplerState*			GetSampleMirrorOnce();
 
+	void InitDepthBuffers();
 	void InitCommonPipeLineStates();
 	bool ResizeSwapChainBuffers(uint32_t width, uint32_t height);
 
@@ -61,6 +63,8 @@ private:
 	ComPtr<ID3D11DeviceContext>			m_DeviceContext;
 	ComPtr<IDXGISwapChain>				m_SwapChain;
 	ID3D11RenderTargetView*				m_RenderTargetView;
+	ComPtr<ID3D11DepthStencilView>		m_DepthStencilView;
+	ComPtr<ID3D11Texture2D>				m_DepthStencilBuffer;
 
 	HWND							m_Window;
 	bool							m_VsyncEnabled;
@@ -69,30 +73,26 @@ private:
 	uint32_t						m_ScreenHeight;
 	DXGI_SWAP_CHAIN_DESC			m_SwapChainDesc;
 
-
-
-
 	bool CreateBlendStates();
 	bool CreateDepthStates();
 	bool CreateRasterizerStates();
 	bool CreateSamplerStates();
 
-	ComPtr < ID3D11BlendState>				m_AlphaDisableBlendState;
-	ComPtr < ID3D11BlendState>				m_AlphaEnableBlendState;
+	ComPtr<ID3D11BlendState>				m_AlphaDisableBlendState;
+	ComPtr<ID3D11BlendState>				m_AlphaEnableBlendState;
 
-	ComPtr < ID3D11RasterizerState>			m_RasterizerStateWireFrame;
-	ComPtr < ID3D11RasterizerState>			m_RasterizerStateCullBackFace;
-	ComPtr < ID3D11RasterizerState>			m_RasterizerStateCullFrontFace;
-	ComPtr < ID3D11RasterizerState>			m_RasterizerStateNoCullFace;
+	ComPtr<ID3D11RasterizerState>			m_RasterizerStateWireFrame;
+	ComPtr<ID3D11RasterizerState>			m_RasterizerStateCullBackFace;
+	ComPtr<ID3D11RasterizerState>			m_RasterizerStateCullFrontFace;
+	ComPtr<ID3D11RasterizerState>			m_RasterizerStateNoCullFace;
 
+	ComPtr<ID3D11DepthStencilState>			m_DepthEnableStencilState;
+	ComPtr<ID3D11DepthStencilState>			m_DepthDisableStencilState;
 
-	ComPtr < ID3D11DepthStencilState>	m_DepthEnableStencilState;
-	ComPtr < ID3D11DepthStencilState>	m_DepthDisableStencilState;
-
-	ComPtr < ID3D11SamplerState >		m_SampleStateRepeat;
-	ComPtr < ID3D11SamplerState >		m_SampleStateMirror;
-	ComPtr < ID3D11SamplerState >		m_SampleStateClamp;
-	ComPtr < ID3D11SamplerState >		m_SampleStateMirrorOnce;
+	ComPtr<ID3D11SamplerState >				m_SampleStateRepeat;
+	ComPtr<ID3D11SamplerState >				m_SampleStateMirror;
+	ComPtr<ID3D11SamplerState >				m_SampleStateClamp;
+	ComPtr<ID3D11SamplerState >				m_SampleStateMirrorOnce;
 
 };
 

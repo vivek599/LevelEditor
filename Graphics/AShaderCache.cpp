@@ -76,21 +76,21 @@ bool AShaderCache::CompileVSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing vs shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing vs shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreateVertexShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_VShader.ReleaseAndGetAddressOf());
+	hr = m_Device->CreateVertexShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_VShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
 
@@ -101,21 +101,21 @@ bool AShaderCache::CompileHSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing hs shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing hs shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreateHullShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_HShader.ReleaseAndGetAddressOf());
+	hr = m_Device->CreateHullShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_HShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
 
@@ -126,21 +126,21 @@ bool AShaderCache::CompileDSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing ds shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing ds shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreateDomainShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_DShader.ReleaseAndGetAddressOf());
+	hr = m_Device->CreateDomainShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_DShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
 
@@ -151,21 +151,21 @@ bool AShaderCache::CompileGSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "gs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "gs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing gs shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing gs shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreateGeometryShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_GShader.ReleaseAndGetAddressOf()); 
+	hr = m_Device->CreateGeometryShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_GShader.ReleaseAndGetAddressOf()); 
 	AHRASSERT(hr);
 
 
@@ -176,21 +176,21 @@ bool AShaderCache::CompilePSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing ps shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing ps shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreatePixelShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_PShader.ReleaseAndGetAddressOf());
+	hr = m_Device->CreatePixelShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_PShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
 
@@ -201,21 +201,21 @@ bool AShaderCache::CompileCSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, NULL, NULL, "main", "cs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "cs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
 		{
-			MessageBoxA(NULL, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
+			MessageBoxA(nullptr, (LPCSTR)m_ErrorMsg->GetBufferPointer(), "Error", MB_OK);
 		}
 		else
 		{
-			MessageBoxW(NULL, filepath, L"Missing cs shader file...", MB_OK);
+			MessageBoxW(nullptr, filepath, L"Missing cs shader file...", MB_OK);
 		}
 		return false;
 	}
 
-	hr = m_Device->CreateComputeShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), NULL, m_CShader.ReleaseAndGetAddressOf());
+	hr = m_Device->CreateComputeShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_CShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
 	return true;
@@ -282,7 +282,7 @@ bool AShaderCache::CreateInputLayout()
 
 	if (inputElements.size() > 0)
 	{
-		hr = m_Device->CreateInputLayout(inputElements.data(), (UINT)inputElements.size(), m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), &GetInputLayout());
+		hr = m_Device->CreateInputLayout(inputElements.data(), (UINT)inputElements.size(), m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), m_InputLayout.GetAddressOf());
 		AHRASSERT(hr);
 	}
 
