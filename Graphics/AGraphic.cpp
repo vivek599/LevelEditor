@@ -48,10 +48,10 @@ AGraphic::~AGraphic()
 	ARenderDevice::DestroyDevice(m_RenderDevice);
 }
 
-bool AGraphic::InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath)
+bool AGraphic::InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename)
 {
 	m_Terrain.reset(new ATerrain());
-	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, heightMapFilePath, pixelShaderFilePath, vertexShaderFilePath);
+	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, heightMapFilePath, pixelShaderFilePath, vertexShaderFilePath, textureFilename);
 
 	return true;
 }
@@ -99,7 +99,10 @@ bool AGraphic::Render()
 
 	if (m_TerrainInitilized)
 	{
-		m_Terrain->Render(m_RenderDevice->GetContext().Get(), m_WorldMatrix, m_ViewMatrix, m_ProjectionMatrix);
+		m_Terrain->SetAmbientColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+		m_Terrain->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
+		m_Terrain->SetLightDirection(Vector3(-0.5f, -1.0f, 0.0f));
+		m_Terrain->Render(m_RenderDevice, m_WorldMatrix, m_ViewMatrix, m_ProjectionMatrix);
 	}
 
 

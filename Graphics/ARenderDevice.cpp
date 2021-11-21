@@ -184,24 +184,24 @@ ID3D11DepthStencilState* ARenderDevice::GetDepthDisableState()
 	return m_DepthDisableStencilState.Get();
 }
 
-ID3D11SamplerState* ARenderDevice::GetSampleRepeat()
+ID3D11SamplerState** ARenderDevice::GetSampleRepeat()
 {
-	return m_SampleStateRepeat.Get();
+	return m_SampleStateRepeat.GetAddressOf();
 }
 
-ID3D11SamplerState* ARenderDevice::GetSampleMirror()
+ID3D11SamplerState** ARenderDevice::GetSampleMirror()
 {
-	return m_SampleStateMirror.Get();
+	return m_SampleStateMirror.GetAddressOf();
 }
 
-ID3D11SamplerState* ARenderDevice::GetSampleClamp()
+ID3D11SamplerState** ARenderDevice::GetSampleClamp()
 {
-	return m_SampleStateClamp.Get();
+	return m_SampleStateClamp.GetAddressOf();
 }
 
-ID3D11SamplerState* ARenderDevice::GetSampleMirrorOnce()
+ID3D11SamplerState** ARenderDevice::GetSampleMirrorOnce()
 {
-	return m_SampleStateMirrorOnce.Get();
+	return m_SampleStateMirrorOnce.GetAddressOf();
 }
 
 void ARenderDevice::InitDepthBuffers()

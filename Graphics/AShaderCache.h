@@ -12,6 +12,15 @@ enum AShaderType
 	COMPUTESHADER
 };
 
+enum ShaderParameterType
+{
+	Invalid,    // Invalid parameter. Doesn't store a type.
+	Texture,    // Texture.
+	Sampler,    // Texture sampler.
+	Buffer,     // Buffers, ConstantBuffers, StructuredBuffers.
+	RWTexture,  // Texture that can be written to in a shader (using Store operations).
+	RWBuffer,   // Read/write structured buffers.
+};
 
 class ARenderDevice;
 
@@ -50,6 +59,7 @@ private:
 	UINT									m_ThreadY;
 	UINT									m_ThreadZ;
 
+	vector<ShaderParameterType>				m_ParameterType;
 public:
 	bool CompileShaderFromFile(const wchar_t* filepath);
 	bool LoadPreCompiled(const wchar_t* filepath);

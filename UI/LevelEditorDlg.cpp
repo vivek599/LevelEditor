@@ -216,7 +216,7 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_HeightMapFileName->SetWindowTextW(p);
 
-	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"));
+	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"), _T("../Data/Textures/layer0.png"));
 
 
 

@@ -212,6 +212,7 @@
     <ClInclude Include="Graphics\AShaderCache.h" />
     <ClInclude Include="Graphics\ATerrain.h" />
     <ClInclude Include="Graphics\ATexture.h" />
+    <ClInclude Include="Graphics\PNG\lodepng.h" />
     <ClInclude Include="UI\CPictureControl.h" />
     <ClInclude Include="UI\framework.h" />
     <ClInclude Include="UI\LevelEditor.h" />
@@ -230,6 +231,7 @@
     <ClCompile Include="Graphics\AShaderCache.cpp" />
     <ClCompile Include="Graphics\ATerrain.cpp" />
     <ClCompile Include="Graphics\ATexture.cpp" />
+    <ClCompile Include="Graphics\PNG\lodepng.cpp" />
     <ClCompile Include="UI\CPictureControl.cpp" />
     <ClCompile Include="UI\LevelEditor.cpp" />
     <ClCompile Include="UI\LevelEditorDlg.cpp" />

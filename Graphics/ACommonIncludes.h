@@ -2,14 +2,6 @@
 
 #define WIN32_LEAN_AND_MEAN
 
-#define NOWARNINGS 1
-
-#if NOWARNINGS
-
-#pragma warning(disable : 4005 4244 4267 4100 4101 )
-
-#endif 
-
 #include <Windows.h>
 #include <shobjidl.h> //open file dialog
 
@@ -36,7 +28,11 @@ using namespace std::chrono;
 #pragma comment(lib, "D3DCompiler.lib") 
 #pragma comment(lib, "d2d1.lib" )
 #pragma comment(lib, "dwrite.lib" )
+#ifdef _DEBUG
+#pragma comment(lib, "DirectXTKd.lib" )
+#else
 #pragma comment(lib, "DirectXTK.lib" )
+#endif
 //#pragma comment(lib, "assimp-vc142-mtd.lib" )
 #pragma comment(lib, "dxguid.lib")
 
@@ -56,6 +52,7 @@ using Microsoft::WRL::ComPtr;
 
 #include <assert.h>
 
+
 #include "ALogger.h"
 #include "ADXTime.h"
 
@@ -70,5 +67,6 @@ typedef Matrix Mat4;
 #define SAFEDELETE(ppT) { if(ppT) { delete [] (ppT); (ppT) = nullptr; } }
 
 //#include <vld.h>
+#include "PNG/lodepng.h"
 
 #include "ACommonDefinitions.h"

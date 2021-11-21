@@ -28,10 +28,10 @@ public:
 	ID3D11RasterizerState*		GetRSNoCullFace();
 	ID3D11DepthStencilState*	GetDepthEnableState();
 	ID3D11DepthStencilState*	GetDepthDisableState();
-	ID3D11SamplerState*			GetSampleRepeat();
-	ID3D11SamplerState*			GetSampleMirror();
-	ID3D11SamplerState*			GetSampleClamp();
-	ID3D11SamplerState*			GetSampleMirrorOnce();
+	ID3D11SamplerState**		GetSampleRepeat();
+	ID3D11SamplerState**		GetSampleMirror();
+	ID3D11SamplerState**		GetSampleClamp();
+	ID3D11SamplerState**		GetSampleMirrorOnce();
 
 	void InitDepthBuffers();
 	void InitCommonPipeLineStates();

@@ -40,6 +40,9 @@
     <ClCompile Include="Graphics\ATerrain.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\PNG\lodepng.cpp">
+      <Filter>Graphics\LoadPNG</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -96,6 +99,9 @@
     <ClInclude Include="Graphics\ATerrain.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\PNG\lodepng.h">
+      <Filter>Graphics\LoadPNG</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Graphics">
@@ -106,6 +112,9 @@
     </Filter>
     <Filter Include="Graphics\Shaders">
       <UniqueIdentifier>{ee085196-a591-4f7b-8731-f0b4c86b267f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graphics\LoadPNG">
+      <UniqueIdentifier>{f40eece8-ae7c-4533-9c96-bd004e4690c9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

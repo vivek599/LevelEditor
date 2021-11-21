@@ -75,8 +75,11 @@ void AShaderCache::SetCSThreads(UINT x, UINT y, UINT z)
 bool AShaderCache::CompileVSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
-
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "vs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if _DEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "vs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -100,8 +103,11 @@ bool AShaderCache::CompileVSFromFile(const wchar_t* filepath)
 bool AShaderCache::CompileHSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
-
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "hs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if _DEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "hs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -125,8 +131,11 @@ bool AShaderCache::CompileHSFromFile(const wchar_t* filepath)
 bool AShaderCache::CompileDSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
-
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ds_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if _DEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ds_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -150,8 +159,11 @@ bool AShaderCache::CompileDSFromFile(const wchar_t* filepath)
 bool AShaderCache::CompileGSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
-
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "gs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if _DEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "gs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -176,7 +188,12 @@ bool AShaderCache::CompilePSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ps_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	DWORD shaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+#if _DEBUG
+	shaderFlags |= D3DCOMPILE_DEBUG;
+#endif
+
+	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ps_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -193,7 +210,6 @@ bool AShaderCache::CompilePSFromFile(const wchar_t* filepath)
 	hr = m_Device->CreatePixelShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_PShader.ReleaseAndGetAddressOf());
 	AHRASSERT(hr);
 
-
 	return true;
 }
 
@@ -202,7 +218,7 @@ bool AShaderCache::CompileCSFromFile(const wchar_t* filepath)
 	HRESULT hr = S_OK;
 
 	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "cs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
-	if (FAILED(hr))
+	if (FAILED(hr)) 
 	{
 		if (m_ErrorMsg)
 		{
@@ -268,7 +284,7 @@ bool AShaderCache::CreateInputLayout()
 
 		inputElement.SemanticName = parameterSignature.SemanticName;
 		inputElement.SemanticIndex = parameterSignature.SemanticIndex;
-		inputElement.InputSlot = i; // TODO: If using interleaved arrays, then the input slot should be 0.  If using packed arrays, the input slot will vary.
+		inputElement.InputSlot = 0;//i; // TODO: If using interleaved arrays, then the input slot should be 0.  If using packed arrays, the input slot will vary.
 		inputElement.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
 		inputElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA; // TODO: Figure out how to deal with per-instance data? .. Don't. Just use structured buffers to store per-instance data and use the SV_InstanceID as an index in the structured buffer.
 		inputElement.InstanceDataStepRate = 0;
@@ -286,7 +302,6 @@ bool AShaderCache::CreateInputLayout()
 		AHRASSERT(hr);
 	}
 
-
 	// Query Resources that are bound to the shader.
 	for (UINT i = 0; i < shaderDescription.BoundResources; i++)
 	{
@@ -297,20 +312,20 @@ bool AShaderCache::CreateInputLayout()
 		switch (bindDesc.Type)
 		{
 		case D3D_SIT_TEXTURE:
-			//parameterType = ShaderParameter::Type::Texture;
+			m_ParameterType.push_back(ShaderParameterType::Texture);
 			break;
 		case D3D_SIT_SAMPLER:
-			//parameterType = ShaderParameter::Type::Sampler;
+			m_ParameterType.push_back(ShaderParameterType::Sampler);
 			break;
 		case D3D_SIT_CBUFFER:
 		case D3D_SIT_STRUCTURED:
-			//parameterType = ShaderParameter::Type::Buffer;
+			m_ParameterType.push_back(ShaderParameterType::Buffer);
 			break;
 		case D3D_SIT_UAV_RWSTRUCTURED:
-			//parameterType = ShaderParameter::Type::RWBuffer;
+			m_ParameterType.push_back(ShaderParameterType::RWBuffer);
 			break;
 		case D3D_SIT_UAV_RWTYPED:
-			//parameterType = ShaderParameter::Type::RWTexture;
+			m_ParameterType.push_back(ShaderParameterType::RWTexture);
 			break;
 		}
 	}

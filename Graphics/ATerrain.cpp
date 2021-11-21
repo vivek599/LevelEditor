@@ -16,14 +16,15 @@ ATerrain::~ATerrain()
 	ShutdownHeightMap();
 }
 
-bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath)
+bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, 
+	const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename)
 {
 	HRESULT hr = S_OK;
 	bool result = true;;
 	ID3D11Device* device = renderDevice->GetDevice().Get();
 
 	// Load in the height map for the terrain.
-	result = LoadHeightMap(heightMapFilePath);
+	result = LoadHeightMapFromBMP(heightMapFilePath);
 	if (!result)
 	{
 		return false;
@@ -32,16 +33,146 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 	// Normalize the height of the height map.
 	NormalizeHeightMap();
 
+	// Calculate the normals for the terrain data.
+	result = CalculateNormals();
+	if (!result)
+	{
+		return false;
+	}
+
+	// Calculate the texture coordinates.
+	CalculateTextureCoordinates();
+
+	// Load the texture.
+	result = LoadTexture(device, textureFilename);
+	if (!result)
+	{
+		return false;
+	}
+
 	// Initialize the vertex and index buffer that hold the geometry for the terrain.
 	VertexType*		Vertices;
 	uint32_t*		Indices;
-
-	uint32_t index, i, j;
-
+	
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
+
+	result = InitGeometry(Vertices, Indices);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Set up the description of the static vertex buffer.
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_VertexCount;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	// Give the subresource structure a pointer to the vertex data.
+	vertexData.pSysMem = Vertices;
+	vertexData.SysMemPitch = 0;
+	vertexData.SysMemSlicePitch = 0;
+
+	// Now create the vertex buffer.
+	hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_VertexBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Set up the description of the static index buffer.
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(uint32_t) * m_IndexCount;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
+
+	// Give the subresource structure a pointer to the index data.
+	indexData.pSysMem = Indices;
+	indexData.SysMemPitch = 0;
+	indexData.SysMemSlicePitch = 0;
+
+	// Create the index buffer.
+	hr = device->CreateBuffer(&indexBufferDesc, &indexData, m_IndexBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Release the arrays now that the buffers have been created and loaded.
+	SAFEDELETE(Vertices);
+	SAFEDELETE(Indices);
+
+	result = InitConstantBuffers(device);
+	if (!result)
+	{
+		return false;
+	}
+
+	//init shader
+	m_PixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
+	m_PixelShader->CompileShaderFromFile(pixelShaderFilePath);
+	m_PixelShader->CreateReflector();
+	m_PixelShader->CreateInputLayout();
+
+	m_VertexShader.reset(new AShaderCache(renderDevice, AShaderType::VERTEXSHADER));
+	m_VertexShader->CompileShaderFromFile(vertexShaderFilePath);
+	m_VertexShader->CreateReflector();
+	m_VertexShader->CreateInputLayout();
+
+	return true;
+}
+
+bool ATerrain::InitConstantBuffers(ID3D11Device* device)
+{
+	HRESULT hr = S_OK;
+
+	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
+	D3D11_BUFFER_DESC matrixBufferDesc;
+	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
+	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	matrixBufferDesc.MiscFlags = 0;
+	matrixBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, m_MatrixBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	// Setup the description of the light dynamic constant buffer that is in the pixel shader.
+	// Note that ByteWidth always needs to be a multiple of 16 if using D3D11_BIND_CONSTANT_BUFFER or CreateBuffer will fail.
+	D3D11_BUFFER_DESC lightBufferDesc;
+	lightBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	lightBufferDesc.ByteWidth = sizeof(LightBufferType);
+	lightBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	lightBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	lightBufferDesc.MiscFlags = 0;
+	lightBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	hr = device->CreateBuffer(&lightBufferDesc, nullptr, m_LightBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
+{
+	uint32_t index, i, j;
+	float tu, tv;
 
 	int index1, index2, index3, index4;
 
@@ -79,156 +210,102 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 			index4 = (m_TerrainHeight * (j + 1)) + (i + 1);  // Upper right.
 
 			// Upper left.
-			Vertices[index].position = Vector3(m_HeightMap[index3].x, m_HeightMap[index3].y, m_HeightMap[index3].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			tv = m_HeightMap[index3].texture.y;
+			// Modify the texture coordinates to cover the top edge.
+			if (tv == 1.0f) 
+			{ 
+				tv = 0.0f; 
+			}
+
+			Vertices[index].position = m_HeightMap[index3].position;
+			Vertices[index].texture = Vector2(m_HeightMap[index3].texture.x, tv);
+			Vertices[index].normal = m_HeightMap[index3].normal;
 			Indices[index] = index++;
 
 			// Upper right.
-			Vertices[index].position = Vector3(m_HeightMap[index4].x, m_HeightMap[index4].y, m_HeightMap[index4].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
+			tu = m_HeightMap[index4].texture.x;
+			tv = m_HeightMap[index4].texture.y;
 
-			// Upper right.
-			Vertices[index].position = Vector3(m_HeightMap[index4].x, m_HeightMap[index4].y, m_HeightMap[index4].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			// Modify the texture coordinates to cover the top and right edge.
+			if (tu == 0.0f) 
+			{ 
+				tu = 1.0f; 
+			}
+
+			if (tv == 1.0f) 
+			{ 
+				tv = 0.0f; 
+			}
+
+			Vertices[index].position = m_HeightMap[index4].position;
+			Vertices[index].texture = Vector2(tu, tv);
+			Vertices[index].normal = m_HeightMap[index4].normal;
 			Indices[index] = index++;
 
 			// Bottom left.
-			Vertices[index].position = Vector3(m_HeightMap[index1].x, m_HeightMap[index1].y, m_HeightMap[index1].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			Vertices[index].position = m_HeightMap[index1].position;
+			Vertices[index].texture = m_HeightMap[index1].texture;
+			Vertices[index].normal = m_HeightMap[index1].normal;
 			Indices[index] = index++;
 
 			// Bottom left.
-			Vertices[index].position = Vector3(m_HeightMap[index1].x, m_HeightMap[index1].y, m_HeightMap[index1].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
-
-			// Upper left.
-			Vertices[index].position = Vector3(m_HeightMap[index3].x, m_HeightMap[index3].y, m_HeightMap[index3].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
-
-			// Bottom left.
-			Vertices[index].position = Vector3(m_HeightMap[index1].x, m_HeightMap[index1].y, m_HeightMap[index1].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			Vertices[index].position = m_HeightMap[index1].position;
+			Vertices[index].texture = m_HeightMap[index1].texture;
+			Vertices[index].normal = m_HeightMap[index1].normal;
 			Indices[index] = index++;
 
 			// Upper right.
-			Vertices[index].position = Vector3(m_HeightMap[index4].x, m_HeightMap[index4].y, m_HeightMap[index4].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
+			tu = m_HeightMap[index4].texture.x;
+			tv = m_HeightMap[index4].texture.y;
 
-			// Upper right.
-			Vertices[index].position = Vector3(m_HeightMap[index4].x, m_HeightMap[index4].y, m_HeightMap[index4].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			// Modify the texture coordinates to cover the top and right edge.
+			if (tu == 0.0f) 
+			{ 
+				tu = 1.0f; 
+			}
+
+			if (tv == 1.0f) 
+			{ 
+				tv = 0.0f; 
+			}
+
+			Vertices[index].position = m_HeightMap[index4].position;
+			Vertices[index].texture = Vector2(tu, tv);
+			Vertices[index].normal = m_HeightMap[index4].normal;
 			Indices[index] = index++;
 
 			// Bottom right.
-			Vertices[index].position = Vector3(m_HeightMap[index2].x, m_HeightMap[index2].y, m_HeightMap[index2].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
+			tu = m_HeightMap[index2].texture.x;
 
-			// Bottom right.
-			Vertices[index].position = Vector3(m_HeightMap[index2].x, m_HeightMap[index2].y, m_HeightMap[index2].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-			Indices[index] = index++;
+			// Modify the texture coordinates to cover the right edge.
+			if (tu == 0.0f) 
+			{ 
+				tu = 1.0f; 
+			}
 
-			// Bottom left.
-			Vertices[index].position = Vector3(m_HeightMap[index1].x, m_HeightMap[index1].y, m_HeightMap[index1].z);
-			Vertices[index].color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+			Vertices[index].position = m_HeightMap[index2].position;
+			Vertices[index].texture = Vector2(tu, m_HeightMap[index2].texture.y);
+			Vertices[index].normal = m_HeightMap[index2].normal;
 			Indices[index] = index++;
 		}
-	}
-
-	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_VertexCount;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = Vertices;
-	vertexData.SysMemPitch = 0;
-	vertexData.SysMemSlicePitch = 0;
-
-	// Now create the vertex buffer.
-	hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_VertexBuffer.GetAddressOf());
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	// Set up the description of the static index buffer.
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(uint32_t) * m_IndexCount;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-	indexBufferDesc.StructureByteStride = 0;
-
-	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = Indices;
-	indexData.SysMemPitch = 0;
-	indexData.SysMemSlicePitch = 0;
-
-	// Create the index buffer.
-	hr = device->CreateBuffer(&indexBufferDesc, &indexData, m_IndexBuffer.ReleaseAndGetAddressOf());
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	// Release the arrays now that the buffers have been created and loaded.
-	delete[] Vertices;
-	Vertices = 0;
-
-	delete[] Indices;
-	Indices = 0;
-
-	//init shader
-	m_PixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
-	m_PixelShader->CompileShaderFromFile(pixelShaderFilePath);
-	m_PixelShader->CreateReflector();
-	m_PixelShader->CreateInputLayout();
-
-	m_VertexShader.reset(new AShaderCache(renderDevice, AShaderType::VERTEXSHADER));
-	m_VertexShader->CompileShaderFromFile(vertexShaderFilePath);
-	m_VertexShader->CreateReflector();
-	m_VertexShader->CreateInputLayout();
-
-	// Setup the description of the dynamic matrix constant buffer that is in the vertex shader.
-	D3D11_BUFFER_DESC matrixBufferDesc;
-	matrixBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	matrixBufferDesc.ByteWidth = sizeof(MatrixBufferType);
-	matrixBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	matrixBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	matrixBufferDesc.MiscFlags = 0;
-	matrixBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&matrixBufferDesc, nullptr, m_MatrixBuffer.ReleaseAndGetAddressOf());
-	if (FAILED(hr))
-	{
-		return false;
 	}
 
 	return true;
 }
 
-void ATerrain::Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix)
+void ATerrain::Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix)
 {
 	unsigned int stride;
 	unsigned int offset;
+
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
 
 	// Set vertex buffer stride and offset.
 	stride = sizeof(VertexType);
 	offset = 0;
 
-	HRESULT result;
+	HRESULT hr;
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
-	MatrixBufferType* dataPtr = nullptr;
 
 	// Transpose the matrices to prepare them for the shader.
 	worlMatrix = XMMatrixTranspose(worlMatrix);
@@ -236,14 +313,14 @@ void ATerrain::Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix vi
 	projMatrix = XMMatrixTranspose(projMatrix);
 
 	// Lock the constant buffer so it can be written to.
-	result = context->Map(m_MatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(result))
+	hr = context->Map(m_MatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
 	{
 		return;
 	}
 
 	// Get a pointer to the data in the constant buffer.
-	dataPtr = (MatrixBufferType*)mappedResource.pData;
+	MatrixBufferType* dataPtr = (MatrixBufferType*)mappedResource.pData;
 
 	// Copy the matrices into the constant buffer.
 	dataPtr->world = worlMatrix;
@@ -253,6 +330,30 @@ void ATerrain::Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix vi
 	// Unlock the constant buffer.
 	context->Unmap(m_MatrixBuffer.Get(), 0);
 
+	// Lock the light constant buffer so it can be written to.
+	hr = context->Map(m_LightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	// Get a pointer to the data in the constant buffer.
+	LightBufferType* dataPtr2 = (LightBufferType*)mappedResource.pData;
+
+	// Copy the lighting variables into the constant buffer.
+	dataPtr2->ambientColor = m_AmbientColor;
+	dataPtr2->diffuseColor = m_DiffuseColor;
+	dataPtr2->lightDirection = m_LightDirection;
+	dataPtr2->padding = 0.0f;
+
+	// Unlock the constant buffer.
+	context->Unmap(m_LightBuffer.Get(), 0);
+
+
+
+
+
+
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	context->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
 
@@ -260,11 +361,14 @@ void ATerrain::Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix vi
 	context->IASetIndexBuffer(m_IndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 	// Set the type of primitive that should be rendered from this vertex buffer, in this case a line list.
-	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-
-	// Finanly set the constant buffer in the vertex shader with the updated values.
+	// Finanly set the constant buffer in the shader with the updated values.
 	context->VSSetConstantBuffers(0, 1, m_MatrixBuffer.GetAddressOf());
+	context->PSSetConstantBuffers(0, 1, m_LightBuffer.GetAddressOf());
+
+	// Set shader texture resource in the pixel shader.
+	context->PSSetShaderResources(0, 1, m_TerrainTextureSrvLayer0.GetAddressOf());
 
 	// Set the vertex input layout.
 	context->IASetInputLayout(m_VertexShader->GetInputLayout().Get());
@@ -273,6 +377,8 @@ void ATerrain::Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix vi
 	context->VSSetShader(m_VertexShader->GetVertexShader().Get(), nullptr, 0);
 	context->PSSetShader(m_PixelShader->GetPixelShader().Get(), nullptr, 0);
 
+	// Set the sampler state in the pixel shader.
+	context->PSSetSamplers(0, 1, renderDevice->GetSampleRepeat());
 
 	// Render the triangle.
 	context->DrawIndexed(m_IndexCount, 0, 0);
@@ -283,7 +389,22 @@ int ATerrain::GetIndexCount()
 	return m_IndexCount;
 }
 
-bool ATerrain::LoadHeightMap(const wchar_t* heightMapFilePath)
+void ATerrain::SetAmbientColor(Vector4 val)
+{
+	m_AmbientColor = val;
+}
+
+void ATerrain::SetDiffuseColor(Vector4 val)
+{
+	m_DiffuseColor = val;
+}
+
+void ATerrain::SetLightDirection(Vector3 val)
+{
+	m_LightDirection = val;
+}
+
+bool ATerrain::LoadHeightMapFromBMP(const wchar_t* heightMapFilePath)
 {
 	ifstream filePtr;
 	uint32_t count;
@@ -330,7 +451,7 @@ bool ATerrain::LoadHeightMap(const wchar_t* heightMapFilePath)
 	filePtr.close();
 
 	// Create the structure to hold the height map data.
-	m_HeightMap = new Vector3[m_TerrainWidth * m_TerrainHeight];
+	m_HeightMap = new VertexType[m_TerrainWidth * m_TerrainHeight];
 	if (!m_HeightMap)
 	{
 		return false;
@@ -348,9 +469,9 @@ bool ATerrain::LoadHeightMap(const wchar_t* heightMapFilePath)
 
 			index = (m_TerrainHeight * j) + i;
 
-			m_HeightMap[index].x = (float)i;
-			m_HeightMap[index].y = (float)height;
-			m_HeightMap[index].z = (float)j;
+			m_HeightMap[index].position.x = (float)i;
+			m_HeightMap[index].position.y = (float)height;
+			m_HeightMap[index].position.z = (float)j;
 
 			k += 3;
 		}
@@ -361,52 +482,250 @@ bool ATerrain::LoadHeightMap(const wchar_t* heightMapFilePath)
 	return true;
 }
 
-bool ATerrain::LoadHeightMapFromRAW(const wchar_t* heightMapFilePath, uint32_t width, uint32_t height)
+bool ATerrain::LoadHeightMapFromPNG(const wchar_t* heightMapFilePath)
 {
-	wstring wide(heightMapFilePath);
-	const char* filename = string(wide.begin(), wide.end()).c_str();
+	USES_CONVERSION;
+	const char* filename = W2A(heightMapFilePath);
  
+	vector<uint8_t> png; //the raw pixels
+	vector<uint8_t> image; //the raw pixels
+	uint32_t _width, _height;
 
+	uint32_t error = lodepng::load_file(png, filename);
+	if (error)
+	{
+		throw;
+	}
 
+	lodepng::State state;
+	error = lodepng_inspect( &_width, &_height, &state, png.data(), png.size());
+	if (error)
+	{
+		throw;
+	}
 
-	//// Create the structure to hold the height map data.
-	//m_HeightMap = new Vector3[m_TerrainWidth * m_TerrainHeight];
-	//if (!m_HeightMap)
-	//{
-	//	return false;
-	//}
+	//decode
+	error = lodepng::decode(image, _width, _height, state, png);
+	if (error)
+	{
+		throw string("png load error!");
+	}
 
-	//// Read the image data into the height map.
-	//for ( uint32_t j = 0; j < m_TerrainHeight; j++)
-	//{
-	//	for (uint32_t i = 0; i < m_TerrainWidth; i++)
-	//	{
-	//		uint32_t index = m_TerrainWidth * j + i;
-	//		float height = rawImage[index];
+	m_TerrainWidth	= _width;
+	m_TerrainHeight = _height;
 
-	//		m_HeightMap[index].x = (float)i;
-	//		m_HeightMap[index].y = (float)height;
-	//		m_HeightMap[index].z = (float)j;
-	//	}
-	//}
+	// Create the structure to hold the height map data.
+	m_HeightMap = new VertexType[m_TerrainWidth * m_TerrainHeight];
+	if (!m_HeightMap)
+	{
+		return false;
+	}
 
+	uint64_t pos = 0;
+	// Read the image data into the height map.
+	for ( uint32_t j = 0; j < m_TerrainHeight; j++)
+	{
+		for (uint32_t i = 0; i < m_TerrainWidth; i++)
+		{
+			uint64_t index	= m_TerrainWidth * j + i;
+			uint16_t height = (image[pos] << 8) | image[pos + 1];
+			pos += 2;
 
+			m_HeightMap[index].position.x = (float)i;
+			m_HeightMap[index].position.y = (float)height;
+			m_HeightMap[index].position.z = (float)j;
+		}
+	}
 
 	return true;
-
 }
 
 void ATerrain::NormalizeHeightMap()
 {
 	return;
-
 	for (uint32_t j = 0; j < m_TerrainHeight; j++)
 	{
 		for (uint32_t i = 0; i < m_TerrainWidth; i++)
 		{
-			m_HeightMap[(m_TerrainHeight * j) + i].y /= 15.0f;
+			m_HeightMap[(m_TerrainHeight * j) + i].position.y /= 768.0f;
 		}
 	} 
+}
+
+bool ATerrain::CalculateNormals()
+{
+	int i, j, index1, index2, index3, index, count;
+	float length;
+	Vector3* normals;
+	Vector3 vector1;
+	Vector3 vector2;
+	Vector3 vertex1;
+	Vector3 vertex2;
+	Vector3 vertex3;
+	Vector3 sum;
+
+	// Create a temporary array to hold the un-normalized normal vectors.
+	normals = new Vector3[(m_TerrainHeight - 1) * (m_TerrainWidth - 1)];
+	if (!normals)
+	{
+		return false;
+	}
+
+	// Go through all the faces in the mesh and calculate their normals.
+	for (j = 0; j < (m_TerrainHeight - 1); j++)
+	{
+		for (i = 0; i < (m_TerrainWidth - 1); i++)
+		{
+			index1 = (j * m_TerrainHeight) + i;
+			index2 = (j * m_TerrainHeight) + (i + 1);
+			index3 = ((j + 1) * m_TerrainHeight) + i;
+
+			// Get three vertices from the face.
+			vertex1 = m_HeightMap[index1].position; 
+			vertex2 = m_HeightMap[index2].position; 
+			vertex3 = m_HeightMap[index3].position; 
+
+			// Calculate the two vectors for this face.
+			vector1 = vertex1 - vertex3;
+			vector2 = vertex3 - vertex2;
+
+			index = (j * (m_TerrainHeight - 1)) + i;
+
+			// Calculate the cross product of those two vectors to get the un-normalized value for this face normal.
+			normals[index] = vector1.Cross(vector2);
+		}
+	}
+
+	// Now go through all the vertices and take an average of each face normal 	
+	// that the vertex touches to get the averaged normal for that vertex.
+	for (j = 0; j < m_TerrainHeight; j++)
+	{
+		for (i = 0; i < m_TerrainWidth; i++)
+		{
+			// Initialize the sum.
+			sum = Vector3(0.0f); 
+
+			// Initialize the count.
+			count = 0;
+
+			// Bottom left face.
+			if (((i - 1) >= 0) && ((j - 1) >= 0))
+			{
+				index = ((j - 1) * (m_TerrainHeight - 1)) + (i - 1);
+
+				sum += normals[index]; 
+				count++;
+			}
+
+			// Bottom right face.
+			if ((i < (m_TerrainWidth - 1)) && ((j - 1) >= 0))
+			{
+				index = ((j - 1) * (m_TerrainHeight - 1)) + i;
+
+				sum += normals[index];
+				count++;
+			}
+
+			// Upper left face.
+			if (((i - 1) >= 0) && (j < (m_TerrainHeight - 1)))
+			{
+				index = (j * (m_TerrainHeight - 1)) + (i - 1);
+				 
+				sum += normals[index];
+				count++;
+			}
+
+			// Upper right face.
+			if ((i < (m_TerrainWidth - 1)) && (j < (m_TerrainHeight - 1)))
+			{
+				index = (j * (m_TerrainHeight - 1)) + i;
+				 
+				sum += normals[index];
+				count++;
+			}
+
+			// Take the average of the faces touching this vertex.
+			sum /= (float)count; 
+
+			// Calculate the length of this normal.
+			sum.Normalize();
+
+			// Get an index to the vertex location in the height map array.
+			index = (j * m_TerrainHeight) + i;
+
+			// Normalize the final shared normal for this vertex and store it in the height map array.
+			m_HeightMap[index].normal = sum;
+		}
+	}
+
+	// Release the temporary normals.
+	SAFEDELETE(normals);
+
+	return true;
+}
+
+void ATerrain::CalculateTextureCoordinates()
+{
+	int incrementCount, i, j, tuCount, tvCount;
+	float incrementValue, tuCoordinate, tvCoordinate;
+
+	// Calculate how much to increment the texture coordinates by.
+	incrementValue = (float)m_TextureRepeatConstant / (float)m_TerrainWidth;
+
+	// Calculate how many times to repeat the texture.
+	incrementCount = m_TerrainWidth / m_TextureRepeatConstant;
+
+	// Initialize the tu and tv coordinate values.
+	tuCoordinate = 0.0f;
+	tvCoordinate = 1.0f;
+
+	// Initialize the tu and tv coordinate indexes.
+	tuCount = 0;
+	tvCount = 0;
+
+	// Loop through the entire height map and calculate the tu and tv texture coordinates for each vertex.
+	for (j = 0; j < m_TerrainHeight; j++)
+	{
+		for (i = 0; i < m_TerrainWidth; i++)
+		{
+			// Store the texture coordinate in the height map.
+			m_HeightMap[(m_TerrainHeight * j) + i].texture.x = tuCoordinate;
+			m_HeightMap[(m_TerrainHeight * j) + i].texture.y = tvCoordinate;
+
+			// Increment the tu texture coordinate by the increment value and increment the index by one.
+			tuCoordinate += incrementValue;
+			tuCount++;
+
+			// Check if at the far right end of the texture and if so then start at the beginning again.
+			if (tuCount == incrementCount)
+			{
+				tuCoordinate = 0.0f;
+				tuCount = 0;
+			}
+		}
+
+		// Increment the tv texture coordinate by the increment value and increment the index by one.
+		tvCoordinate -= incrementValue;
+		tvCount++;
+
+		// Check if at the top of the texture and if so then start at the bottom again.
+		if (tvCount == incrementCount)
+		{
+			tvCoordinate = 1.0f;
+			tvCount = 0;
+		}
+	}
+}
+
+bool ATerrain::LoadTexture(ID3D11Device* device, const wchar_t* textureFilename)
+{
+	HRESULT hr = CreateWICTextureFromFile( device, textureFilename, m_TerrainTextureLayer0.GetAddressOf(), m_TerrainTextureSrvLayer0.GetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void ATerrain::ShutdownHeightMap()

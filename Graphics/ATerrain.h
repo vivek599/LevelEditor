@@ -10,22 +10,36 @@ public:
 	ATerrain();
 	~ATerrain();
 
-	bool Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath);
-	void Render(ID3D11DeviceContext* context, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
+	bool Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, 
+		const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename);
+
+
+	
+	void Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
 
 	int GetIndexCount();
+
+	void SetAmbientColor( Vector4 val );
+	void SetDiffuseColor( Vector4 val );
+	void SetLightDirection( Vector3 val );
 
 private:
 
 	struct VertexType
 	{
 		Vector3 position;
-		Vector4 color;
+		Vector2 texture;
+		Vector3 normal;
 	};
 
-	bool LoadHeightMap(const wchar_t* heightMapFilePath);
-	bool LoadHeightMapFromRAW(const wchar_t* heightMapFilePath, uint32_t width, uint32_t height);
+	bool InitGeometry(VertexType*& Vertices, uint32_t*& Indices);
+	bool InitConstantBuffers(ID3D11Device* device);
+	bool LoadHeightMapFromBMP(const wchar_t* heightMapFilePath);
+	bool LoadHeightMapFromPNG(const wchar_t* heightMapFilePath);
 	void NormalizeHeightMap();
+	bool CalculateNormals();
+	void CalculateTextureCoordinates();
+	bool LoadTexture(ID3D11Device* device, const wchar_t* textureFilename);
 	void ShutdownHeightMap();
 
 	uint32_t m_TerrainWidth;
@@ -36,7 +50,7 @@ private:
 	ComPtr<ID3D11Buffer>	m_VertexBuffer;
 	ComPtr<ID3D11Buffer>	m_IndexBuffer;
 
-	Vector3*				m_HeightMap;
+	VertexType*				m_HeightMap;
 
 	unique_ptr<class AShaderCache>	m_PixelShader;
 	unique_ptr<class AShaderCache>	m_VertexShader;
@@ -48,6 +62,23 @@ private:
 		Matrix projection;
 	};
 
-	ComPtr<ID3D11Buffer>	m_MatrixBuffer; 
+	struct LightBufferType
+	{
+		Vector4 ambientColor;
+		Vector4 diffuseColor;
+		Vector3 lightDirection;
+		float padding;
+	};
+
+	ComPtr<ID3D11ShaderResourceView>	m_TerrainTextureSrvLayer0;
+	ComPtr<ID3D11Resource>				m_TerrainTextureLayer0;
+	int									m_TextureRepeatConstant = 8;
+
+	ComPtr<ID3D11Buffer>	m_MatrixBuffer;
+	ComPtr<ID3D11Buffer>	m_LightBuffer;
+
+	Vector4 m_AmbientColor;
+	Vector4 m_DiffuseColor;
+	Vector3 m_LightDirection;
 };
 

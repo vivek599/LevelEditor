@@ -10,7 +10,7 @@ public:
 	AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen);
 	~AGraphic();
 
-	bool InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath );
+	bool InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename);
 	void BeginScene(Color color);
 	bool Update(float deltaTime);
 	bool Render();
