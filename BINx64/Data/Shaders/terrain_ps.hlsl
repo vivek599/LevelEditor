@@ -5,8 +5,8 @@ struct PixelInputType
     float3 normal : NORMAL;
 };
 
-Texture2D shaderTexture;
-SamplerState SampleType;
+Texture2D shaderTexture : register(t0);
+SamplerState SampleType : register(s0);
 
 cbuffer LightBuffer : register(b0)
 {

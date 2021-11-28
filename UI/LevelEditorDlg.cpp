@@ -193,7 +193,6 @@ void CLevelEditorDlg::OnHelpAbout()
 	dlgAbout.DoModal();
 }
 
-
 void CLevelEditorDlg::OnBnClickedLoadheightmap()
 {
 	// TODO: Add your control notification handler code here
