@@ -160,11 +160,32 @@ bool ATerrain::InitConstantBuffers(ID3D11Device* device)
 	lightBufferDesc.StructureByteStride = 0;
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&lightBufferDesc, nullptr, m_LightBuffer.GetAddressOf());
+	hr = device->CreateBuffer(&lightBufferDesc, nullptr, m_LightBuffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
 		return false;
 	}
+
+	D3D11_BUFFER_DESC shaderParamBufferDesc;
+	shaderParamBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	shaderParamBufferDesc.ByteWidth = sizeof(ShaderParametersBuffer);
+	shaderParamBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	shaderParamBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	shaderParamBufferDesc.MiscFlags = 0;
+	shaderParamBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	hr = device->CreateBuffer(&shaderParamBufferDesc, nullptr, m_ShaderParametersBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+
+
+
+
+
 
 	return true;
 }
@@ -349,9 +370,18 @@ void ATerrain::Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix vie
 	// Unlock the constant buffer.
 	context->Unmap(m_LightBuffer.Get(), 0);
 
+	hr = context->Map(m_ShaderParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
 
+	ShaderParametersBuffer* dataPtr3 = (ShaderParametersBuffer*)mappedResource.pData;
 
+	dataPtr3->TextureUVScale = m_TerrainTextureUVScale;
 
+	// Unlock the constant buffer.
+	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
 
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
@@ -365,7 +395,9 @@ void ATerrain::Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix vie
 
 	// Finanly set the constant buffer in the shader with the updated values.
 	context->VSSetConstantBuffers(0, 1, m_MatrixBuffer.GetAddressOf());
-	context->PSSetConstantBuffers(0, 1, m_LightBuffer.GetAddressOf());
+
+	ID3D11Buffer* buffers[] = { m_LightBuffer.Get(), m_ShaderParametersBuffer.Get() };
+	context->PSSetConstantBuffers(0, _countof(buffers), buffers );
 
 	// Set shader texture resource in the pixel shader.
 	context->PSSetShaderResources(0, 1, m_TerrainTextureSrvLayer0.GetAddressOf());
@@ -402,6 +434,11 @@ void ATerrain::SetDiffuseColor(Vector4 val)
 void ATerrain::SetLightDirection(Vector3 val)
 {
 	m_LightDirection = val;
+}
+
+void ATerrain::SetTextureUVScale(float val)
+{
+	m_TerrainTextureUVScale = Vector4(val);
 }
 
 bool ATerrain::LoadHeightMapFromBMP(const wchar_t* heightMapFilePath)
@@ -472,6 +509,7 @@ bool ATerrain::LoadHeightMapFromBMP(const wchar_t* heightMapFilePath)
 			m_HeightMap[index].position.x = (float)i;
 			m_HeightMap[index].position.y = (float)height;
 			m_HeightMap[index].position.z = (float)j;
+			m_HeightMap[index].position.w = 1.0f;
 
 			k += 3;
 		}
@@ -581,9 +619,9 @@ bool ATerrain::CalculateNormals()
 			index3 = ((j + 1) * m_TerrainHeight) + i;
 
 			// Get three vertices from the face.
-			vertex1 = m_HeightMap[index1].position; 
-			vertex2 = m_HeightMap[index2].position; 
-			vertex3 = m_HeightMap[index3].position; 
+			vertex1 = (Vector3)m_HeightMap[index1].position; 
+			vertex2 = (Vector3)m_HeightMap[index2].position; 
+			vertex3 = (Vector3)m_HeightMap[index3].position; 
 
 			// Calculate the two vectors for this face.
 			vector1 = vertex1 - vertex3;
@@ -666,53 +704,63 @@ bool ATerrain::CalculateNormals()
 
 void ATerrain::CalculateTextureCoordinates()
 {
-	int incrementCount, i, j, tuCount, tvCount;
-	float incrementValue, tuCoordinate, tvCoordinate;
+	//int incrementCount, i, j, tuCount, tvCount;
+	//float incrementValue, tuCoordinate, tvCoordinate;
 
-	// Calculate how much to increment the texture coordinates by.
-	incrementValue = (float)m_TextureRepeatConstant / (float)m_TerrainWidth;
+	//// Calculate how much to increment the texture coordinates by.
+	//incrementValue = (float)m_TextureRepeatConstant / (float)m_TerrainWidth;
 
-	// Calculate how many times to repeat the texture.
-	incrementCount = m_TerrainWidth / m_TextureRepeatConstant;
+	//// Calculate how many times to repeat the texture.
+	//incrementCount = m_TerrainWidth / m_TextureRepeatConstant;
 
-	// Initialize the tu and tv coordinate values.
-	tuCoordinate = 0.0f;
-	tvCoordinate = 1.0f;
+	//// Initialize the tu and tv coordinate values.
+	//tuCoordinate = 0.0f;
+	//tvCoordinate = 1.0f;
 
-	// Initialize the tu and tv coordinate indexes.
-	tuCount = 0;
-	tvCount = 0;
+	//// Initialize the tu and tv coordinate indexes.
+	//tuCount = 0;
+	//tvCount = 0;
 
-	// Loop through the entire height map and calculate the tu and tv texture coordinates for each vertex.
-	for (j = 0; j < m_TerrainHeight; j++)
+	//// Loop through the entire height map and calculate the tu and tv texture coordinates for each vertex.
+	//for (j = 0; j < m_TerrainHeight; j++)
+	//{
+	//	for (i = 0; i < m_TerrainWidth; i++)
+	//	{
+	//		// Store the texture coordinate in the height map.
+	//		m_HeightMap[(m_TerrainHeight * j) + i].texture.x = tuCoordinate;
+	//		m_HeightMap[(m_TerrainHeight * j) + i].texture.y = tvCoordinate;
+
+	//		// Increment the tu texture coordinate by the increment value and increment the index by one.
+	//		tuCoordinate += incrementValue;
+	//		tuCount++;
+
+	//		// Check if at the far right end of the texture and if so then start at the beginning again.
+	//		if (tuCount == incrementCount)
+	//		{
+	//			tuCoordinate = 0.0f;
+	//			tuCount = 0;
+	//		}
+	//	}
+
+	//	// Increment the tv texture coordinate by the increment value and increment the index by one.
+	//	tvCoordinate -= incrementValue;
+	//	tvCount++;
+
+	//	// Check if at the top of the texture and if so then start at the bottom again.
+	//	if (tvCount == incrementCount)
+	//	{
+	//		tvCoordinate = 1.0f;
+	//		tvCount = 0;
+	//	}
+	//}
+
+	for (int j = 0; j < m_TerrainHeight; j++)
 	{
-		for (i = 0; i < m_TerrainWidth; i++)
+		for (int i = 0; i < m_TerrainWidth; i++)
 		{
 			// Store the texture coordinate in the height map.
-			m_HeightMap[(m_TerrainHeight * j) + i].texture.x = tuCoordinate;
-			m_HeightMap[(m_TerrainHeight * j) + i].texture.y = tvCoordinate;
-
-			// Increment the tu texture coordinate by the increment value and increment the index by one.
-			tuCoordinate += incrementValue;
-			tuCount++;
-
-			// Check if at the far right end of the texture and if so then start at the beginning again.
-			if (tuCount == incrementCount)
-			{
-				tuCoordinate = 0.0f;
-				tuCount = 0;
-			}
-		}
-
-		// Increment the tv texture coordinate by the increment value and increment the index by one.
-		tvCoordinate -= incrementValue;
-		tvCount++;
-
-		// Check if at the top of the texture and if so then start at the bottom again.
-		if (tvCount == incrementCount)
-		{
-			tvCoordinate = 1.0f;
-			tvCount = 0;
+			m_HeightMap[(m_TerrainHeight * j) + i].texture.x = float(i)/(m_TerrainWidth-1);
+			m_HeightMap[(m_TerrainHeight * j) + i].texture.y = float(j)/(m_TerrainHeight-1);
 		}
 	}
 }

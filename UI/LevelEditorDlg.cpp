@@ -216,7 +216,7 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_HeightMapFileName->SetWindowTextW(p);
 
-	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"), _T("../Data/Textures/layer0.png"));
+	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"), _T("../Data/Textures/Grass0130_1.jpg"));
 
 
 
@@ -231,6 +231,7 @@ void CLevelEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 		m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 		UpdateData(FALSE);
+		m_Graphic->SetTextureUVScale(m_BrushSizeSlider->GetPos() + 1);
 	}
 	else 
 	{

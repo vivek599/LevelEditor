@@ -16,13 +16,20 @@ cbuffer LightBuffer : register(b0)
     float padding;
 };
 
+cbuffer ShaderParameters : register(b1)
+{
+    float4 TextureUVScale;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Pixel Shader
 ////////////////////////////////////////////////////////////////////////////////
-float4 main(PixelInputType input) : SV_TARGET
+float4 main(PixelInputType input) : SV_TARGET 
 {
+    float2 uv = input.tex * TextureUVScale.x;
+
     // Sample the pixel color from the texture using the sampler at this texture coordinate location.
-    float4 textureColor = shaderTexture.Sample(SampleType, input.tex);
+    float4 textureColor = shaderTexture.Sample(SampleType, uv);
 
     // Set the default output color to the ambient light value for all pixels.
     float4 color = ambientColor;

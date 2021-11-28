@@ -21,6 +21,7 @@ public:
 	Matrix GetWorldMatrix();
 	Matrix GetOrthoMatrix();
 
+	void SetTextureUVScale(float val);
 private:
 
 	Matrix m_ProjectionMatrix;
@@ -44,5 +45,6 @@ private:
 	bool					m_TerrainInitilized;
 
 	unique_ptr<class ATerrain> m_Terrain;
+	float					m_TextureUVScale;
 };
 

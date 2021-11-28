@@ -23,11 +23,13 @@ public:
 	void SetDiffuseColor( Vector4 val );
 	void SetLightDirection( Vector3 val );
 
+	void SetTextureUVScale(float val);
+
 private:
 
 	struct VertexType
 	{
-		Vector3 position;
+		Vector4 position;
 		Vector2 texture;
 		Vector3 normal;
 	};
@@ -70,15 +72,23 @@ private:
 		float padding;
 	};
 
+	struct ShaderParametersBuffer
+	{
+		Vector4 TextureUVScale;
+	};
+
 	ComPtr<ID3D11ShaderResourceView>	m_TerrainTextureSrvLayer0;
 	ComPtr<ID3D11Resource>				m_TerrainTextureLayer0;
 	int									m_TextureRepeatConstant = 8;
 
 	ComPtr<ID3D11Buffer>	m_MatrixBuffer;
 	ComPtr<ID3D11Buffer>	m_LightBuffer;
+	ComPtr<ID3D11Buffer>	m_ShaderParametersBuffer;
 
 	Vector4 m_AmbientColor;
 	Vector4 m_DiffuseColor;
 	Vector3 m_LightDirection;
+
+	Vector4 m_TerrainTextureUVScale;
 };
 

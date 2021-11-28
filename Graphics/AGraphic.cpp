@@ -99,9 +99,10 @@ bool AGraphic::Render()
 
 	if (m_TerrainInitilized)
 	{
-		m_Terrain->SetAmbientColor(Vector4(0.5f, 0.5f, 0.5f, 1.0f));
+		m_Terrain->SetAmbientColor(Vector4(0.15f, 0.15f, 0.15f, 1.0f));
 		m_Terrain->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		m_Terrain->SetLightDirection(Vector3(-0.5f, -1.0f, 0.0f));
+		m_Terrain->SetTextureUVScale(m_TextureUVScale);
 		m_Terrain->Render(m_RenderDevice, m_WorldMatrix, m_ViewMatrix, m_ProjectionMatrix);
 	}
 
@@ -150,3 +151,7 @@ Matrix AGraphic::GetOrthoMatrix()
 	return m_OrthoMatrix;
 }
 
+void AGraphic::SetTextureUVScale(float val)
+{
+	m_TextureUVScale = val;
+}
