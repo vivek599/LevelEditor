@@ -852,27 +852,33 @@ void ATerrain::Erode(int cycles, float dt)
 
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
+	Ray ray(rayOrigin, rayDirection);
 	Plane p( Vector3(0.0f), Vector3(0.0f, 1.0f, 0.0f));
-	float odot = p.DotNormal(rayOrigin);
-	float ndot = p.DotNormal(rayDirection);
-	float t = -1.0f * odot / ndot;
+	//float odot = p.DotNormal(rayOrigin);
+	//float ndot = p.DotNormal(rayDirection);
+	//float t = -1.0f * odot / ndot;
 
-	//perpendicular to plane
-	if (ndot == 0.0f)
+	////perpendicular to plane
+	//if (ndot == 0.0f)
+	//{
+	//	return false;
+	//}
+	float t = 0.0f;
+	if (ray.Intersects(p, t))
 	{
-		return false;
+		Vector3 pos = rayOrigin + t * rayDirection;
+
+		int x = pos.x;
+		int z = pos.z;
+		if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+		{
+			return false;
+		}
+
+		uint64_t index = (m_TerrainHeight * z) + x;
+		m_HeightMap[index].position.y = 256.0f;
+		return true;
 	}
 
-	Vector3 pos = rayOrigin + t * rayDirection;
-
-	int x = pos.x;
-	int z = pos.z;
-	if (x < 0 || z < 0 || x > m_TerrainWidth-1 || z > m_TerrainHeight-1)
-	{
-		return false;
-	}
-
-	uint64_t index = (m_TerrainHeight * z) + x;
-	m_HeightMap[index].position.y = 256.0f;
-	return true;
+	return false;
 }

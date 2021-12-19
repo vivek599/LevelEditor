@@ -458,7 +458,7 @@ void CLevelEditorDlg::CalculateFps()
 	m_frameCounter++;
 
 	CString frameStr;
-	frameStr.Format(_T("%d"), Fps);
+	frameStr.Format(_T("X:%d Y:%d"), pointOnRenderBox.x, pointOnRenderBox.y);
 	m_FpsText->SetWindowTextW(frameStr.GetBuffer());
 	m_FpsText->UpdateWindow();
 }
@@ -482,7 +482,11 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
 
-		m_Graphic->Resize(cx, cy);
+		CRect rect;
+		m_RenderBox->GetWindowRect(rect);
+		ScreenToClient(rect);
+
+		m_Graphic->Resize(rect.right - rect.left, rect.bottom - rect.top);
 	}
 
 
@@ -544,7 +548,6 @@ void CLevelEditorDlg::SendMouseState(CPoint& point)
 
 	if (point.x < rect.right && point.y < rect.bottom)
 	{
-		CPoint pointOnRenderBox; 
 		pointOnRenderBox = point - rect.TopLeft();
 		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, m_MouseState.LeftDown);
 	}

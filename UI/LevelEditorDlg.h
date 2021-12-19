@@ -100,5 +100,6 @@ public:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
 	void SendMouseState(CPoint& point);
+	CPoint pointOnRenderBox;
 
 };
