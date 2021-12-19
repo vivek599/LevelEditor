@@ -21,7 +21,11 @@ bool ATexture::CreateBuffer()
 	bufferDesc.StructureByteStride = m_PixelSizeOrStride;
 
 	hr = m_Device->CreateBuffer(&bufferDesc, nullptr, &m_Buffer);
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateBuffer Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	if (IsUAV())
 	{
@@ -33,6 +37,11 @@ bool ATexture::CreateBuffer()
 		uavDesc.Buffer.Flags = 0;
 
 		hr = m_Device->CreateUnorderedAccessView(m_Buffer.Get(), &uavDesc, &m_pUAV);
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateUnorderedAccessView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	}
 	else
 	{
@@ -43,9 +52,14 @@ bool ATexture::CreateBuffer()
 		srvDesc.Buffer.NumElements = m_Width* m_Height;
 
 		hr = m_Device->CreateShaderResourceView(m_Buffer.Get(), &srvDesc, &m_pSRV);
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	}
 
-	AHRASSERT(hr);
+
 
 	return true;
 }

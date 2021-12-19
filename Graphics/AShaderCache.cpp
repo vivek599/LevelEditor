@@ -94,7 +94,11 @@ bool AShaderCache::CompileVSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreateVertexShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_VShader.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateVertexShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 
 	return true;
@@ -122,7 +126,11 @@ bool AShaderCache::CompileHSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreateHullShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_HShader.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateHullShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 
 	return true;
@@ -150,7 +158,11 @@ bool AShaderCache::CompileDSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreateDomainShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_DShader.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateDomainShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 
 	return true;
@@ -178,7 +190,11 @@ bool AShaderCache::CompileGSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreateGeometryShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_GShader.ReleaseAndGetAddressOf()); 
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateGeometryShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 
 	return true;
@@ -208,7 +224,11 @@ bool AShaderCache::CompilePSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreatePixelShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_PShader.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreatePixelShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -232,7 +252,11 @@ bool AShaderCache::CompileCSFromFile(const wchar_t* filepath)
 	}
 
 	hr = m_Device->CreateComputeShader(m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), nullptr, m_CShader.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateComputeShader Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -257,7 +281,11 @@ bool AShaderCache::LoadPreCompiled(const wchar_t* filepath)
 	HRESULT hr = S_OK;
 
 	hr = D3DReadFileToBlob( filepath, m_ByteCode.ReleaseAndGetAddressOf() );
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("D3DReadFileToBlob Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -269,7 +297,11 @@ bool AShaderCache::CreateInputLayout()
 	// Query input parameters and build the input layout
 	D3D11_SHADER_DESC shaderDescription;
 	hr = m_Reflector->GetDesc(&shaderDescription);
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("GetDesc Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	vector<D3D11_INPUT_ELEMENT_DESC> inputElements;
 
@@ -299,7 +331,11 @@ bool AShaderCache::CreateInputLayout()
 	if (inputElements.size() > 0)
 	{
 		hr = m_Device->CreateInputLayout(inputElements.data(), (UINT)inputElements.size(), m_ByteCode->GetBufferPointer(), m_ByteCode->GetBufferSize(), m_InputLayout.GetAddressOf());
-		AHRASSERT(hr);
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateInputLayout Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	}
 
 	// Query Resources that are bound to the shader.

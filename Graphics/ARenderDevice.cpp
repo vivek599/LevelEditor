@@ -73,7 +73,10 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 		nullptr,
 		&d3dDeviceContext);
 
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG("CreateDeviceAndSwapChain Failed!");
+	}
 
 	ComPtr<ID3D11Resource> backBuffer;
 	hr = dxgiSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer));
@@ -323,11 +326,19 @@ bool ARenderDevice::CreateBlendStates()
 
 	// Create the blend state using the description.
 	HRESULT hr = m_Device->CreateBlendState(&blendStateDescription, m_AlphaEnableBlendState.ReleaseAndGetAddressOf());
-	AHRASSERT(SUCCEEDED(result));
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateBlendState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	blendStateDescription.RenderTarget[0].BlendEnable = FALSE;
 	hr = m_Device->CreateBlendState(&blendStateDescription, m_AlphaDisableBlendState.ReleaseAndGetAddressOf());
-	AHRASSERT(SUCCEEDED(result));
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateBlendState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -359,13 +370,22 @@ bool ARenderDevice::CreateDepthStates()
 
 	//create depth stencil state
 	HRESULT hr = m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthDisableStencilState.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateDepthStencilState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	depthStencilDesc.DepthEnable = true;
 	depthStencilDesc.StencilEnable = true;
 
 	hr = m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthEnableStencilState.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateDepthStencilState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
+
 	return true;
 }
 
@@ -385,20 +405,36 @@ bool ARenderDevice::CreateRasterizerStates()
 	rasterDesc.SlopeScaledDepthBias = 0.f;
 
 	HRESULT hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateNoCullFace.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	rasterDesc.CullMode = D3D11_CULL_BACK;
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateCullBackFace.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	rasterDesc.CullMode = D3D11_CULL_FRONT;
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateCullFrontFace.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	rasterDesc.CullMode = D3D11_CULL_NONE;
 	rasterDesc.FillMode = D3D11_FILL_WIREFRAME;
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateWireFrame.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -422,28 +458,44 @@ bool ARenderDevice::CreateSamplerStates()
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
 
 	HRESULT hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateClamp.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateRepeat.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR;
 
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateMirror.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_MIRROR_ONCE;
 
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateMirrorOnce.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }

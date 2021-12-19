@@ -43,6 +43,10 @@
     <ClCompile Include="Graphics\PNG\lodepng.cpp">
       <Filter>Graphics\LoadPNG</Filter>
     </ClCompile>
+    <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Graphics\ACemara.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -101,6 +105,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\PNG\lodepng.h">
       <Filter>Graphics\LoadPNG</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ACemara.h">
+      <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

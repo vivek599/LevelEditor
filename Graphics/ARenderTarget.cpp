@@ -59,8 +59,11 @@ bool ARenderTarget::CreateTexture1D()
 		SRVDesc.Texture1D.MipLevels = 1;
 
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture1D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
-
-		AHRASSERT(hr);
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	}
 
 	// Setup the description of the render target view.
@@ -72,7 +75,11 @@ bool ARenderTarget::CreateTexture1D()
 
 	// Create the render target view.
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture1D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -104,8 +111,11 @@ bool ARenderTarget::CreateTexture2D()
 		SRVDesc.Texture2D.MipLevels = 1;
 
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture2D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
-
-		AHRASSERT(hr);
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	}
 
 	// Setup the description of the render target view.
@@ -117,7 +127,11 @@ bool ARenderTarget::CreateTexture2D()
 
 	// Create the render target view.
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture2D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -147,8 +161,11 @@ bool ARenderTarget::CreateTexture3D()
 		SRVDesc.Texture3D.MostDetailedMip = 0;
 
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture3D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
-
-		AHRASSERT(hr); 
+		if (FAILED(hr))
+		{
+			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			return false;
+		}
 	} 
 	  
 	// Setup the description of the render target view. 
@@ -160,7 +177,11 @@ bool ARenderTarget::CreateTexture3D()
 	 
 	// Create the render target view. 
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture3D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf()); 
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return false;
+	}
 
 	return true;
 }
@@ -190,7 +211,11 @@ void ARenderTarget::CreateDSV()
 
 	// Create the texture for the depth buffer using the filled out description.
 	hr = m_Device->CreateTexture2D(&depthBufferDesc, nullptr, m_DepthStencilBuffer.ReleaseAndGetAddressOf());
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateTexture2D Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return;
+	}
 
 	// Initailze the depth stencil view description.
 	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
@@ -202,7 +227,11 @@ void ARenderTarget::CreateDSV()
 
 	// Create the depth stencil view.
 	hr = m_Device->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &depthStencilViewDesc, m_pDSV.ReleaseAndGetAddressOf() );
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateDepthStencilView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		return;
+	}
 }
 
 ComPtr<ID3D11ShaderResourceView> ARenderTarget::GetSRV() const

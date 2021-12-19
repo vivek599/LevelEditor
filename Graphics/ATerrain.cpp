@@ -16,15 +16,14 @@ ATerrain::~ATerrain()
 	ShutdownHeightMap();
 }
 
-bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, 
-	const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename)
+bool ATerrain::Initialize(ARenderDevice* renderDevice, TerrainInitializationParams& params)
 {
 	HRESULT hr = S_OK;
 	bool result = true;;
 	ID3D11Device* device = renderDevice->GetDevice().Get();
 
 	// Load in the height map for the terrain.
-	result = LoadHeightMapFromBMP(heightMapFilePath);
+	result = LoadHeightMapFromBMP(params.heightMap);
 	if (!result)
 	{
 		return false;
@@ -44,37 +43,38 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 	CalculateTextureCoordinates();
 
 	// Load the texture.
-	result = LoadTexture(device, textureFilename);
+	result = LoadTexture(device, params.textureLayers);
 	if (!result)
 	{
 		return false;
 	}
 
 	// Initialize the vertex and index buffer that hold the geometry for the terrain.
-	VertexType*		Vertices;
-	uint32_t*		Indices;
 	
 	D3D11_BUFFER_DESC vertexBufferDesc;
 	D3D11_BUFFER_DESC indexBufferDesc;
 	D3D11_SUBRESOURCE_DATA vertexData;
 	D3D11_SUBRESOURCE_DATA indexData;
 
-	result = InitGeometry(Vertices, Indices);
+	SAFEDELETE(m_Vertices);
+	SAFEDELETE(m_Indices);
+
+	result = InitGeometry(m_Vertices, m_Indices);
 	if (!result)
 	{
 		return false;
 	}
 
 	// Set up the description of the static vertex buffer.
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_VertexCount;
 	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	vertexBufferDesc.MiscFlags = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the vertex data.
-	vertexData.pSysMem = Vertices;
+	vertexData.pSysMem = m_Vertices;
 	vertexData.SysMemPitch = 0;
 	vertexData.SysMemSlicePitch = 0;
 
@@ -94,7 +94,7 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 	indexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the index data.
-	indexData.pSysMem = Indices;
+	indexData.pSysMem = m_Indices;
 	indexData.SysMemPitch = 0;
 	indexData.SysMemSlicePitch = 0;
 
@@ -106,8 +106,8 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 	}
 
 	// Release the arrays now that the buffers have been created and loaded.
-	SAFEDELETE(Vertices);
-	SAFEDELETE(Indices);
+	//SAFEDELETE(Vertices); not deleting for erosion
+	//SAFEDELETE(Indices);
 
 	result = InitConstantBuffers(device);
 	if (!result)
@@ -117,16 +117,108 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapF
 
 	//init shader
 	m_PixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
-	m_PixelShader->CompileShaderFromFile(pixelShaderFilePath);
+	m_PixelShader->CompileShaderFromFile(params.pixelSHader);
 	m_PixelShader->CreateReflector();
 	m_PixelShader->CreateInputLayout();
 
 	m_VertexShader.reset(new AShaderCache(renderDevice, AShaderType::VERTEXSHADER));
-	m_VertexShader->CompileShaderFromFile(vertexShaderFilePath);
+	m_VertexShader->CompileShaderFromFile(params.vertexSHader);
 	m_VertexShader->CreateReflector();
 	m_VertexShader->CreateInputLayout();
 
 	return true;
+}
+
+void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix)
+{
+	//thread erodeThread([=]() {Erode(20, deltaTime); return 1; });
+
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
+
+	HRESULT hr = S_OK; 
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+	// Transpose the matrices to prepare them for the shader.
+	worlMatrix = XMMatrixTranspose(worlMatrix);
+	viewMatrix = XMMatrixTranspose(viewMatrix);
+	projMatrix = XMMatrixTranspose(projMatrix);
+
+	// Lock the constant buffer so it can be written to.
+	hr = context->Map(m_MatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	// Get a pointer to the data in the constant buffer.
+	MatrixBufferType* dataPtr = (MatrixBufferType*)mappedResource.pData;
+
+	// Copy the matrices into the constant buffer.
+	dataPtr->world = worlMatrix;
+	dataPtr->view = viewMatrix;
+	dataPtr->projection = projMatrix;
+
+	// Unlock the constant buffer.
+	context->Unmap(m_MatrixBuffer.Get(), 0);
+
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	// Lock the light constant buffer so it can be written to.
+	hr = context->Map(m_LightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	// Get a pointer to the data in the constant buffer.
+	LightBufferType* dataPtr2 = (LightBufferType*)mappedResource.pData;
+
+	// Copy the lighting variables into the constant buffer.
+	dataPtr2->ambientColor = m_AmbientColor;
+	dataPtr2->diffuseColor = m_DiffuseColor;
+	dataPtr2->lightDirection = m_LightDirection;
+	dataPtr2->padding = 0.0f;
+
+	// Unlock the constant buffer.
+	context->Unmap(m_LightBuffer.Get(), 0);
+
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	hr = context->Map(m_ShaderParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	ShaderParametersBuffer* dataPtr3 = (ShaderParametersBuffer*)mappedResource.pData;
+
+	dataPtr3->TextureUVScale = m_TerrainTextureUVScale;
+
+	// Unlock the constant buffer.
+	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
+
+
+	SAFEDELETE(m_Vertices);
+	SAFEDELETE(m_Indices);
+	//erodeThread.join();
+
+	bool result = InitGeometry(m_Vertices, m_Indices);
+	if (!result)
+	{
+		return;
+	}
+
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	hr = context->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	memcpy(mappedResource.pData, m_Vertices, m_VertexCount * sizeof(VertexType));
+
+	context->Unmap(m_VertexBuffer.Get(), 0);
+
+	SAFEDELETE(m_Vertices);
 }
 
 bool ATerrain::InitConstantBuffers(ID3D11Device* device)
@@ -181,12 +273,6 @@ bool ATerrain::InitConstantBuffers(ID3D11Device* device)
 		return false;
 	}
 
-
-
-
-
-
-
 	return true;
 }
 
@@ -198,7 +284,7 @@ bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
 	int index1, index2, index3, index4;
 
 	// Calculate the number of vertices in the terrain mesh.
-	m_VertexCount = (m_TerrainWidth - 1) * (m_TerrainHeight - 1) * 12;
+	m_VertexCount = (m_TerrainWidth - 1) * (m_TerrainHeight - 1) * 6;
 
 	// Set the index count to the same as the vertex count.
 	m_IndexCount = m_VertexCount;
@@ -314,75 +400,13 @@ bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
 	return true;
 }
 
-void ATerrain::Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix)
+void ATerrain::Render(ARenderDevice* renderDevice)
 {
-	unsigned int stride;
-	unsigned int offset;
+	// Set vertex buffer stride and offset.
+	unsigned int stride = sizeof(VertexType);
+	unsigned int offset = 0;
 
 	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
-
-	// Set vertex buffer stride and offset.
-	stride = sizeof(VertexType);
-	offset = 0;
-
-	HRESULT hr;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
-
-	// Transpose the matrices to prepare them for the shader.
-	worlMatrix = XMMatrixTranspose(worlMatrix);
-	viewMatrix = XMMatrixTranspose(viewMatrix);
-	projMatrix = XMMatrixTranspose(projMatrix);
-
-	// Lock the constant buffer so it can be written to.
-	hr = context->Map(m_MatrixBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(hr))
-	{
-		return;
-	}
-
-	// Get a pointer to the data in the constant buffer.
-	MatrixBufferType* dataPtr = (MatrixBufferType*)mappedResource.pData;
-
-	// Copy the matrices into the constant buffer.
-	dataPtr->world = worlMatrix;
-	dataPtr->view = viewMatrix;
-	dataPtr->projection = projMatrix;
-
-	// Unlock the constant buffer.
-	context->Unmap(m_MatrixBuffer.Get(), 0);
-
-	// Lock the light constant buffer so it can be written to.
-	hr = context->Map(m_LightBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(hr))
-	{
-		return;
-	}
-
-	// Get a pointer to the data in the constant buffer.
-	LightBufferType* dataPtr2 = (LightBufferType*)mappedResource.pData;
-
-	// Copy the lighting variables into the constant buffer.
-	dataPtr2->ambientColor = m_AmbientColor;
-	dataPtr2->diffuseColor = m_DiffuseColor;
-	dataPtr2->lightDirection = m_LightDirection;
-	dataPtr2->padding = 0.0f;
-
-	// Unlock the constant buffer.
-	context->Unmap(m_LightBuffer.Get(), 0);
-
-	hr = context->Map(m_ShaderParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(hr))
-	{
-		return;
-	}
-
-	ShaderParametersBuffer* dataPtr3 = (ShaderParametersBuffer*)mappedResource.pData;
-
-	dataPtr3->TextureUVScale = m_TerrainTextureUVScale;
-
-	// Unlock the constant buffer.
-	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
-
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	context->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
@@ -400,7 +424,7 @@ void ATerrain::Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix vie
 	context->PSSetConstantBuffers(0, _countof(buffers), buffers );
 
 	// Set shader texture resource in the pixel shader.
-	context->PSSetShaderResources(0, 1, m_TerrainTextureSrvLayer0.GetAddressOf());
+	context->PSSetShaderResources(0, m_TerrainTextureSrvLayers.size(), m_TerrainTextureSrvLayers.data());
 
 	// Set the vertex input layout.
 	context->IASetInputLayout(m_VertexShader->GetInputLayout().Get());
@@ -439,6 +463,16 @@ void ATerrain::SetLightDirection(Vector3 val)
 void ATerrain::SetTextureUVScale(float val)
 {
 	m_TerrainTextureUVScale = Vector4(val);
+}
+
+uint32_t ATerrain::GetWidth() const
+{
+	return m_TerrainWidth;
+}
+
+uint32_t ATerrain::GetHeight() const
+{
+	return m_TerrainHeight;
 }
 
 bool ATerrain::LoadHeightMapFromBMP(const wchar_t* heightMapFilePath)
@@ -704,56 +738,6 @@ bool ATerrain::CalculateNormals()
 
 void ATerrain::CalculateTextureCoordinates()
 {
-	//int incrementCount, i, j, tuCount, tvCount;
-	//float incrementValue, tuCoordinate, tvCoordinate;
-
-	//// Calculate how much to increment the texture coordinates by.
-	//incrementValue = (float)m_TextureRepeatConstant / (float)m_TerrainWidth;
-
-	//// Calculate how many times to repeat the texture.
-	//incrementCount = m_TerrainWidth / m_TextureRepeatConstant;
-
-	//// Initialize the tu and tv coordinate values.
-	//tuCoordinate = 0.0f;
-	//tvCoordinate = 1.0f;
-
-	//// Initialize the tu and tv coordinate indexes.
-	//tuCount = 0;
-	//tvCount = 0;
-
-	//// Loop through the entire height map and calculate the tu and tv texture coordinates for each vertex.
-	//for (j = 0; j < m_TerrainHeight; j++)
-	//{
-	//	for (i = 0; i < m_TerrainWidth; i++)
-	//	{
-	//		// Store the texture coordinate in the height map.
-	//		m_HeightMap[(m_TerrainHeight * j) + i].texture.x = tuCoordinate;
-	//		m_HeightMap[(m_TerrainHeight * j) + i].texture.y = tvCoordinate;
-
-	//		// Increment the tu texture coordinate by the increment value and increment the index by one.
-	//		tuCoordinate += incrementValue;
-	//		tuCount++;
-
-	//		// Check if at the far right end of the texture and if so then start at the beginning again.
-	//		if (tuCount == incrementCount)
-	//		{
-	//			tuCoordinate = 0.0f;
-	//			tuCount = 0;
-	//		}
-	//	}
-
-	//	// Increment the tv texture coordinate by the increment value and increment the index by one.
-	//	tvCoordinate -= incrementValue;
-	//	tvCount++;
-
-	//	// Check if at the top of the texture and if so then start at the bottom again.
-	//	if (tvCount == incrementCount)
-	//	{
-	//		tvCoordinate = 1.0f;
-	//		tvCount = 0;
-	//	}
-	//}
-
 	for (int j = 0; j < m_TerrainHeight; j++)
 	{
 		for (int i = 0; i < m_TerrainWidth; i++)
@@ -765,12 +749,19 @@ void ATerrain::CalculateTextureCoordinates()
 	}
 }
 
-bool ATerrain::LoadTexture(ID3D11Device* device, const wchar_t* textureFilename)
+bool ATerrain::LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames)
 {
-	HRESULT hr = CreateWICTextureFromFile( device, textureFilename, m_TerrainTextureLayer0.GetAddressOf(), m_TerrainTextureSrvLayer0.GetAddressOf());
-	if (FAILED(hr))
+	m_TerrainTextureLayers.resize(textureFilenames.size());
+	m_TerrainTextureSrvLayers.resize(textureFilenames.size());
+
+
+	for (int i = 0; i < textureFilenames.size(); i++)
 	{
-		return false;
+		HRESULT hr = CreateWICTextureFromFile(device, textureFilenames[i], &m_TerrainTextureLayers[i], &m_TerrainTextureSrvLayers[i]);
+		if (FAILED(hr))
+		{
+			return false;
+		}
 	}
 
 	return true;
@@ -786,3 +777,102 @@ void ATerrain::ShutdownHeightMap()
 
 }
 
+void ATerrain::Erode(int cycles, float dt) 
+{
+	/*
+	  Note: Everything is properly scaled by a time step-size "dt"
+	*/
+	srand(time(0));
+	//Do a series of iterations! (5 Particles)
+	for (int i = 0; i < cycles; i++) 
+	{
+		//Spawn New Particle
+		Vector2 newpos = Vector2(rand() % m_TerrainWidth, rand() % m_TerrainHeight);
+		Particle drop(newpos);
+
+		//As long as the droplet exists...
+		while (drop.Volume > m_MinVol) 
+		{
+			int index = (int)drop.Pos.y * m_TerrainWidth + (int)drop.Pos.x;
+			//int index1 = (int)(drop.Pos.y * m_TerrainWidth + drop.Pos.x);
+
+			if (index >= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				index = (m_TerrainWidth - 1) * (m_TerrainHeight - 1);
+			}
+
+
+			Vector3 n = m_HeightMap[index].normal;  //Surface Normal at Position
+
+			//Accelerate particle using Newtonian mechanics using the surface normal.
+			drop.Speed += dt * Vector2(n.x, n.z) / (drop.Volume * m_Density);//F = ma, so a = F/m
+			drop.Pos += dt * drop.Speed;
+			drop.Speed *= (1.0 - dt * m_Friction);       //Friction Factor
+
+			int index1 = (int)drop.Pos.y * m_TerrainWidth + (int)drop.Pos.x;
+			if (index1 >= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				index1 = (m_TerrainWidth - 1) * (m_TerrainHeight - 1);
+			}
+
+			/*
+			  Note: For multiplied factors (e.g. friction, evaporation)
+			  time-scaling is correctly implemented like above.
+			*/
+
+			//Check if Particle is still in-bounds
+			BoundingBox b;
+			b.Center = Vector3(m_TerrainWidth, 0.0f, m_TerrainHeight) * 0.5f;
+			b.Extents = Vector3(m_TerrainWidth, 65536.0f, m_TerrainHeight) * 0.5f;
+			Vector3 dropPos = Vector3(drop.Pos.x, 0.0f, drop.Pos.y);
+
+			if (b.Contains(dropPos) == ContainmentType::DISJOINT)
+			{
+				break;
+			}
+
+			//Compute sediment capacity difference
+			float maxsediment = drop.Volume * drop.Speed.Length() * (m_HeightMap[index].position.y - m_HeightMap[index1].position.y);
+			if (maxsediment < 0.0)
+			{
+				maxsediment = 0.0;
+			}
+
+			float sdiff = maxsediment - drop.Sediment;
+
+			//Act on the Height map and Droplet!
+			drop.Sediment += dt * m_DepositionRate * sdiff;
+			m_HeightMap[index].position.y -= dt * drop.Volume * m_DepositionRate * sdiff;
+
+			//Evaporate the Droplet (Note: Proportional to Volume! Better: Use shape factor to make proportional to the area instead.)
+			drop.Volume *= (1.0 - dt * m_EvapRate);
+		}
+	}
+}
+
+bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
+{
+	Plane p( Vector3(0.0f), Vector3(0.0f, 1.0f, 0.0f));
+	float odot = p.DotNormal(rayOrigin);
+	float ndot = p.DotNormal(rayDirection);
+	float t = -1.0f * odot / ndot;
+
+	//perpendicular to plane
+	if (ndot == 0.0f)
+	{
+		return false;
+	}
+
+	Vector3 pos = rayOrigin + t * rayDirection;
+
+	int x = pos.x;
+	int z = pos.z;
+	if (x < 0 || z < 0 || x > m_TerrainWidth-1 || z > m_TerrainHeight-1)
+	{
+		return false;
+	}
+
+	uint64_t index = (m_TerrainHeight * z) + x;
+	m_HeightMap[index].position.y = 256.0f;
+	return true;
+}

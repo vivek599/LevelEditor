@@ -2,6 +2,7 @@
 #include "AGraphic.h"
 #include "ARenderDevice.h"
 #include "ATerrain.h"
+#include "ACemara.h"
 
 
 AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen) :
@@ -16,16 +17,19 @@ AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabl
 	m_Device		= m_RenderDevice->GetDevice();
 	m_DeviceContext	= m_RenderDevice->GetContext();
 
-	m_Viewport.Width = (float)screenWidth;
-	m_Viewport.Height = (float)screenHeight;
-	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.MaxDepth = 1.0f;
-	m_Viewport.TopLeftX = 0.0f;
-	m_Viewport.TopLeftY = 0.0f;
+	m_ScreenWidth = screenWidth;
+	m_ScreenHeight = screenHeight;
+
+	m_Viewport.width = (float)screenWidth;
+	m_Viewport.height = (float)screenHeight;
+	m_Viewport.minDepth = 0.0f;
+	m_Viewport.maxDepth = 1.0f;
+	m_Viewport.x = 0.0f;
+	m_Viewport.y = 0.0f;
 
 	// Setup the projection matrix.
 	m_Near	= 0.1f;
-	m_Far	= 1000.0f;
+	m_Far	= 10000.0f;
 	m_FieldOfView = XM_PIDIV4;
 	m_AspectRatio = (float)screenWidth / (float)screenHeight;
 
@@ -38,9 +42,11 @@ AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabl
 	m_OrthoFar	=	100.0f;
 
 	m_OrthoMatrix	= XMMatrixOrthographicLH( (float)screenWidth, (float)screenHeight, m_OrthoNear, m_OrthoFar );
-	m_ViewMatrix	= XMMatrixLookAtLH( Vector3(0.0f, 50.0f, -10.0f), Vector3(512, 0.0f, 512.0f), Vector3(0.0f, 1.0f, 0.0f));
+	//m_ViewMatrix	= XMMatrixLookAtLH( Vector3(0.0f, 256.0f, -256.0f), Vector3(512, 0.0f, 512.0f), Vector3(0.0f, 1.0f, 0.0f));
 
-
+	m_Camera.reset(new ACemara());
+	m_Camera->SetPosition(0.0f, 256.0f, -256.0f);
+	m_Camera->SetFocus(512, 0.0f, 512.0f);
 }
 
 AGraphic::~AGraphic()
@@ -48,10 +54,10 @@ AGraphic::~AGraphic()
 	ARenderDevice::DestroyDevice(m_RenderDevice);
 }
 
-bool AGraphic::InitializeTerrain( const wchar_t* heightMapFilePath, const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename)
+bool AGraphic::InitializeTerrain(TerrainInitializationParams& params)
 {
 	m_Terrain.reset(new ATerrain());
-	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, heightMapFilePath, pixelShaderFilePath, vertexShaderFilePath, textureFilename);
+	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, params);
 
 	return true;
 }
@@ -80,17 +86,30 @@ void AGraphic::BeginScene(Color color)
 
 bool AGraphic::Update(float deltaTime)
 {
+	m_Camera->Update(deltaTime);
+	if (m_TerrainInitilized)
+	{
+		m_Terrain->Update(m_RenderDevice, deltaTime, m_WorldMatrix, m_Camera->GetViewMatrix(), m_ProjectionMatrix);
+		UnprojectMouseCoord();
+
+		if (m_LeftMouseDown)
+		{
+			m_Terrain->RayTerrainIntersect(m_RayOrigin, m_RayDirection);
+		}
+	}
 
 	return true;
 }
 
 bool AGraphic::Render()
 {
+	m_Camera->Render();
+
 	if (m_ResizeSuccess)
 	{
 		m_DeviceContext->RSSetState(m_RenderDevice->GetRSCullBackFace());
 		m_DeviceContext->OMSetRenderTargets(1, m_RenderDevice->GetRenderTargetView().GetAddressOf(), m_RenderDevice->GetDepthStencilView().Get());
-		m_DeviceContext->RSSetViewports(1, &m_Viewport);
+		m_DeviceContext->RSSetViewports(1, m_Viewport.Get11());
 	}
 	else
 	{
@@ -103,7 +122,7 @@ bool AGraphic::Render()
 		m_Terrain->SetDiffuseColor(Vector4(1.0f, 1.0f, 1.0f, 1.0f));
 		m_Terrain->SetLightDirection(Vector3(-0.5f, -1.0f, 0.0f));
 		m_Terrain->SetTextureUVScale(m_TextureUVScale);
-		m_Terrain->Render(m_RenderDevice, m_WorldMatrix, m_ViewMatrix, m_ProjectionMatrix);
+		m_Terrain->Render(m_RenderDevice);
 	}
 
 
@@ -128,12 +147,12 @@ void AGraphic::Resize(int width, int height)
 	m_ResizeSuccess = m_RenderDevice->ResizeSwapChainBuffers(width, height);
 
 	// Set up the viewport.
-	m_Viewport.Width = width;
-	m_Viewport.Height = height;
-	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.MaxDepth = 1.0f;
-	m_Viewport.TopLeftX = 0;
-	m_Viewport.TopLeftY = 0;
+	m_Viewport.width = width;
+	m_Viewport.height = height;
+	m_Viewport.minDepth = 0.0f;
+	m_Viewport.maxDepth = 1.0f;
+	m_Viewport.x = 0;
+	m_Viewport.y = 0;
 }
 
 Matrix AGraphic::GetProjectionMatrix()
@@ -155,3 +174,37 @@ void AGraphic::SetTextureUVScale(float val)
 {
 	m_TextureUVScale = val;
 }
+
+bool AGraphic::UnprojectMouseCoord()
+{ 
+	if (!m_TerrainInitilized)
+	{
+		return false;
+	}
+
+	Vector3 mouseNear	= Vector3(m_MouseX, m_MouseY, 0.0f);
+	Vector3 mouseFar	= Vector3(m_MouseX, m_MouseY, 1.0f);
+
+	mouseNear	= m_Viewport.Unproject(mouseNear, m_ProjectionMatrix, m_Camera->GetViewMatrix(), m_WorldMatrix);
+	mouseFar	= m_Viewport.Unproject(mouseFar, m_ProjectionMatrix, m_Camera->GetViewMatrix(), m_WorldMatrix);
+
+	m_RayDirection = mouseFar - mouseNear;
+	m_RayDirection.Normalize();
+
+	m_RayOrigin = mouseNear;
+	 
+	return true;
+}
+
+void AGraphic::SetMouseState(int mouseX, int mouseY, bool mouseDown)
+{
+	m_MouseX = mouseX;
+	m_MouseY = mouseY;
+	m_LeftMouseDown = mouseDown;
+}
+
+
+
+
+
+

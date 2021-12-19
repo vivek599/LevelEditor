@@ -70,3 +70,21 @@ typedef Matrix Mat4;
 #include "PNG/lodepng.h"
 
 #include "ACommonDefinitions.h"
+
+
+
+struct TerrainInitializationParams
+{
+	const wchar_t* heightMap;
+	const wchar_t* pixelSHader;
+	const wchar_t* vertexSHader;
+	vector<const wchar_t*>	textureLayers;
+};
+
+
+
+
+
+
+
+

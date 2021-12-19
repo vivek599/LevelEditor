@@ -13,7 +13,10 @@ void AConstantBuffer::CreateBuffer()
 	bufferDesc.StructureByteStride = 0;
 
 	HRESULT hr = m_Device->CreateBuffer(&bufferDesc, nullptr, m_Buffer.ReleaseAndGetAddressOf());
-	AHRASSERT(hr); 
+	if (FAILED(hr))
+	{
+		ALOG(string("CreateBuffer Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+	}
 }
 
 AConstantBuffer::AConstantBuffer(ARenderDevice* renderDevice, AShaderVisibility visibility) :
@@ -38,7 +41,10 @@ bool AConstantBuffer::UpdateBuffer(const void* data, size_t size)
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 
 	hr = m_DeviceContext->Map(m_Buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	AHRASSERT(hr);
+	if (FAILED(hr))
+	{
+		ALOG(string("Map Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+	}
 
 	memcpy(mappedResource.pData, data, m_BufferSize);
 

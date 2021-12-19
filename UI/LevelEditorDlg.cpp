@@ -68,6 +68,7 @@ CLevelEditorDlg::CLevelEditorDlg(CWnd* pParent /*=nullptr*/)
 	m_ErodeIterationText = nullptr;
 	m_BrushTypeText		= nullptr;
 	m_frameCounter		= 0;
+	m_MouseState.LeftDown = false;
 }
 
 void CLevelEditorDlg::DoDataExchange(CDataExchange* pDX)
@@ -90,6 +91,9 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	ON_WM_GETMINMAXINFO()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
 END_MESSAGE_MAP()
 
 
@@ -215,7 +219,14 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_HeightMapFileName->SetWindowTextW(p);
 
-	m_Graphic->InitializeTerrain(p, _T("../Data/Shaders/terrain_ps.hlsl"), _T("../Data/Shaders/terrain_vs.hlsl"), _T("../Data/Textures/Grass0130_1.jpg"));
+
+	TerrainInitializationParams params;
+	params.heightMap = p;
+	params.pixelSHader = _T("../Data/Shaders/terrain_ps.hlsl");
+	params.vertexSHader = _T("../Data/Shaders/terrain_vs.hlsl");
+	params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
+
+	m_Graphic->InitializeTerrain(params);
 
 
 
@@ -492,4 +503,49 @@ void CLevelEditorDlg::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
 	lpMMI->ptMinTrackSize.y = 480;
 
 	CDialogEx::OnGetMinMaxInfo(lpMMI);
+}
+
+void CLevelEditorDlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_MouseState.LeftDown = true;
+	SendMouseState(point);
+
+	CDialogEx::OnLButtonDown(nFlags, point);
+}
+
+
+void CLevelEditorDlg::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_MouseState.LeftDown = false;
+
+	CDialogEx::OnLButtonUp(nFlags, point);
+}
+
+
+void CLevelEditorDlg::OnMouseMove(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+
+	if (m_MouseState.LeftDown)
+	{
+		SendMouseState(point);
+	}
+
+	CDialogEx::OnMouseMove(nFlags, point);
+}
+
+void CLevelEditorDlg::SendMouseState(CPoint& point)
+{
+	CRect rect;
+	m_RenderBox->GetWindowRect(rect);
+	ScreenToClient(rect);
+
+	if (point.x < rect.right && point.y < rect.bottom)
+	{
+		CPoint pointOnRenderBox; 
+		pointOnRenderBox = point - rect.TopLeft();
+		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, m_MouseState.LeftDown);
+	}
 }

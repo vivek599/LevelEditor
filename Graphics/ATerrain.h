@@ -10,12 +10,12 @@ public:
 	ATerrain();
 	~ATerrain();
 
-	bool Initialize(ARenderDevice* renderDevice, const wchar_t* heightMapFilePath, 
-		const wchar_t* pixelShaderFilePath, const wchar_t* vertexShaderFilePath, const wchar_t* textureFilename);
+	bool Initialize(ARenderDevice* renderDevice, TerrainInitializationParams& params);
 
 
 	
-	void Render(ARenderDevice* renderDevice, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
+	void Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
+	void Render(ARenderDevice* renderDevice);
 
 	int GetIndexCount();
 
@@ -25,6 +25,9 @@ public:
 
 	void SetTextureUVScale(float val);
 
+	uint32_t GetWidth() const;
+	uint32_t GetHeight() const;
+	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
 private:
 
 	struct VertexType
@@ -34,6 +37,29 @@ private:
 		Vector3 normal;
 	};
 
+	struct Particle 
+	{
+		//Construct Particle at Position
+		Particle(Vector2 _pos) 
+		{ 
+			Pos = _pos; 
+		}
+
+		Vector2 Pos;
+		Vector2 Speed = Vector2(0.0);
+
+		float Volume	= 1.0;   //This will vary in time
+		float Sediment	= 0.0; //Fraction of Volume that is Sediment!
+	};
+
+	//Particle Properties
+	//float dt = 1.2;
+	float m_Density				= 1.0;  //This gives varying amounts of inertia and stuff...
+	float m_EvapRate			= 0.001;
+	float m_DepositionRate		= 0.1;
+	float m_MinVol				= 0.01;
+	float m_Friction			= 0.05;
+
 	bool InitGeometry(VertexType*& Vertices, uint32_t*& Indices);
 	bool InitConstantBuffers(ID3D11Device* device);
 	bool LoadHeightMapFromBMP(const wchar_t* heightMapFilePath);
@@ -41,8 +67,9 @@ private:
 	void NormalizeHeightMap();
 	bool CalculateNormals();
 	void CalculateTextureCoordinates();
-	bool LoadTexture(ID3D11Device* device, const wchar_t* textureFilename);
+	bool LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames );
 	void ShutdownHeightMap();
+	void Erode(int cycles, float dt);
 
 	uint32_t m_TerrainWidth;
 	uint32_t m_TerrainHeight;
@@ -53,6 +80,8 @@ private:
 	ComPtr<ID3D11Buffer>	m_IndexBuffer;
 
 	VertexType*				m_HeightMap;
+	VertexType*				m_Vertices;
+	uint32_t*				m_Indices;
 
 	unique_ptr<class AShaderCache>	m_PixelShader;
 	unique_ptr<class AShaderCache>	m_VertexShader;
@@ -75,11 +104,12 @@ private:
 	struct ShaderParametersBuffer
 	{
 		Vector4 TextureUVScale;
+		Vector3 HitPosition;
+		float	Radius;
 	};
 
-	ComPtr<ID3D11ShaderResourceView>	m_TerrainTextureSrvLayer0;
-	ComPtr<ID3D11Resource>				m_TerrainTextureLayer0;
-	int									m_TextureRepeatConstant = 8;
+	vector<ID3D11ShaderResourceView*>	m_TerrainTextureSrvLayers;
+	vector<ID3D11Resource*>				m_TerrainTextureLayers;
 
 	ComPtr<ID3D11Buffer>	m_MatrixBuffer;
 	ComPtr<ID3D11Buffer>	m_LightBuffer;

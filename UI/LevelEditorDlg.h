@@ -62,7 +62,16 @@ protected:
 	float				m_deltaTime;
 	int					m_frameCounter;
 
-	unique_ptr<AGraphic> m_Graphic;
+	unique_ptr<AGraphic> m_Graphic;	
+	
+	struct MouseState
+	{
+		bool LeftDown;
+		bool MiddleDown;
+		bool RightDown;
+	};
+
+	MouseState				m_MouseState;
 
 public:
 	afx_msg void OnFileExit();
@@ -86,4 +95,10 @@ public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+
+	void SendMouseState(CPoint& point);
+
 };

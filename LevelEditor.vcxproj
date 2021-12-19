@@ -105,7 +105,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -128,7 +128,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <AdditionalDependencies>uafxcwd.lib;Libcmtd.lib</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>uafxcwd.lib;Libcmtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -155,7 +155,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -182,7 +182,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>uafxcw.lib;Libcmt.lib</AdditionalDependencies>
@@ -200,6 +200,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Graphics\ACemara.h" />
     <ClInclude Include="Graphics\ACommonDefinitions.h" />
     <ClInclude Include="Graphics\ACommonIncludes.h" />
     <ClInclude Include="Graphics\AConstantBuffer.h" />
@@ -221,6 +222,7 @@
     <ClInclude Include="UI\targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Graphics\ACemara.cpp" />
     <ClCompile Include="Graphics\AConstantBuffer.cpp" />
     <ClCompile Include="Graphics\ADXTime.cpp" />
     <ClCompile Include="Graphics\AGraphic.cpp" />
@@ -232,6 +234,7 @@
     <ClCompile Include="Graphics\ATerrain.cpp" />
     <ClCompile Include="Graphics\ATexture.cpp" />
     <ClCompile Include="Graphics\PNG\lodepng.cpp" />
+    <ClCompile Include="Source.cpp" />
     <ClCompile Include="UI\CPictureControl.cpp" />
     <ClCompile Include="UI\LevelEditor.cpp" />
     <ClCompile Include="UI\LevelEditorDlg.cpp" />
