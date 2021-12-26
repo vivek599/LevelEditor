@@ -866,8 +866,22 @@ bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 			return false;
 		}
 
-		uint64_t index = (m_TerrainHeight * z) + x;
-		m_HeightMap[index].position.y = 256.0f;
+		int radiusMax = 50;
+		for (int i = -radiusMax; i < radiusMax; i++)
+		{
+			for (int j = -radiusMax; j < radiusMax; j++)
+			{
+				uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
+				if (index >= 0 && index <= (m_TerrainWidth-1) * (m_TerrainHeight-1))
+				{ 
+					float radius = Vector2( i, j ).Length(); 
+					float strength = 1.0f;
+					//m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
+					m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * (cosf( XM_PI * radius / float(radiusMax)) + 1.0f) * 0.5f;
+				}
+			}
+		}
+
 		return true;
 	}
 

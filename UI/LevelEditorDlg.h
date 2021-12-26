@@ -50,14 +50,19 @@ protected:
 	CButton*			m_ButtonErode;
 	CSliderCtrl*		m_BrushSizeSlider;
 	CEdit*				m_BrushSizeTextbox;
+	CSliderCtrl*		m_BrushStrengthSlider;
+	CEdit*				m_BrushStrengthTextbox;
 	CEdit*				m_HeightMapFileName;
 	CComboBox*			m_BrushComboBox;
 	CStatic*			m_ErodeIterationText;
+	CStatic*			m_SliderSizeText;
+	CStatic*			m_SliderWeightText;
 	CStatic*			m_BrushTypeText;
 	class CPictureControl*			m_RenderBox;
 	CStatic*			m_FpsText;
 	CFont				m_FpsFont;
 	CString				m_BrushSizeSliderVal;
+	CString				m_BrushStrengthSliderVal;
 
 	float				m_deltaTime;
 	int					m_frameCounter;
@@ -99,7 +104,7 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 
-	void SendMouseState(CPoint& point);
+	void SendMouseState(CPoint& point, const MouseState& state);
 	CPoint pointOnRenderBox;
 
 };

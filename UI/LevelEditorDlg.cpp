@@ -228,6 +228,7 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 	params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
 
 	m_Graphic->InitializeTerrain(&params);
+	m_Graphic->SetTextureUVScale(1);
 
 
 
@@ -243,6 +244,12 @@ void CLevelEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 		UpdateData(FALSE);
 		m_Graphic->SetTextureUVScale(m_BrushSizeSlider->GetPos() + 1);
+	}
+	else if (pScrollBar == (CScrollBar*)m_BrushStrengthSlider)
+	{
+		m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushStrengthSlider->GetPos());
+		m_BrushStrengthTextbox->SetWindowTextW(m_BrushStrengthSliderVal.GetBuffer());
+		UpdateData(FALSE);
 	}
 	else 
 	{
@@ -331,10 +338,14 @@ bool CLevelEditorDlg::InitializeControls()
 	this->SetMenu(&m_Menu);
 
 	m_ErodeIterationText	= (CStatic*)(GetDlgItem(IDC_STATIC_ITER));
+	m_SliderSizeText		= (CStatic*)(GetDlgItem(IDC_STATIC_SZ));
+	m_SliderWeightText		= (CStatic*)(GetDlgItem(IDC_STATIC_WT));
 	m_ButtonLoadHeightMap	= (CButton*)(GetDlgItem(IDC_LOADHEIGHTMAP));
 	m_ButtonErode			= (CButton*)(GetDlgItem(IDC_BUTTON_ERODE));
 	m_BrushSizeSlider	= (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSIZESLIDER));
 	m_BrushSizeTextbox	= (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
+	m_BrushStrengthSlider	= (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSTRENGTHSLIDER));
+	m_BrushStrengthTextbox	= (CEdit*)GetDlgItem(IDC_BRUSHSTRENGTHTEXTBOX);
 	m_BrushComboBox		= (CComboBox*)GetDlgItem(IDC_COMBO_BRUSHTYPE);
 	m_HeightMapFileName = (CEdit*)GetDlgItem(IDC_HMFILENAME);
 	m_BrushTypeText		= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
@@ -348,6 +359,11 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushSizeSlider->SetPos(0);
 	m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
+
+	m_BrushStrengthSlider->SetRange(0, 100, TRUE);
+	m_BrushStrengthSlider->SetPos(0);
+	m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
+	m_BrushStrengthTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
 	m_FpsFont.CreateFont(
 		24,                        // nHeight
@@ -474,12 +490,19 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		int vspacing = 30;
 		m_ButtonLoadHeightMap->SetWindowPos(nullptr, cx - 250 - hspacing, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_HeightMapFileName->SetWindowPos(nullptr, cx - 250 - hspacing, 50 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 257 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_BrushSizeTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_BrushComboBox->SetWindowPos(nullptr, cx - 185 - hspacing, 110 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_BrushTypeText->SetWindowPos(nullptr, cx - 250 - hspacing, 115 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 135 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_SliderSizeText->SetWindowPos(nullptr, cx - 252 - hspacing, 85 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_BrushStrengthSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 110 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushStrengthTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 110 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_SliderWeightText->SetWindowPos(nullptr, cx - 252 - hspacing, 115 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_BrushComboBox->SetWindowPos(nullptr, cx - 185 - hspacing, 140 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushTypeText->SetWindowPos(nullptr, cx - 250 - hspacing, 145 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 170 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 173 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
 		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
 
@@ -488,6 +511,12 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		ScreenToClient(rect);
 
 		m_Graphic->Resize(rect.right - rect.left, rect.bottom - rect.top);
+		m_SliderSizeText->RedrawWindow(nullptr);
+		m_SliderWeightText->RedrawWindow(nullptr);
+		m_BrushStrengthSlider->RedrawWindow(nullptr);
+		m_ErodeIterationText->RedrawWindow(nullptr);
+		m_BrushSizeTextbox->RedrawWindow(nullptr);
+		m_BrushStrengthTextbox->RedrawWindow(nullptr);
 	}
 
 
@@ -514,7 +543,7 @@ void CLevelEditorDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	m_MouseState.LeftDown = true;
-	SendMouseState(point);
+	SendMouseState(point, m_MouseState);
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -524,6 +553,7 @@ void CLevelEditorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	m_MouseState.LeftDown = false;
+	SendMouseState(point, m_MouseState);
 
 	CDialogEx::OnLButtonUp(nFlags, point);
 }
@@ -533,15 +563,13 @@ void CLevelEditorDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 
-	if (m_MouseState.LeftDown)
-	{
-		SendMouseState(point);
-	}
+
+	SendMouseState(point, m_MouseState);
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
 
-void CLevelEditorDlg::SendMouseState(CPoint& point)
+void CLevelEditorDlg::SendMouseState(CPoint& point, const MouseState& state )
 {
 	CRect rect;
 	m_RenderBox->GetWindowRect(rect);
@@ -550,6 +578,6 @@ void CLevelEditorDlg::SendMouseState(CPoint& point)
 	if (point.x < rect.right && point.y < rect.bottom)
 	{
 		pointOnRenderBox = point - rect.TopLeft();
-		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, m_MouseState.LeftDown);
+		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, state.LeftDown);
 	}
 }

@@ -51,6 +51,15 @@ namespace
 		return Lerp(oMin, oMax, alpha);
 	}
 
+	float SmotherStep(float minVal, float maxVal, float x)
+	{
+		// Scale, and clamp x to 0..1 range
+		x = Clamp<float>((x - minVal) / (maxVal - minVal), 0.0, 1.0);
+
+		// Evaluate polynomial
+		return x * x * x * (x * (x * 6 - 15) + 10);
+	};
+
 	Vector3 RLerp(Vector3 v1, Vector3 v2, float t)
 	{
 		v1.Normalize();

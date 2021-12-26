@@ -18,6 +18,11 @@
 #define IDC_BUTTON_ERODE                1007
 #define IDC_STATIC_ITER                 1008
 #define IDC_STATIC_FPS                  1009
+#define IDC_BRUSHSTRENGTHSLIDER         1012
+#define IDC_BRUSHSTRENGTHTEXTBOX        1013
+#define IDC_STATIC_ITER3                1015
+#define IDC_STATIC_SZ                   1015
+#define IDC_STATIC_WT                   1016
 #define ID_FILE_EXIT                    32771
 #define ID_EDIT_CUT32772                32772
 #define ID_EDIT_COPY32773               32773
