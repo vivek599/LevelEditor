@@ -2,6 +2,7 @@
 
 #include "../Graphics/ACommonIncludes.h"
 
+class TerrainInitializationParams;
 
 class AGraphic
 {
@@ -9,7 +10,7 @@ public:
 	AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabled, bool full_screen);
 	~AGraphic();
 
-	bool InitializeTerrain(TerrainInitializationParams& params);
+	bool InitializeTerrain(TerrainInitializationParams* params);
 	void BeginScene(Color color);
 	bool Update(float deltaTime);
 	bool Render();

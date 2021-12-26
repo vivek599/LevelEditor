@@ -76,24 +76,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\MyProjects\LevelEditor\DirectXTK-master\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)DirectXTK-main\Inc;$(IncludePath)</IncludePath>
     <LibraryPath>D:\MyProjects\LevelEditor\Libx64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\MyProjects\LevelEditor\DirectXTK-master\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)DirectXTK-main\Inc;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)BINx64\$(Configuration)\</OutDir>
-    <LibraryPath>D:\MyProjects\LevelEditor\Libx64;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)Libx64;$(SolutionDir)Libx64\DirectXTK\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\MyProjects\LevelEditor\DirectXTK-master\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)DirectXTK-main\Inc;$(IncludePath)</IncludePath>
     <LibraryPath>D:\MyProjects\LevelEditor\Libx64;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>D:\MyProjects\LevelEditor\DirectXTK-master\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\MyProjects\LevelEditor\Libx64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)DirectXTK-main\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Libx64;$(SolutionDir)Libx64\DirectXTK\Release;$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)BINx64\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

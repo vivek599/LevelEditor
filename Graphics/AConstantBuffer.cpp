@@ -15,7 +15,7 @@ void AConstantBuffer::CreateBuffer()
 	HRESULT hr = m_Device->CreateBuffer(&bufferDesc, nullptr, m_Buffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateBuffer Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateBuffer Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 	}
 }
 
@@ -43,7 +43,7 @@ bool AConstantBuffer::UpdateBuffer(const void* data, size_t size)
 	hr = m_DeviceContext->Map(m_Buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(hr))
 	{
-		ALOG(string("Map Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("Map Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 	}
 
 	memcpy(mappedResource.pData, data, m_BufferSize);

@@ -9,8 +9,8 @@
 
 using namespace std;
 
-void ALOG( string str );
-void ALOG(const char* str, ...);
+void ALOG( wstring str );
+void ALOG(const wchar_t* str, ...);
 
 
 class ALogger
@@ -19,8 +19,8 @@ public:
 
     static ALogger* instance();
     
-	void log(string str);
-	void log(const char* str, va_list list);
+	void log(wstring str);
+	void log(const wchar_t* str, va_list list);
     
 private:
 
@@ -29,7 +29,7 @@ private:
     
     // static variables
     static ALogger *m_instance;
-    ofstream m_stream;
+    wofstream m_stream;
  
 };
 

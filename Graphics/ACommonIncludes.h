@@ -5,10 +5,16 @@
 #include <Windows.h>
 #include <shobjidl.h> //open file dialog
 
+#if defined(DEBUG) || defined(_DEBUG)
+	#define _CRTDBG_MAP_ALLOC
+	#include <crtdbg.h>
+#endif
+
 #include <d2d1_3.h>
 #include <dwrite.h>
 #include <d3d11.h>
 #include <dxgi.h>
+#include <dxgi1_6.h>
 #include <d3dcommon.h>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
@@ -17,7 +23,6 @@
 #include <queue>
 #include <chrono>   
 #include <thread>   
-using namespace std::chrono;
 
 #include <WICTextureLoader.h>
 
@@ -28,11 +33,9 @@ using namespace std::chrono;
 #pragma comment(lib, "D3DCompiler.lib") 
 #pragma comment(lib, "d2d1.lib" )
 #pragma comment(lib, "dwrite.lib" )
-#ifdef _DEBUG
-#pragma comment(lib, "DirectXTKd.lib" )
-#else
+
 #pragma comment(lib, "DirectXTK.lib" )
-#endif
+
 //#pragma comment(lib, "assimp-vc142-mtd.lib" )
 #pragma comment(lib, "dxguid.lib")
 
@@ -60,6 +63,7 @@ using Microsoft::WRL::ComPtr;
 using namespace std;
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
+using namespace std::chrono;
 
 typedef Matrix Mat4;
 
@@ -70,16 +74,6 @@ typedef Matrix Mat4;
 #include "PNG/lodepng.h"
 
 #include "ACommonDefinitions.h"
-
-
-
-struct TerrainInitializationParams
-{
-	const wchar_t* heightMap;
-	const wchar_t* pixelSHader;
-	const wchar_t* vertexSHader;
-	vector<const wchar_t*>	textureLayers;
-};
 
 
 

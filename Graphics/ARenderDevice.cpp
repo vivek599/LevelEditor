@@ -55,15 +55,24 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 		D3D_FEATURE_LEVEL_10_0,
 	};
 
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+#ifdef _DEBUG
+	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 	IDXGISwapChain*			dxgiSwapChain;
 	ID3D11Device*			d3dDevice;
 	ID3D11DeviceContext*	d3dDeviceContext;
 
+	ComPtr<IDXGIAdapter1> hardwareAdapter;
+	GetHardwareAdapter( hardwareAdapter.ReleaseAndGetAddressOf(), true);
+
 	HRESULT hr = D3D11CreateDeviceAndSwapChain(
-		nullptr, // Default adapter
-		D3D_DRIVER_TYPE_HARDWARE,
+		hardwareAdapter.Get(), // Default adapter
+		hardwareAdapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
-		D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_DEBUG,
+		createDeviceFlags,
 		requiredFeatureLevel,
 		_countof(requiredFeatureLevel),
 		D3D11_SDK_VERSION,
@@ -75,7 +84,7 @@ ARenderDevice* ARenderDevice::CreateDevice(HWND hwnd, int screenWidth, int scree
 
 	if (FAILED(hr))
 	{
-		ALOG("CreateDeviceAndSwapChain Failed!");
+		ALOG(TEXT("CreateDeviceAndSwapChain Failed!"));
 	}
 
 	ComPtr<ID3D11Resource> backBuffer;
@@ -328,7 +337,7 @@ bool ARenderDevice::CreateBlendStates()
 	HRESULT hr = m_Device->CreateBlendState(&blendStateDescription, m_AlphaEnableBlendState.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateBlendState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateBlendState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -336,7 +345,7 @@ bool ARenderDevice::CreateBlendStates()
 	hr = m_Device->CreateBlendState(&blendStateDescription, m_AlphaDisableBlendState.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateBlendState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateBlendState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -372,7 +381,7 @@ bool ARenderDevice::CreateDepthStates()
 	HRESULT hr = m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthDisableStencilState.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateDepthStencilState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateDepthStencilState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -382,7 +391,7 @@ bool ARenderDevice::CreateDepthStates()
 	hr = m_Device->CreateDepthStencilState(&depthStencilDesc, m_DepthEnableStencilState.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateDepthStencilState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateDepthStencilState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -407,7 +416,7 @@ bool ARenderDevice::CreateRasterizerStates()
 	HRESULT hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateNoCullFace.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRasterizerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -415,7 +424,7 @@ bool ARenderDevice::CreateRasterizerStates()
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateCullBackFace.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRasterizerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -423,7 +432,7 @@ bool ARenderDevice::CreateRasterizerStates()
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateCullFrontFace.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRasterizerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -432,7 +441,7 @@ bool ARenderDevice::CreateRasterizerStates()
 	hr = m_Device->CreateRasterizerState(&rasterDesc, m_RasterizerStateWireFrame.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRasterizerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRasterizerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -460,7 +469,7 @@ bool ARenderDevice::CreateSamplerStates()
 	HRESULT hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateClamp.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateSamplerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -471,7 +480,7 @@ bool ARenderDevice::CreateSamplerStates()
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateRepeat.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateSamplerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -482,7 +491,7 @@ bool ARenderDevice::CreateSamplerStates()
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateMirror.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateSamplerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -493,16 +502,61 @@ bool ARenderDevice::CreateSamplerStates()
 	hr = m_Device->CreateSamplerState(&samplerDesc, m_SampleStateMirrorOnce.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateSamplerState Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateSamplerState Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
 	return true;
 }
 
+// This method acquires the first available hardware adapter.
+// If no such adapter can be found, *ppAdapter will be set to nullptr.
+void ARenderDevice::GetHardwareAdapter(IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter)
+{
+	*ppAdapter = nullptr;
+
+	ComPtr<IDXGIAdapter1> adapter;
+
+	DXGI_GPU_PREFERENCE GpuPreference = requestHighPerformanceAdapter ? DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE : DXGI_GPU_PREFERENCE_UNSPECIFIED;
 
 
+	ComPtr<IDXGIFactory> pFactory;
+	// Create a DirectX graphics interface factory.
+	HRESULT hr = CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)pFactory.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		throw "Unable To Create Factory...!";
+	}
 
+	ComPtr<IDXGIFactory6> factory6;
+	hr = pFactory.As(&factory6);
+	if (SUCCEEDED(hr))
+	{
+		for (UINT adapterIndex = 0;
+			SUCCEEDED(factory6->EnumAdapterByGpuPreference( adapterIndex, GpuPreference, IID_PPV_ARGS(adapter.ReleaseAndGetAddressOf())));
+			adapterIndex++)
+		{
+			DXGI_ADAPTER_DESC1 desc;
+			adapter->GetDesc1(&desc);
+
+			if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			{
+				// Don't select the Basic Render Driver adapter.
+				continue;
+			}
+
+#ifdef _DEBUG
+			wchar_t buff[256] = {};
+			swprintf_s(buff, L"Direct3D Adapter (%u): VID:%04X, PID:%04X - %ls\n", adapterIndex, desc.VendorId, desc.DeviceId, desc.Description);
+			ALOG(buff);
+#endif
+
+			break;
+		}
+	}
+
+	*ppAdapter = adapter.Detach();
+}
 
 
 

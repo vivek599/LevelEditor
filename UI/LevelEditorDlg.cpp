@@ -9,6 +9,7 @@
 #include "../ui/CPictureControl.h"
 #include "../Graphics/ACommonIncludes.h"
 #include "../Graphics/AGraphic.h"
+#include "../Graphics/ATerrain.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -226,7 +227,7 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 	params.vertexSHader = _T("../Data/Shaders/terrain_vs.hlsl");
 	params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
 
-	m_Graphic->InitializeTerrain(params);
+	m_Graphic->InitializeTerrain(&params);
 
 
 
@@ -458,7 +459,7 @@ void CLevelEditorDlg::CalculateFps()
 	m_frameCounter++;
 
 	CString frameStr;
-	frameStr.Format(_T("X:%d Y:%d"), pointOnRenderBox.x, pointOnRenderBox.y);
+	frameStr.Format(_T("X:%d Y:%d, FPS : %d"), pointOnRenderBox.x, pointOnRenderBox.y, Fps);
 	m_FpsText->SetWindowTextW(frameStr.GetBuffer());
 	m_FpsText->UpdateWindow();
 }

@@ -854,15 +854,6 @@ bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
 	Ray ray(rayOrigin, rayDirection);
 	Plane p( Vector3(0.0f), Vector3(0.0f, 1.0f, 0.0f));
-	//float odot = p.DotNormal(rayOrigin);
-	//float ndot = p.DotNormal(rayDirection);
-	//float t = -1.0f * odot / ndot;
-
-	////perpendicular to plane
-	//if (ndot == 0.0f)
-	//{
-	//	return false;
-	//}
 	float t = 0.0f;
 	if (ray.Intersects(p, t))
 	{

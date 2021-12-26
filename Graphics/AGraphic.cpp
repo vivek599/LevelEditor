@@ -54,10 +54,10 @@ AGraphic::~AGraphic()
 	ARenderDevice::DestroyDevice(m_RenderDevice);
 }
 
-bool AGraphic::InitializeTerrain(TerrainInitializationParams& params)
+bool AGraphic::InitializeTerrain(TerrainInitializationParams* params)
 {
 	m_Terrain.reset(new ATerrain());
-	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, params);
+	m_TerrainInitilized = m_Terrain->Initialize( m_RenderDevice, *params);
 
 	return true;
 }
@@ -177,11 +177,6 @@ void AGraphic::SetTextureUVScale(float val)
 
 bool AGraphic::UnprojectMouseCoord()
 { 
-	if (!m_TerrainInitilized)
-	{
-		return false;
-	}
-
 	Vector3 mouseNear	= Vector3(m_MouseX, m_MouseY, 0.0f);
 	Vector3 mouseFar	= Vector3(m_MouseX, m_MouseY, 1.0f);
 

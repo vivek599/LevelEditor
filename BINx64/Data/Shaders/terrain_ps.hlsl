@@ -40,17 +40,16 @@ float4 main(PixelInputType input) : SV_TARGET
     // Calculate the amount of light on this pixel.
     float lightIntensity = saturate(dot(input.normal, lightDir));
 
-    if (lightIntensity > 0.0f)
-    {
-        // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
-        color += (diffuseColor * lightIntensity);
-    }
+    float diff = max(lightIntensity, 0.0001f);
+        
+    // Determine the final diffuse color based on the diffuse color and the amount of light intensity.
+    color += (diffuseColor * diff);
 
     // Saturate the final light color.
     color = saturate(color);
 
     // Multiply the texture pixel and the final light color to get the result.
-    color = color * textureColor;
+    color *= textureColor;
 
     return color;
 }

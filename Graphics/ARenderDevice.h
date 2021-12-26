@@ -78,6 +78,8 @@ private:
 	bool CreateRasterizerStates();
 	bool CreateSamplerStates();
 
+	static void GetHardwareAdapter(IDXGIAdapter1** ppAdapter, bool requestHighPerformanceAdapter);
+
 	ComPtr<ID3D11BlendState>				m_AlphaDisableBlendState;
 	ComPtr<ID3D11BlendState>				m_AlphaEnableBlendState;
 

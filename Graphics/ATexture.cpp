@@ -23,7 +23,7 @@ bool ATexture::CreateBuffer()
 	hr = m_Device->CreateBuffer(&bufferDesc, nullptr, &m_Buffer);
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateBuffer Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateBuffer Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -39,7 +39,7 @@ bool ATexture::CreateBuffer()
 		hr = m_Device->CreateUnorderedAccessView(m_Buffer.Get(), &uavDesc, &m_pUAV);
 		if (FAILED(hr))
 		{
-			ALOG(string("CreateUnorderedAccessView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			ALOG(wstring(TEXT("CreateUnorderedAccessView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 			return false;
 		}
 	}
@@ -54,7 +54,7 @@ bool ATexture::CreateBuffer()
 		hr = m_Device->CreateShaderResourceView(m_Buffer.Get(), &srvDesc, &m_pSRV);
 		if (FAILED(hr))
 		{
-			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			ALOG(wstring(TEXT("CreateShaderResourceView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 			return false;
 		}
 	}

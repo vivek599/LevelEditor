@@ -61,7 +61,7 @@ bool ARenderTarget::CreateTexture1D()
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture1D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
 		if (FAILED(hr))
 		{
-			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			ALOG(wstring(TEXT("CreateShaderResourceView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 			return false;
 		}
 	}
@@ -77,7 +77,7 @@ bool ARenderTarget::CreateTexture1D()
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture1D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRenderTargetView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -113,7 +113,7 @@ bool ARenderTarget::CreateTexture2D()
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture2D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
 		if (FAILED(hr))
 		{
-			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			ALOG(wstring(TEXT("CreateShaderResourceView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 			return false;
 		}
 	}
@@ -129,7 +129,7 @@ bool ARenderTarget::CreateTexture2D()
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture2D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRenderTargetView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -163,7 +163,7 @@ bool ARenderTarget::CreateTexture3D()
 		hr = m_Device->CreateShaderResourceView(m_RenderTargetTexture3D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
 		if (FAILED(hr))
 		{
-			ALOG(string("CreateShaderResourceView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+			ALOG(wstring(TEXT("CreateShaderResourceView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 			return false;
 		}
 	} 
@@ -179,7 +179,7 @@ bool ARenderTarget::CreateTexture3D()
 	hr = m_Device->CreateRenderTargetView(m_RenderTargetTexture3D.Get(), &renderTargetViewDesc, m_pRTV.ReleaseAndGetAddressOf()); 
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateRenderTargetView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateRenderTargetView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return false;
 	}
 
@@ -213,7 +213,7 @@ void ARenderTarget::CreateDSV()
 	hr = m_Device->CreateTexture2D(&depthBufferDesc, nullptr, m_DepthStencilBuffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateTexture2D Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateTexture2D Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return;
 	}
 
@@ -229,7 +229,7 @@ void ARenderTarget::CreateDSV()
 	hr = m_Device->CreateDepthStencilView(m_DepthStencilBuffer.Get(), &depthStencilViewDesc, m_pDSV.ReleaseAndGetAddressOf() );
 	if (FAILED(hr))
 	{
-		ALOG(string("CreateDepthStencilView Failed!") + string(__FUNCTION__) + to_string(__LINE__));
+		ALOG(wstring(TEXT("CreateDepthStencilView Failed!")) + wstring(TEXT(__FUNCTION__)) + to_wstring(__LINE__));
 		return;
 	}
 }

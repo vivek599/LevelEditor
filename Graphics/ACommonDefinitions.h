@@ -23,17 +23,18 @@ namespace
 	#define ROOT_2					1.414213562    
 	#define SIN_45					0.707106781
 	
-	float clampf(float d, float min, float max) 
+	template <typename T>
+	T Clamp(T d, T min, T max)
 	{
-		const float t = d < min ? min : d;
+		const T t = d < min ? min : d;
 
 		return t > max ? max : t;
 	}
 
 	template <typename T>
-	T Lerp(T min, T max, float blend)
+	T Lerp(T min, T max, float alpha)
 	{
-		return min + (max - min) * blend;
+		return min + (max - min) * alpha;
 	}
 
 	template <typename T>
@@ -45,9 +46,9 @@ namespace
 	template <typename T>
 	T Remap(T iMin, T iMax, T oMin, T oMax, T value)
 	{
-		float blend = InvLerp(iMin, iMax, value);
+		float alpha = InvLerp(iMin, iMax, value);
 
-		return Lerp(oMin, oMax, blend);
+		return Lerp(oMin, oMax, alpha);
 	}
 
 	Vector3 RLerp(Vector3 v1, Vector3 v2, float t)
@@ -154,7 +155,7 @@ namespace
 			return result;
 		}
 
-		clampf(dot, -1, 1);           // Robustness: Stay within domain of acos()
+		Clamp<double>(dot, -1, 1);           // Robustness: Stay within domain of acos()
 
 		double theta_0 = acos(dot);  // theta_0 = angle between input vectors
 
@@ -360,16 +361,13 @@ namespace
 	Color ArgbToColor(ColorARGB color)
 	{
 		Color c;
-		uint32_t alpha = color & 0xFF000000;
-		alpha >>= 24;
+		uint32_t alpha = (color & 0xFF000000) >> 24;
 		c.w = alpha / float(255);
 
-		uint32_t red = color & 0x00FF0000;
-		red >>= 16;
+		uint32_t red = (color & 0x00FF0000) >> 16;
 		c.x = red / float(255);
 
-		uint32_t green = color & 0x0000FF00;
-		green >>= 8;
+		uint32_t green = (color & 0x0000FF00) >> 8;
 		c.y = green / float(255);
 
 		uint32_t blue = color & 0x000000FF;
