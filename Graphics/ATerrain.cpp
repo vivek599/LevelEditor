@@ -5,7 +5,8 @@
 ATerrain::ATerrain()
 {
 	m_HeightMap = nullptr;
-
+	m_radiusMax = 1;
+	m_strength = 1;
 
 
 }
@@ -857,33 +858,131 @@ bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 	float t = 0.0f;
 	if (ray.Intersects(p, t))
 	{
-		Vector3 pos = rayOrigin + t * rayDirection;
-
-		int x = pos.x;
-		int z = pos.z;
-		if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
-		{
-			return false;
-		}
-
-		int radiusMax = 50;
-		for (int i = -radiusMax; i < radiusMax; i++)
-		{
-			for (int j = -radiusMax; j < radiusMax; j++)
-			{
-				uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
-				if (index >= 0 && index <= (m_TerrainWidth-1) * (m_TerrainHeight-1))
-				{ 
-					float radius = Vector2( i, j ).Length(); 
-					float strength = 1.0f;
-					//m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
-					m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * (cosf( XM_PI * radius / float(radiusMax)) + 1.0f) * 0.5f;
-				}
-			}
-		}
-
+		m_PickedPoint = rayOrigin + t * rayDirection;
+		 
 		return true;
 	}
 
 	return false;
+}
+
+void ATerrain::Raise()
+{
+	int x = m_PickedPoint.x;
+	int z = m_PickedPoint.z;
+	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+	{
+		return;
+	}
+	 
+	for (int i = -m_radiusMax; i < m_radiusMax; i++)
+	{
+		for (int j = -m_radiusMax; j < m_radiusMax; j++)
+		{
+			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
+			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				float radius = Vector2(i, j).Length();
+				//m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
+				m_HeightMap[index].position.y += radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f;
+			}
+		}
+	}
+}
+
+void ATerrain::Lower()
+{
+	int x = m_PickedPoint.x;
+	int z = m_PickedPoint.z;
+	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+	{
+		return;
+	}
+	 
+	for (int i = -m_radiusMax; i < m_radiusMax; i++)
+	{
+		for (int j = -m_radiusMax; j < m_radiusMax; j++)
+		{
+			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
+			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				float radius = Vector2(i, j).Length();
+				//m_HeightMap[index].position.y -= radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
+				m_HeightMap[index].position.y -= radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f;
+			}
+		}
+	}
+}
+
+void ATerrain::Flatten()
+{
+	int x = m_PickedPoint.x;
+	int z = m_PickedPoint.z;
+	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+	{
+		return;
+	}
+	 
+	for (int i = -m_radiusMax; i < m_radiusMax; i++)
+	{
+		for (int j = -m_radiusMax; j < m_radiusMax; j++)
+		{
+			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
+			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				float radius = Vector2(i, j).Length();
+				m_HeightMap[index].position.y = radius > m_radiusMax ? 0.0f : m_PickedPoint.y;
+			}
+		}
+	}
+}
+
+void ATerrain::Smooth()
+{
+	/*int x = m_PickedPoint.x;
+	int z = m_PickedPoint.z;
+	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+	{
+		return;
+	}
+
+	int smoothRadius = 5; 
+	int radiusMax = 50;
+	for (int i = -radiusMax; i < radiusMax; i++)
+	{
+		for (int j = -radiusMax; j < radiusMax; j++)
+		{
+			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
+			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+			{
+				float avgY = 0.0f;
+				float radius = Vector2(i, j).Length();
+				for (int k = -smoothRadius; k < smoothRadius; k++)
+				{
+					for (int l = -smoothRadius; l < smoothRadius; l++)
+					{
+						uint64_t index2 = (m_TerrainHeight * (z + j + l)) + (x + i + k);
+						if (index2 >= 0 && index2 <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+						{
+							float radius2 = Vector2(k, l).Length();
+							avgY += radius2 > smoothRadius ? 0.0f : m_HeightMap[index2].position.y;
+						}
+					}
+				}
+				avgY /= (smoothRadius * smoothRadius);
+				m_HeightMap[index].position.y = radius > radiusMax ? 0.0f : avgY;
+			}
+		}
+	}*/
+
+}
+
+void ATerrain::SetBrushRadius(int val)
+{
+	m_radiusMax = val;
+}
+
+void ATerrain::SetBrushStrength(float val)
+{
+	m_strength = val;
 }

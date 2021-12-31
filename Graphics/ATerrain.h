@@ -36,6 +36,12 @@ public:
 	uint32_t GetWidth() const;
 	uint32_t GetHeight() const;
 	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
+	void Raise();
+	void Lower();
+	void Flatten();
+	void Smooth();
+	void SetBrushRadius(int val);
+	void SetBrushStrength(float val);
 private:
 
 	struct VertexType
@@ -128,5 +134,8 @@ private:
 	Vector3 m_LightDirection;
 
 	Vector4 m_TerrainTextureUVScale;
+	Vector3 m_PickedPoint;
+	int m_radiusMax;
+	float m_strength;
 };
 

@@ -4,6 +4,14 @@
 
 class TerrainInitializationParams;
 
+enum ESculptMode
+{
+	RAISE,
+	LOWER,
+	FLATTEN,
+	SMOOTH
+};
+
 class AGraphic
 {
 public:
@@ -24,6 +32,8 @@ public:
 	void SetTextureUVScale(float val);
 	bool UnprojectMouseCoord();
 	void SetMouseState(int mouseX, int mouseY, bool mouseDown);
+	void SetSculptRadius(int radius);
+	void SetSculptStrenght(int strength);
 private:
 
 	Matrix m_ProjectionMatrix;
@@ -57,5 +67,9 @@ private:
 	int						m_MouseX;
 	int						m_MouseY;
 	bool					m_LeftMouseDown;
+	ESculptMode				m_TerrainSculptmode;
+
+public:
+	void SetTerrainSculptMode(ESculptMode mode);
 };
 

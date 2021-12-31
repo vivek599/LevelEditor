@@ -92,9 +92,25 @@ bool AGraphic::Update(float deltaTime)
 		m_Terrain->Update(m_RenderDevice, deltaTime, m_WorldMatrix, m_Camera->GetViewMatrix(), m_ProjectionMatrix);
 		UnprojectMouseCoord();
 
-		if (m_LeftMouseDown)
+		if (m_LeftMouseDown && m_Terrain->RayTerrainIntersect(m_RayOrigin, m_RayDirection))
 		{
-			m_Terrain->RayTerrainIntersect(m_RayOrigin, m_RayDirection);
+			switch (m_TerrainSculptmode)
+			{
+			case RAISE:
+				m_Terrain->Raise();
+				break;
+			case LOWER:
+				m_Terrain->Lower();
+				break;
+			case FLATTEN:
+				m_Terrain->Flatten();
+				break;
+			case SMOOTH:
+				m_Terrain->Smooth();
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -198,6 +214,20 @@ void AGraphic::SetMouseState(int mouseX, int mouseY, bool mouseDown)
 	m_LeftMouseDown = mouseDown;
 }
 
+void AGraphic::SetSculptRadius(int radius)
+{
+	m_Terrain->SetBrushRadius(radius);
+}
+
+void AGraphic::SetSculptStrenght(int strength)
+{
+	m_Terrain->SetBrushStrength(strength);
+}
+
+void AGraphic::SetTerrainSculptMode(ESculptMode mode)
+{
+	m_TerrainSculptmode = mode;
+}
 
 
 

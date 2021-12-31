@@ -243,13 +243,14 @@ void CLevelEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 		m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 		UpdateData(FALSE);
-		m_Graphic->SetTextureUVScale(m_BrushSizeSlider->GetPos() + 1);
+		m_Graphic->SetSculptRadius(m_BrushSizeSlider->GetPos());
 	}
 	else if (pScrollBar == (CScrollBar*)m_BrushStrengthSlider)
 	{
 		m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushStrengthSlider->GetPos());
 		m_BrushStrengthTextbox->SetWindowTextW(m_BrushStrengthSliderVal.GetBuffer());
 		UpdateData(FALSE);
+		m_Graphic->SetSculptStrenght(m_BrushStrengthSlider->GetPos());
 	}
 	else 
 	{
@@ -309,19 +310,19 @@ void CLevelEditorDlg::OnCbnSelendokComboBrushtype()
 
 	if (strValue == "Smooth")
 	{
-		TRACE(L"%s\n", strValue.GetString());
+		m_Graphic->SetTerrainSculptMode(ESculptMode::SMOOTH);
 	}
 	else if (strValue == "Flatten")
 	{
-		TRACE(L"%s\n", strValue.GetString());
+		m_Graphic->SetTerrainSculptMode(ESculptMode::FLATTEN);
 	}
 	else if (strValue == "Raise")
 	{
-		TRACE(L"%s\n", strValue.GetString());
+		m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
 	}
 	else if (strValue == "Lower")
 	{
-		TRACE(L"%s\n", strValue.GetString());
+		m_Graphic->SetTerrainSculptMode(ESculptMode::LOWER);
 	}
 
 }
@@ -355,12 +356,12 @@ bool CLevelEditorDlg::InitializeControls()
 
 	m_FpsText->LockWindowUpdate();
 
-	m_BrushSizeSlider->SetRange(0, 100, TRUE);
+	m_BrushSizeSlider->SetRange(1, 100, TRUE);
 	m_BrushSizeSlider->SetPos(0);
 	m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
-	m_BrushStrengthSlider->SetRange(0, 100, TRUE);
+	m_BrushStrengthSlider->SetRange(1, 100, TRUE);
 	m_BrushStrengthSlider->SetPos(0);
 	m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushStrengthTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
