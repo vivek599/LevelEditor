@@ -208,12 +208,14 @@
     <ClInclude Include="Graphics\ADXTime.h" />
     <ClInclude Include="Graphics\AGraphic.h" />
     <ClInclude Include="Graphics\ALogger.h" />
+    <ClInclude Include="Graphics\AQuadTree.h" />
     <ClInclude Include="Graphics\ARenderDevice.h" />
     <ClInclude Include="Graphics\ARenderSystem.h" />
     <ClInclude Include="Graphics\ARenderTarget.h" />
     <ClInclude Include="Graphics\AShaderCache.h" />
     <ClInclude Include="Graphics\ATerrain.h" />
     <ClInclude Include="Graphics\ATexture.h" />
+    <ClInclude Include="Graphics\AMathHeader.h" />
     <ClInclude Include="Graphics\PNG\lodepng.h" />
     <ClInclude Include="UI\CPictureControl.h" />
     <ClInclude Include="UI\framework.h" />
@@ -228,6 +230,7 @@
     <ClCompile Include="Graphics\ADXTime.cpp" />
     <ClCompile Include="Graphics\AGraphic.cpp" />
     <ClCompile Include="Graphics\ALogger.cpp" />
+    <ClCompile Include="Graphics\AQuadTree.cpp" />
     <ClCompile Include="Graphics\ARenderDevice.cpp" />
     <ClCompile Include="Graphics\ARenderSystem.cpp" />
     <ClCompile Include="Graphics\ARenderTarget.cpp" />

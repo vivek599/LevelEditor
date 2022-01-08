@@ -47,6 +47,9 @@
     <ClCompile Include="Graphics\ACemara.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Graphics\AQuadTree.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -107,6 +110,12 @@
       <Filter>Graphics\LoadPNG</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\ACemara.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\AQuadTree.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\AMathHeader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
   </ItemGroup>

@@ -64,8 +64,7 @@ using namespace std;
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 using namespace std::chrono;
-
-typedef Matrix Mat4;
+ 
 
 #define SAFERELEASE(ppT) { if(ppT) { (ppT)->Release(); (ppT) = nullptr; } }
 #define SAFEDELETE(ppT) { if(ppT) { delete [] (ppT); (ppT) = nullptr; } }
@@ -74,6 +73,7 @@ typedef Matrix Mat4;
 #include "PNG/lodepng.h"
 
 #include "ACommonDefinitions.h"
+#include "AMathHeader.h"
 
 
 

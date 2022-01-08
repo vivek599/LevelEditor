@@ -137,5 +137,7 @@ private:
 	Vector3 m_PickedPoint;
 	int m_radiusMax;
 	float m_strength;
+	unique_ptr<class AQuadTree>		m_QTree;
+	Vector3 GetBestIntersectionPoint(Ray ray, BoundingBox& outBox);
 };
 

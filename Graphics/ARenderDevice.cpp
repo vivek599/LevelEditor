@@ -264,8 +264,8 @@ void ARenderDevice::InitDepthBuffers()
 
 bool ARenderDevice::ResizeSwapChainBuffers(uint32_t width, uint32_t height)
 {
-	m_ScreenWidth = width;
-	m_ScreenHeight = height;
+	m_ScreenWidth = __max(width, 1);
+	m_ScreenHeight = __max(height, 1);
 
 	InitDepthBuffers();
 

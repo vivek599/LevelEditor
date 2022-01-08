@@ -107,4 +107,5 @@ public:
 	void SendMouseState(CPoint& point, const MouseState& state);
 	CPoint pointOnRenderBox;
 
+	afx_msg void OnChangeBrushstrengthtextbox();
 };

@@ -47,6 +47,7 @@ AGraphic::AGraphic(HWND hwnd, int screenWidth, int screenHeight, bool vsyncEnabl
 	m_Camera.reset(new ACemara());
 	m_Camera->SetPosition(0.0f, 256.0f, -256.0f);
 	m_Camera->SetFocus(512, 0.0f, 512.0f);
+	m_Camera->CreateFrustum(m_ProjectionMatrix);
 }
 
 AGraphic::~AGraphic()

@@ -1,6 +1,7 @@
 #include "ATerrain.h"
 #include "ARenderDevice.h"
 #include "AShaderCache.h"
+#include "AQuadTree.h"
 
 ATerrain::ATerrain()
 {
@@ -851,19 +852,42 @@ void ATerrain::Erode(int cycles, float dt)
 	}
 }
 
+DirectX::SimpleMath::Vector3 ATerrain::GetBestIntersectionPoint(Ray ray, BoundingBox& outBox)
+{
+	float dot = FLT_MIN;
+	Vector3 closestPoint;
+	for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
+	{
+		Vector3 nearestPoint = AQuadTree::HitQueue[i].Center;
+		Vector3 nearestPointDir = nearestPoint - ray.position;
+		nearestPointDir.Normalize();
+		float dotCurrent = nearestPointDir.Dot(ray.direction);
+		if (dotCurrent > dot)
+		{
+			dot = dotCurrent;
+			closestPoint = nearestPoint;
+			outBox = AQuadTree::HitQueue[i];
+		}
+	}
+
+	return closestPoint;
+}
+
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
 	Ray ray(rayOrigin, rayDirection);
-	Plane p( Vector3(0.0f), Vector3(0.0f, 1.0f, 0.0f));
-	float t = 0.0f;
-	if (ray.Intersects(p, t))
-	{
-		m_PickedPoint = rayOrigin + t * rayDirection;
-		 
-		return true;
-	}
-
-	return false;
+	BoundingBox MaxBound = BoundingBox( Vector3(m_TerrainWidth * 0.5f, 0.0f, m_TerrainHeight * 0.5f), Vector3(m_TerrainWidth * 0.5f, 32768.0f, m_TerrainHeight * 0.5f) );
+	m_QTree.reset(new AQuadTree( ray, MaxBound.Center, MaxBound.Extents));
+	 
+	BoundingBox b = m_QTree->SubDevide(ray.position, ray.position + 10000.f * ray.direction);
+	 
+	//Vector3 v0 = b.Center + Vector3(-b.Extents.x, 0.0f, b.Extents.z);	//NW
+	//Vector3 v1 = b.Center + Vector3(b.Extents.x, 0.0f, b.Extents.z);	//NE
+	//Vector3 v2 = b.Center + Vector3(b.Extents.x, 0.0f, -b.Extents.z);	//SE
+	//Vector3 v3 = b.Center + Vector3(-b.Extents.x, 0.0f, -b.Extents.z);	//SW
+	BoundingBox outBox;
+	m_PickedPoint = GetBestIntersectionPoint(ray, outBox);//v0;
+	return true;
 }
 
 void ATerrain::Raise()
@@ -923,6 +947,8 @@ void ATerrain::Flatten()
 		return;
 	}
 	 
+	m_PickedPoint.y = m_HeightMap[m_TerrainHeight * z + x].position.y;
+
 	for (int i = -m_radiusMax; i < m_radiusMax; i++)
 	{
 		for (int j = -m_radiusMax; j < m_radiusMax; j++)
@@ -931,7 +957,10 @@ void ATerrain::Flatten()
 			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
 			{
 				float radius = Vector2(i, j).Length();
-				m_HeightMap[index].position.y = radius > m_radiusMax ? 0.0f : m_PickedPoint.y;
+				if (radius < m_radiusMax)
+				{
+					m_HeightMap[index].position.y = m_PickedPoint.y;
+				}
 			}
 		}
 	}

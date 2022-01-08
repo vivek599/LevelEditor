@@ -7,7 +7,7 @@ class ACemara
 public:
 	ACemara();
 	~ACemara();
-
+	void CreateFrustum(const Matrix& Projection);
 	Matrix	GetViewMatrix() const;
 	Vector3 GetPosition() const;
 	void	SetPosition(float x, float y, float z);
@@ -27,6 +27,7 @@ private:
 	Vector3			m_Eye;
 	Vector3			m_LookAt;
 	Vector3			m_Up;
+	BoundingFrustum m_Frustum;
 
 
 

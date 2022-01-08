@@ -11,6 +11,12 @@ ACemara::~ACemara()
 
 }
 
+void ACemara::CreateFrustum(const Matrix& Projection)
+{
+	m_ViewMatrix = XMMatrixLookAtLH(m_Eye, m_LookAt, m_Up);
+	BoundingFrustum::CreateFromMatrix(m_Frustum, m_ViewMatrix * Projection);
+}
+
 Matrix ACemara::GetViewMatrix() const
 {
 	return m_ViewMatrix;

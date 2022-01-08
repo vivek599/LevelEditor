@@ -95,6 +95,7 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
+	ON_EN_CHANGE(IDC_BRUSHSTRENGTHTEXTBOX, &CLevelEditorDlg::OnChangeBrushstrengthtextbox)
 END_MESSAGE_MAP()
 
 
@@ -229,6 +230,7 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 	m_Graphic->InitializeTerrain(&params);
 	m_Graphic->SetTextureUVScale(1);
+	m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
 
 
 
@@ -365,6 +367,8 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushStrengthSlider->SetPos(0);
 	m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushStrengthTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
+
+	m_BrushComboBox->SetCurSel(ESculptMode::RAISE);
 
 	m_FpsFont.CreateFont(
 		24,                        // nHeight
@@ -581,4 +585,31 @@ void CLevelEditorDlg::SendMouseState(CPoint& point, const MouseState& state )
 		pointOnRenderBox = point - rect.TopLeft();
 		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, state.LeftDown);
 	}
+	else
+	{ 
+		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, false);
+	}
+}
+
+
+void CLevelEditorDlg::OnChangeBrushstrengthtextbox()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	CString text;
+	m_BrushStrengthTextbox->GetWindowTextW(text);
+	int value = StrToIntW(text.GetBuffer());
+	if (value > 100)
+	{
+		value = 100;
+	}
+	else if (value < 1)
+	{
+		value = 1;
+	}
+	m_BrushStrengthSlider->SetPos(value);
 }
