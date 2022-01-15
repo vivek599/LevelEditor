@@ -133,19 +133,19 @@ bool ATexture::LoadData(const void* pData, size_t size, UINT pixelSize )
 	return true;
 }
 
-ComPtr<ID3D11ShaderResourceView> ATexture::GetSRV() const
+ID3D11ShaderResourceView* ATexture::GetSRV() const
 {
-	return m_pSRV;
+	return m_pSRV.Get();
 }
 
-ComPtr<ID3D11UnorderedAccessView> ATexture::GetUAV() const
+ID3D11UnorderedAccessView* ATexture::GetUAV() const
 {
-	return m_pUAV;
+	return m_pUAV.Get();
 }
 
-ComPtr<ID3D11RenderTargetView> ATexture::GetRTV() const
+ID3D11RenderTargetView* ATexture::GetRTV() const
 {
-	return m_pRTV;
+	return m_pRTV.Get();
 }
 
 ATextureType ATexture::GetType()

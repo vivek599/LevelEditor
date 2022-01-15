@@ -49,8 +49,8 @@ bool ARenderTarget::CreateTexture1D()
 	initData.SysMemPitch = 1;
 	initData.SysMemSlicePitch = 1;
 
-	HRESULT hr = m_Device->CreateTexture1D(&desc, nullptr, &m_RenderTargetTexture1D);
-	if (SUCCEEDED(hr) && m_RenderTargetTexture1D != 0)
+	HRESULT hr = m_Device->CreateTexture1D(&desc, nullptr, m_RenderTargetTexture1D.ReleaseAndGetAddressOf());
+	if (SUCCEEDED(hr))
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
 		memset(&SRVDesc, 0, sizeof(SRVDesc));
@@ -100,9 +100,9 @@ bool ARenderTarget::CreateTexture2D()
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 
-	HRESULT hr = m_Device->CreateTexture2D(&desc, nullptr, &m_RenderTargetTexture2D);
+	HRESULT hr = m_Device->CreateTexture2D(&desc, nullptr, m_RenderTargetTexture2D.ReleaseAndGetAddressOf());
 
-	if (SUCCEEDED(hr) && m_RenderTargetTexture2D != 0)
+	if (SUCCEEDED(hr))
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
 		memset(&SRVDesc, 0, sizeof(SRVDesc));
@@ -150,8 +150,8 @@ bool ARenderTarget::CreateTexture3D()
 	desc.CPUAccessFlags = 0;
 	desc.MiscFlags = 0;
 
-	HRESULT hr = m_Device->CreateTexture3D(&desc, nullptr, &m_RenderTargetTexture3D);
-	if (SUCCEEDED(hr) && m_RenderTargetTexture3D != 0)
+	HRESULT hr = m_Device->CreateTexture3D(&desc, nullptr, m_RenderTargetTexture3D.ReleaseAndGetAddressOf());
+	if (SUCCEEDED(hr))
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
 		memset(&SRVDesc, 0, sizeof(SRVDesc));
@@ -234,19 +234,19 @@ void ARenderTarget::CreateDSV()
 	}
 }
 
-ComPtr<ID3D11ShaderResourceView> ARenderTarget::GetSRV() const
+ID3D11ShaderResourceView* ARenderTarget::GetSRV() const
 {
-	return m_pSRV;
+	return m_pSRV.Get();
 }
 
-ComPtr<ID3D11DepthStencilView> ARenderTarget::GetDSV() const
+ID3D11DepthStencilView* ARenderTarget::GetDSV() const
 {
-	return m_pDSV;
+	return m_pDSV.Get();
 }
 
-ComPtr<ID3D11RenderTargetView> ARenderTarget::GetRTV() const
+ID3D11RenderTargetView* ARenderTarget::GetRTV() const
 {
-	return m_pRTV;
+	return m_pRTV.Get();
 }
 
 D3D11_VIEWPORT ARenderTarget::GetViewport() const

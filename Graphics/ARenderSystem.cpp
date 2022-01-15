@@ -25,10 +25,10 @@ void ARenderSystem::SetRenderTargets(vector <shared_ptr<ARenderTarget> >& render
 
 	for (int i = 0; i < renderTargets.size(); i++ )
 	{
-		rtvs.push_back( renderTargets[i]->GetRTV().Get() );
+		rtvs.push_back( renderTargets[i]->GetRTV() );
 	}
 
-	m_DeviceContext->OMSetRenderTargets(rtvs.size(), rtvs.data(), renderTargets[0]->GetDSV().Get());
+	m_DeviceContext->OMSetRenderTargets(rtvs.size(), rtvs.data(), renderTargets[0]->GetDSV());
 }
 
 void ARenderSystem::SetShaderResources(vector <shared_ptr<ATexture> >& shaderResources)
@@ -39,13 +39,14 @@ void ARenderSystem::SetShaderResources(vector <shared_ptr<ATexture> >& shaderRes
 	{
 		if (shaderResources[i]->IsUAV() == false )
 		{
+			auto srv = shaderResources[i]->GetSRV();
 			if (m_bIsComputeShader)
 			{
-				m_DeviceContext->CSSetShaderResources(srvres++, 1, shaderResources[i]->GetSRV().GetAddressOf());
+				m_DeviceContext->CSSetShaderResources(srvres++, 1, &srv);
 			}
 			else
 			{
-				m_DeviceContext->PSSetShaderResources(srvres++, 1, shaderResources[i]->GetSRV().GetAddressOf());
+				m_DeviceContext->PSSetShaderResources(srvres++, 1, &srv);
 			}
 		}
 	}
@@ -56,7 +57,8 @@ void ARenderSystem::SetShaderResources(vector <shared_ptr<ATexture> >& shaderRes
 	{
 		if (shaderResources[i]->IsUAV())
 		{
-			m_DeviceContext->CSSetUnorderedAccessViews( uavres++, 1, shaderResources[i]->GetUAV().GetAddressOf(), &uavInitCount );
+			auto uav = shaderResources[i]->GetUAV();
+			m_DeviceContext->CSSetUnorderedAccessViews(uavres++, 1, &uav, &uavInitCount);
 		}
 	} 
 }

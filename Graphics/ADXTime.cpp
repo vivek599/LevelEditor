@@ -21,15 +21,15 @@ float ADXTime::End()
 {
 	QueryPerformanceCounter(&m_EndingTime);
 	m_ElapsedMicroseconds.QuadPart = m_EndingTime.QuadPart - m_StartingTime.QuadPart;
-	return GetMilliSeconds();
+	return GetMSec();
 }
 
 float ADXTime::GetSeconds()
 {
-	return GetMilliSeconds() / 1000.0f;
+	return GetMSec() / 1000.0f;
 }
 
-float ADXTime::GetMilliSeconds()
+float ADXTime::GetMSec()
 {
 	m_ElapsedMicroseconds.QuadPart *= 1000000;
 	m_ElapsedMicroseconds.QuadPart /= m_Frequency.QuadPart;

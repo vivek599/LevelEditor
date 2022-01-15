@@ -48,9 +48,9 @@ public:
 	ARenderTarget(ARenderDevice* renderDevice, ARenderTargetType type, UINT width, UINT height, UINT ArraySize, DXGI_FORMAT Format);
 	~ARenderTarget();
 
-	ComPtr<ID3D11ShaderResourceView>		GetSRV() const;
-	ComPtr<ID3D11DepthStencilView>			GetDSV() const;
-	ComPtr<ID3D11RenderTargetView>			GetRTV() const;
+	ID3D11ShaderResourceView* GetSRV() const;
+	ID3D11DepthStencilView* GetDSV() const;
+	ID3D11RenderTargetView* GetRTV() const;
 	D3D11_VIEWPORT							GetViewport() const;
 
 };

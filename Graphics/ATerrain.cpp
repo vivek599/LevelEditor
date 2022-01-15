@@ -852,21 +852,41 @@ void ATerrain::Erode(int cycles, float dt)
 	}
 }
 
-DirectX::SimpleMath::Vector3 ATerrain::GetBestIntersectionPoint(Ray ray, BoundingBox& outBox)
+Vector3 ATerrain::GetBestIntersectionPoint(Ray ray, BoundingBox& outBox)
 {
-	float dot = FLT_MIN;
+	//float dot = FLT_MIN;
 	Vector3 closestPoint;
+	//for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
+	//{
+	//	Vector3 nearestPoint = AQuadTree::HitQueue[i].Center;
+	//	Vector3 nearestPointDir = nearestPoint - ray.position;
+	//	nearestPointDir.Normalize();
+	//	float dotCurrent = nearestPointDir.Dot(ray.direction);
+	//	if (dotCurrent > dot)
+	//	{
+	//		dot = dotCurrent;
+	//		closestPoint = nearestPoint;
+	//		outBox = AQuadTree::HitQueue[i];
+	//	}
+	//}
+
 	for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
 	{
-		Vector3 nearestPoint = AQuadTree::HitQueue[i].Center;
-		Vector3 nearestPointDir = nearestPoint - ray.position;
-		nearestPointDir.Normalize();
-		float dotCurrent = nearestPointDir.Dot(ray.direction);
-		if (dotCurrent > dot)
+		int x = AQuadTree::HitQueue[i].x;
+		int z = AQuadTree::HitQueue[i].z;
+		if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
 		{
-			dot = dotCurrent;
-			closestPoint = nearestPoint;
-			outBox = AQuadTree::HitQueue[i];
+			return closestPoint;
+		}
+
+		Vector3 nearestPointDir = AQuadTree::HitQueue[i] - ray.position;
+		float dotCurrent = nearestPointDir.Dot(ray.direction);
+		uint64_t index = m_TerrainHeight * z + x;
+		if (abs(m_HeightMap[index].position.y - AQuadTree::HitQueue[i].y) < 0.5f && dotCurrent > 0.95f)
+		{
+			closestPoint = AQuadTree::HitQueue[i];
+			AQuadTree::HitQueue.clear();
+			return closestPoint;
 		}
 	}
 

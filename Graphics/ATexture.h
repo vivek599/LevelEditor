@@ -49,9 +49,9 @@ public:
 	bool LoadFromFile(const wchar_t* textureFileName); 
 	bool LoadData(const void* pData, size_t size, UINT pixelSize); 
 
-	ComPtr<ID3D11ShaderResourceView>	GetSRV() const; 
-	ComPtr<ID3D11UnorderedAccessView>	GetUAV() const; 
-	ComPtr<ID3D11RenderTargetView>		GetRTV() const; 
+	ID3D11ShaderResourceView*	GetSRV() const; 
+	ID3D11UnorderedAccessView*	GetUAV() const; 
+	ID3D11RenderTargetView*		GetRTV() const; 
 	 
 	ATextureType GetType();
 	bool IsUAV();

@@ -9,10 +9,11 @@ public:
 	AQuadTree(Ray ray, Vector3 Center, Vector3 Extent);
 	~AQuadTree();
 
-	BoundingBox SubDevide(Vector3 Start, Vector3 End);
+	BoundingBox SubDevide(Vector3& Start, Vector3& End);
 	bool Line_AABB_1d(float start, float dir, float min, float max, float& enter, float& exit);
 	bool Line_AABB(const Vector3& s, const Vector3& e, const BoundingBox& box, Vector3& hitPointEnter, Vector3& hitPointExit);
-	static vector<BoundingBox> HitQueue;
+	bool RayAABBFinalImprovement(const Vector3& s, const Vector3& e, const BoundingBox& box, Vector3& hitPointEnter, Vector3& hitPointExit);
+	static vector<Vector3> HitQueue;
 private:
 	BoundingBox		m_Box;
 	Ray				m_Ray;

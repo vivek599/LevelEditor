@@ -12,11 +12,18 @@ namespace
 	#define PI						3.141592654    
 	#define HALFPI					1.570796327    
 	#define TWOPI					6.283185307    
-	#define DEG_TO_RAD(x)			((1.74532952e-2)*x)    
-	#define RAD_TO_DEG(x)			(57.29577951*x)   
+	#define DEG_TO_RAD(x)			((1.74532952e-2)*(x))    
+	#define RAD_TO_DEG(x)			(57.29577951*(x))   
 	#define ROOT_2					1.414213562    
 	#define SIN_45					0.707106781
-	
+
+		Vector3 Rotation( const Vector3& vector)
+		{
+			Vector3 d = vector;
+			d.Normalize();
+			return Vector3(asin(-d.y), atan2(d.x, d.z), 0.0f);
+		}
+
 		template<class T>
 		constexpr const T& Clamp(const T& d, const T& min, const T& max)
 		{
@@ -172,7 +179,6 @@ namespace
 			return v0 * cos(theta) + v2 * sin(theta);
 		}
 	
-	
 		Vector3& Nlerp(Vector3& start, Vector3& end, float percent)
 		{
 			Vector3 result = Lerp(start, end, percent);
@@ -181,40 +187,6 @@ namespace
 	
 			return result;
 		}
-	
-		Vector3& PitchYawRollFromVector(Vector3& v)
-		{
-			Vector3 pyr;
-			Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
-	
-			v.Normalize();
-	
-			// Yaw is the bearing of the forward vector's shadow in the xz plane.
-			float yaw = atan2f(v.x, v.z);
-	
-			// Pitch is the altitude of the forward vector off the xz plane, toward the down direction.
-			float pitch = -asinf(v.y);
-	
-			//// Find the vector in the xz plane 90 degrees to the right of our bearing.
-			//float planeRightX = sinf(yaw);
-			//float planeRightZ = -cosf(yaw);
-	
-			// Roll is the rightward lean of our up vector, computed here using a dot product.
-			float roll = 0.0f;// asinf(up.x * planeRightX + up.z * planeRightZ);
-	
-			//// If we're twisted upside-down, return a roll in the range +-(pi/2, pi)
-			//if (up.z < 0)
-			//{
-			//	roll = roll > 0 ? PI - roll : -PI - roll;
-			//}
-	
-			// Convert radians to degrees.
-			pyr.x = RAD_TO_DEG(pitch);
-			pyr.y = RAD_TO_DEG(yaw);
-			pyr.z = RAD_TO_DEG(roll);
-	
-			return pyr;
-	
-		}
+	 
 	}
 }

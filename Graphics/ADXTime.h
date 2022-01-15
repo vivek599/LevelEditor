@@ -12,7 +12,7 @@ public:
 	float End();
 
 private:
-	float GetMilliSeconds();
+	float GetMSec();
 	float GetSeconds();
 
 	LARGE_INTEGER m_StartingTime;
