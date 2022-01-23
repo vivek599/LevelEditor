@@ -36,12 +36,13 @@ public:
 	uint32_t GetWidth() const;
 	uint32_t GetHeight() const;
 	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
-	void Raise();
-	void Lower();
-	void Flatten();
-	void Smooth();
+	void Raise(float deltaTime);
+	void Lower(float deltaTime);
+	void Flatten(float deltaTime);
+	void Smooth(float deltaTime);
 	void SetBrushRadius(int val);
 	void SetBrushStrength(float val);
+	void ResetClosestPoint();
 private:
 
 	struct VertexType
@@ -137,7 +138,7 @@ private:
 	Vector3 m_PickedPoint;
 	int m_radiusMax;
 	float m_strength;
-	unique_ptr<class AQuadTree>		m_QTree;
 	Vector3 GetBestIntersectionPoint(Ray ray, BoundingBox& outBox);
+	Vector3 m_ClosestPoint = Vector3(-1.0f);
 };
 

@@ -98,20 +98,24 @@ bool AGraphic::Update(float deltaTime)
 			switch (m_TerrainSculptmode)
 			{
 			case RAISE:
-				m_Terrain->Raise();
+				m_Terrain->Raise(deltaTime);
 				break;
 			case LOWER:
-				m_Terrain->Lower();
+				m_Terrain->Lower(deltaTime);
 				break;
 			case FLATTEN:
-				m_Terrain->Flatten();
+				m_Terrain->Flatten(deltaTime);
 				break;
 			case SMOOTH:
-				m_Terrain->Smooth();
+				m_Terrain->Smooth(deltaTime);
 				break;
 			default:
 				break;
 			}
+		}
+		else
+		{
+			m_Terrain->ResetClosestPoint();
 		}
 	}
 

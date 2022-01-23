@@ -16,12 +16,15 @@ AQuadTree::~AQuadTree()
 
 DirectX::BoundingBox AQuadTree::SubDevide(Vector3& Start, Vector3& End)
 {
-#if 0
+#if 1
 	float dist = 0.0f;
 	BoundingBox nullBox = BoundingBox(Vector3(0.f), Vector3(0.f));
 	if (m_Box.Extents.x <= 0.5f || m_Box.Extents.z <= 0.5f)
 	{
-		HitQueue.push_back(m_Box);
+		if (Start != Vector3::Zero)
+		{
+			HitQueue.emplace_back(Start);
+		}
 		return m_Box;
 	}
 
@@ -31,6 +34,7 @@ DirectX::BoundingBox AQuadTree::SubDevide(Vector3& Start, Vector3& End)
 		halfExtent.x = m_Box.Extents.x * 0.5f;
 		halfExtent.y = m_Box.Extents.y;
 		halfExtent.z = m_Box.Extents.z * 0.5f;
+		Start = m_Ray.position + dist * m_Ray.direction;
 
 		m_NW.reset(new AQuadTree(m_Ray, m_Box.Center + Vector3(-halfExtent.x, 0.0f, halfExtent.z), halfExtent));
 		m_NE.reset(new AQuadTree(m_Ray, m_Box.Center + Vector3(halfExtent.x, 0.0f, halfExtent.z), halfExtent));

@@ -853,64 +853,67 @@ void ATerrain::Erode(int cycles, float dt)
 }
 
 Vector3 ATerrain::GetBestIntersectionPoint(Ray ray, BoundingBox& outBox)
-{
-	//float dot = FLT_MIN;
-	Vector3 closestPoint;
-	//for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
-	//{
-	//	Vector3 nearestPoint = AQuadTree::HitQueue[i].Center;
-	//	Vector3 nearestPointDir = nearestPoint - ray.position;
-	//	nearestPointDir.Normalize();
-	//	float dotCurrent = nearestPointDir.Dot(ray.direction);
-	//	if (dotCurrent > dot)
-	//	{
-	//		dot = dotCurrent;
-	//		closestPoint = nearestPoint;
-	//		outBox = AQuadTree::HitQueue[i];
-	//	}
-	//}
-
+{ 
 	for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
 	{
 		int x = AQuadTree::HitQueue[i].x;
 		int z = AQuadTree::HitQueue[i].z;
+
+
 		if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
 		{
-			return closestPoint;
+			return Vector3(-1.0f);
+		}
+
+		uint64_t index = m_TerrainHeight * z + x;
+		int y = m_HeightMap[index].position.y;
+
+		Vector3 v0 = Vector3(x, y, z);
+		Vector3 v1 = Vector3(x+1, y, z);
+		Vector3 v2 = Vector3(x+1, y, z+1);
+		Vector3 v3 = Vector3(x, y, z+1);
+
+		Ray downwardRay = Ray(Vector3(0.0f, 10000.0f, 0.0f),Vector3(0.0f, -1.0f, 0.0f));
+
+		float dist = 0.0f;
+		Vector3 ExactIntersect = v0;
+		if(downwardRay.Intersects(v0, v1, v3, dist))
+		{
+			ExactIntersect = downwardRay.position + downwardRay.direction * dist;
+		} 
+		else if(downwardRay.Intersects(v1, v2, v3, dist))
+		{
+			ExactIntersect = downwardRay.position + downwardRay.direction * dist;
 		}
 
 		Vector3 nearestPointDir = AQuadTree::HitQueue[i] - ray.position;
 		float dotCurrent = nearestPointDir.Dot(ray.direction);
-		uint64_t index = m_TerrainHeight * z + x;
-		if (abs(m_HeightMap[index].position.y - AQuadTree::HitQueue[i].y) < 0.5f && dotCurrent > 0.95f)
+		if (abs(ExactIntersect.y - AQuadTree::HitQueue[i].y) < 0.5f && dotCurrent > 0.95f)
 		{
-			closestPoint = AQuadTree::HitQueue[i];
+			m_ClosestPoint = AQuadTree::HitQueue[i];
 			AQuadTree::HitQueue.clear();
-			return closestPoint;
+			break;
 		}
 	}
 
-	return closestPoint;
+	return m_ClosestPoint;
 }
 
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
 	Ray ray(rayOrigin, rayDirection);
 	BoundingBox MaxBound = BoundingBox( Vector3(m_TerrainWidth * 0.5f, 0.0f, m_TerrainHeight * 0.5f), Vector3(m_TerrainWidth * 0.5f, 32768.0f, m_TerrainHeight * 0.5f) );
-	m_QTree.reset(new AQuadTree( ray, MaxBound.Center, MaxBound.Extents));
+	unique_ptr<class AQuadTree>		QTree;
+	QTree.reset(new AQuadTree(ray, MaxBound.Center, MaxBound.Extents));
 	 
-	BoundingBox b = m_QTree->SubDevide(ray.position, ray.position + 10000.f * ray.direction);
+	BoundingBox b = QTree->SubDevide(ray.position, ray.position + 10000.f * ray.direction);
 	 
-	//Vector3 v0 = b.Center + Vector3(-b.Extents.x, 0.0f, b.Extents.z);	//NW
-	//Vector3 v1 = b.Center + Vector3(b.Extents.x, 0.0f, b.Extents.z);	//NE
-	//Vector3 v2 = b.Center + Vector3(b.Extents.x, 0.0f, -b.Extents.z);	//SE
-	//Vector3 v3 = b.Center + Vector3(-b.Extents.x, 0.0f, -b.Extents.z);	//SW
 	BoundingBox outBox;
 	m_PickedPoint = GetBestIntersectionPoint(ray, outBox);//v0;
 	return true;
 }
 
-void ATerrain::Raise()
+void ATerrain::Raise(float deltaTime)
 {
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
@@ -928,13 +931,13 @@ void ATerrain::Raise()
 			{
 				float radius = Vector2(i, j).Length();
 				//m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
-				m_HeightMap[index].position.y += radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f;
+				m_HeightMap[index].position.y += (radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f) * deltaTime * 10.0f;
 			}
 		}
 	}
 }
 
-void ATerrain::Lower()
+void ATerrain::Lower(float deltaTime)
 {
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
@@ -952,13 +955,13 @@ void ATerrain::Lower()
 			{
 				float radius = Vector2(i, j).Length();
 				//m_HeightMap[index].position.y -= radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
-				m_HeightMap[index].position.y -= radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f;
+				m_HeightMap[index].position.y -= (radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f)* deltaTime * 10.0f;
 			}
 		}
 	}
 }
 
-void ATerrain::Flatten()
+void ATerrain::Flatten(float deltaTime)
 {
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
@@ -986,7 +989,7 @@ void ATerrain::Flatten()
 	}
 }
 
-void ATerrain::Smooth()
+void ATerrain::Smooth(float deltaTime)
 {
 	/*int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
@@ -1034,4 +1037,9 @@ void ATerrain::SetBrushRadius(int val)
 void ATerrain::SetBrushStrength(float val)
 {
 	m_strength = val;
+}
+
+void ATerrain::ResetClosestPoint()
+{
+	m_ClosestPoint = Vector3(-1.0f);
 }
