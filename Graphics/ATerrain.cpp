@@ -410,6 +410,8 @@ void ATerrain::Render(ARenderDevice* renderDevice)
 
 	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
 
+	context->RSSetState(renderDevice->GetRSWireFrame());
+
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	context->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
 
@@ -851,65 +853,45 @@ void ATerrain::Erode(int cycles, float dt)
 		}
 	}
 }
-
-Vector3 ATerrain::GetBestIntersectionPoint(Ray ray, BoundingBox& outBox)
-{ 
-	for (size_t i = 0; i < AQuadTree::HitQueue.size(); i++)
+ 
+Vector3 ATerrain::GetBestIntersectionPointLineDrawing(Ray ray)
+{
+	for (float t = 0.0f; t <= 10000.0f; t += 0.001f)
 	{
-		int x = AQuadTree::HitQueue[i].x;
-		int z = AQuadTree::HitQueue[i].z;
-
-
-		if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
+		Vector3 PointOnLine = ray.position + t * ray.direction;
+		int x = PointOnLine.x;
+		int z = PointOnLine.z;
+		if (x >= 0 && z >= 0 && x < m_TerrainWidth - 1 && z < m_TerrainHeight - 1)
 		{
-			return Vector3(-1.0f);
-		}
+			uint64_t index0 = m_TerrainHeight * z + x;
+			uint64_t index1 = m_TerrainHeight * z + (x + 1);
+			uint64_t index2 = m_TerrainHeight * (z + 1) + (x + 1);
+			uint64_t index3 = m_TerrainHeight * (z + 1) + x;
 
-		uint64_t index = m_TerrainHeight * z + x;
-		int y = m_HeightMap[index].position.y;
+			const Vector3& v0 = Vector3(m_HeightMap[index0].position);
+			const Vector3& v1 = Vector3(m_HeightMap[index1].position);
+			const Vector3& v2 = Vector3(m_HeightMap[index2].position);
+			const Vector3& v3 = Vector3(m_HeightMap[index3].position);
 
-		Vector3 v0 = Vector3(x, y, z);
-		Vector3 v1 = Vector3(x+1, y, z);
-		Vector3 v2 = Vector3(x+1, y, z+1);
-		Vector3 v3 = Vector3(x, y, z+1);
-
-		Ray downwardRay = Ray(Vector3(0.0f, 10000.0f, 0.0f),Vector3(0.0f, -1.0f, 0.0f));
-
-		float dist = 0.0f;
-		Vector3 ExactIntersect = v0;
-		if(downwardRay.Intersects(v0, v1, v3, dist))
-		{
-			ExactIntersect = downwardRay.position + downwardRay.direction * dist;
-		} 
-		else if(downwardRay.Intersects(v1, v2, v3, dist))
-		{
-			ExactIntersect = downwardRay.position + downwardRay.direction * dist;
-		}
-
-		Vector3 nearestPointDir = AQuadTree::HitQueue[i] - ray.position;
-		float dotCurrent = nearestPointDir.Dot(ray.direction);
-		if (abs(ExactIntersect.y - AQuadTree::HitQueue[i].y) < 0.5f && dotCurrent > 0.95f)
-		{
-			m_ClosestPoint = AQuadTree::HitQueue[i];
-			AQuadTree::HitQueue.clear();
-			break;
+			float fDist = 0.0f;
+			if (ray.Intersects(v0, v1, v3, fDist))
+			{
+				return v0;
+			}
+			else if (ray.Intersects(v1, v2, v3, fDist))
+			{
+				return v1;
+			}
 		}
 	}
 
-	return m_ClosestPoint;
+	return Vector3(-1.0f);
 }
 
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
 	Ray ray(rayOrigin, rayDirection);
-	BoundingBox MaxBound = BoundingBox( Vector3(m_TerrainWidth * 0.5f, 0.0f, m_TerrainHeight * 0.5f), Vector3(m_TerrainWidth * 0.5f, 32768.0f, m_TerrainHeight * 0.5f) );
-	unique_ptr<class AQuadTree>		QTree;
-	QTree.reset(new AQuadTree(ray, MaxBound.Center, MaxBound.Extents));
-	 
-	BoundingBox b = QTree->SubDevide(ray.position, ray.position + 10000.f * ray.direction);
-	 
-	BoundingBox outBox;
-	m_PickedPoint = GetBestIntersectionPoint(ray, outBox);//v0;
+	m_PickedPoint = GetBestIntersectionPointLineDrawing(ray); 
 	return true;
 }
 
@@ -922,6 +904,7 @@ void ATerrain::Raise(float deltaTime)
 		return;
 	}
 	 
+	m_bSculptingInProgress = true;
 	for (int i = -m_radiusMax; i < m_radiusMax; i++)
 	{
 		for (int j = -m_radiusMax; j < m_radiusMax; j++)
@@ -946,6 +929,7 @@ void ATerrain::Lower(float deltaTime)
 		return;
 	}
 	 
+	m_bSculptingInProgress = true;
 	for (int i = -m_radiusMax; i < m_radiusMax; i++)
 	{
 		for (int j = -m_radiusMax; j < m_radiusMax; j++)
@@ -970,6 +954,7 @@ void ATerrain::Flatten(float deltaTime)
 		return;
 	}
 	 
+	m_bSculptingInProgress = true;
 	m_PickedPoint.y = m_HeightMap[m_TerrainHeight * z + x].position.y;
 
 	for (int i = -m_radiusMax; i < m_radiusMax; i++)
@@ -998,6 +983,7 @@ void ATerrain::Smooth(float deltaTime)
 		return;
 	}
 
+	m_bSculptingInProgress = true;
 	int smoothRadius = 5; 
 	int radiusMax = 50;
 	for (int i = -radiusMax; i < radiusMax; i++)
@@ -1042,4 +1028,14 @@ void ATerrain::SetBrushStrength(float val)
 void ATerrain::ResetClosestPoint()
 {
 	m_ClosestPoint = Vector3(-1.0f);
+}
+
+bool ATerrain::SculptingInProgress()
+{
+	return m_bSculptingInProgress;
+}
+
+void ATerrain::ResetSculptingProgress()
+{
+	m_bSculptingInProgress = false;
 }

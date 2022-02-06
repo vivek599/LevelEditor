@@ -93,33 +93,48 @@ bool AGraphic::Update(float deltaTime)
 		m_Terrain->Update(m_RenderDevice, deltaTime, m_WorldMatrix, m_Camera->GetViewMatrix(), m_ProjectionMatrix);
 		UnprojectMouseCoord();
 
-		if (m_LeftMouseDown && m_Terrain->RayTerrainIntersect(m_RayOrigin, m_RayDirection))
+		if (m_LeftMouseDown)
 		{
-			switch (m_TerrainSculptmode)
+			if (!m_Terrain->SculptingInProgress() || m_MouseMoving)
 			{
-			case RAISE:
-				m_Terrain->Raise(deltaTime);
-				break;
-			case LOWER:
-				m_Terrain->Lower(deltaTime);
-				break;
-			case FLATTEN:
-				m_Terrain->Flatten(deltaTime);
-				break;
-			case SMOOTH:
-				m_Terrain->Smooth(deltaTime);
-				break;
-			default:
-				break;
+				if (m_Terrain->RayTerrainIntersect(m_RayOrigin, m_RayDirection))
+				{
+					SculptTerrain(deltaTime);
+				}
+			}
+			else
+			{
+				SculptTerrain(deltaTime);
 			}
 		}
 		else
 		{
-			m_Terrain->ResetClosestPoint();
+			m_Terrain->ResetSculptingProgress();
 		}
 	}
 
 	return true;
+}
+
+void AGraphic::SculptTerrain(float deltaTime)
+{
+	switch (m_TerrainSculptmode)
+	{
+	case RAISE:
+		m_Terrain->Raise(deltaTime);
+		break;
+	case LOWER:
+		m_Terrain->Lower(deltaTime);
+		break;
+	case FLATTEN:
+		m_Terrain->Flatten(deltaTime);
+		break;
+	case SMOOTH:
+		m_Terrain->Smooth(deltaTime);
+		break;
+	default:
+		break;
+	}
 }
 
 bool AGraphic::Render()
@@ -212,21 +227,28 @@ bool AGraphic::UnprojectMouseCoord()
 	return true;
 }
 
-void AGraphic::SetMouseState(int mouseX, int mouseY, bool mouseDown)
+void AGraphic::SetMouseState(int mouseX, int mouseY, bool mouseDown, bool mouseMoving)
 {
 	m_MouseX = mouseX;
 	m_MouseY = mouseY;
 	m_LeftMouseDown = mouseDown;
+	m_MouseMoving = mouseMoving;
 }
 
 void AGraphic::SetSculptRadius(int radius)
 {
-	m_Terrain->SetBrushRadius(radius);
+	if (m_Terrain)
+	{
+		m_Terrain->SetBrushRadius(radius);
+	}
 }
 
 void AGraphic::SetSculptStrenght(int strength)
 {
-	m_Terrain->SetBrushStrength(strength);
+	if (m_Terrain)
+	{
+		m_Terrain->SetBrushStrength(strength);
+	}
 }
 
 void AGraphic::SetTerrainSculptMode(ESculptMode mode)

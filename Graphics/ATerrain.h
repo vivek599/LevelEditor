@@ -43,6 +43,8 @@ public:
 	void SetBrushRadius(int val);
 	void SetBrushStrength(float val);
 	void ResetClosestPoint();
+	bool SculptingInProgress();
+	void ResetSculptingProgress();
 private:
 
 	struct VertexType
@@ -139,6 +141,8 @@ private:
 	int m_radiusMax;
 	float m_strength;
 	Vector3 GetBestIntersectionPoint(Ray ray, BoundingBox& outBox);
+	Vector3 GetBestIntersectionPointLineDrawing(Ray ray);
 	Vector3 m_ClosestPoint = Vector3(-1.0f);
+	bool m_bSculptingInProgress = false;
 };
 

@@ -21,6 +21,9 @@ public:
 	bool InitializeTerrain(TerrainInitializationParams* params);
 	void BeginScene(Color color);
 	bool Update(float deltaTime);
+
+	void SculptTerrain(float deltaTime);
+
 	bool Render();
 	void EndScene();
 	void Resize(int width, int height);
@@ -31,7 +34,7 @@ public:
 
 	void SetTextureUVScale(float val);
 	bool UnprojectMouseCoord();
-	void SetMouseState(int mouseX, int mouseY, bool mouseDown);
+	void SetMouseState(int mouseX, int mouseY, bool mouseDown, bool mouseMoving);
 	void SetSculptRadius(int radius);
 	void SetSculptStrenght(int strength);
 private:
@@ -69,6 +72,7 @@ private:
 	bool					m_LeftMouseDown;
 	ESculptMode				m_TerrainSculptmode;
 
+	bool m_MouseMoving;
 public:
 	void SetTerrainSculptMode(ESculptMode mode);
 };

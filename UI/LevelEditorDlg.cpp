@@ -391,6 +391,11 @@ bool CLevelEditorDlg::InitializeControls()
 	return true;
 }
 
+void CLevelEditorDlg::CheckMouseMovingState()
+{ 
+	m_MouseState.Draging = false;
+}
+
 bool CLevelEditorDlg::Update()
 {
 
@@ -413,6 +418,8 @@ LRESULT CLevelEditorDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		exit(0);
 	}
+
+	//m_MouseState.Draging = (message == WM_MOUSEMOVE) && ((wParam & MK_LBUTTON) == 1); TODO
 
 	if (message == WM_IDLE)
 	{
@@ -448,6 +455,7 @@ BOOL CLevelEditorDlg::OnIdle(LONG lCount)
 	}
 
 	CalculateFps();
+	CheckMouseMovingState();
 
 	return TRUE;
 }
@@ -567,9 +575,8 @@ void CLevelEditorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 void CLevelEditorDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-
-
-	SendMouseState(point, m_MouseState);
+  
+	SendMouseState(point, m_MouseState); 
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
@@ -583,11 +590,11 @@ void CLevelEditorDlg::SendMouseState(CPoint& point, const MouseState& state )
 	if (point.x < rect.right && point.y < rect.bottom)
 	{
 		pointOnRenderBox = point - rect.TopLeft();
-		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, state.LeftDown);
+		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, state.LeftDown, state.Draging);
 	}
 	else
 	{ 
-		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, false);
+		m_Graphic->SetMouseState(pointOnRenderBox.x, pointOnRenderBox.y, false, state.Draging);
 	}
 }
 

@@ -74,6 +74,7 @@ protected:
 		bool LeftDown;
 		bool MiddleDown;
 		bool RightDown;
+		bool Draging;
 	};
 
 	MouseState				m_MouseState;
@@ -96,6 +97,9 @@ public:
 private:
 	bool InitializeControls();
 
+	void CheckMouseMovingState();
+	uint64_t NewMouseMovingState = 0;
+	uint64_t OldMouseMovingState = 0;
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
