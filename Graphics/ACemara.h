@@ -11,6 +11,7 @@ public:
 	Matrix	GetViewMatrix() const;
 	Vector3 GetPosition() const;
 	void	SetPosition(float x, float y, float z);
+	void	SetRotation(float pitch, float yaw, float roll);
 	void	SetPosition(Vector3 Position);
 	void	SetFocus(float x, float y, float z);
 	void	SetFocus(Vector3 Position);
@@ -29,8 +30,12 @@ private:
 	Vector3			m_Up;
 	BoundingFrustum m_Frustum;
 
+	const Vector3 DEFAULT_UP = Vector3(0.0f, 1.0f, 0.0f);
+	const Vector3 DEFAULT_FORWARD = Vector3(0.0f, 0.0f, 1.0f);
+	const Vector3 DEFAULT_RIGHT = Vector3(1.0f, 0.0f, 0.0f);
 
-
+	Vector3                                 m_Forward;
+	Vector3                                 m_Right;
 
 };
 

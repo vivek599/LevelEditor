@@ -144,5 +144,6 @@ private:
 	Vector3 GetBestIntersectionPointLineDrawing(Ray ray);
 	Vector3 m_ClosestPoint = Vector3(-1.0f);
 	bool m_bSculptingInProgress = false;
+	bool m_bWireFrame;
 };
 

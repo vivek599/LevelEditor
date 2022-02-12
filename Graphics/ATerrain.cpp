@@ -221,6 +221,11 @@ void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlM
 	context->Unmap(m_VertexBuffer.Get(), 0);
 
 	SAFEDELETE(m_Vertices);
+
+	if (HIWORD(GetAsyncKeyState('I')))
+	{
+		m_bWireFrame = !m_bWireFrame;
+	}
 }
 
 bool ATerrain::InitConstantBuffers(ID3D11Device* device)
@@ -410,7 +415,7 @@ void ATerrain::Render(ARenderDevice* renderDevice)
 
 	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
 
-	context->RSSetState(renderDevice->GetRSWireFrame());
+	context->RSSetState( m_bWireFrame? renderDevice->GetRSWireFrame() : renderDevice->GetRSCullBackFace());
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	context->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
