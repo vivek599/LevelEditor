@@ -89,7 +89,7 @@ public:
 	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg void OnCbnSelendokComboBrushtype();
 	afx_msg void OnBnClickedButtonErode();
-
+	
 
 	bool Update();
 	bool Render();
