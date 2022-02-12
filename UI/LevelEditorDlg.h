@@ -112,4 +112,6 @@ public:
 	CPoint pointOnRenderBox;
 
 	afx_msg void OnChangeBrushstrengthtextbox();
+	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
+	afx_msg void OnMouseLeave();
 };

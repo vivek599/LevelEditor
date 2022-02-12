@@ -96,6 +96,8 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_EN_CHANGE(IDC_BRUSHSTRENGTHTEXTBOX, &CLevelEditorDlg::OnChangeBrushstrengthtextbox)
+	ON_WM_MOUSEHOVER()
+	ON_WM_MOUSELEAVE()
 END_MESSAGE_MAP()
 
 
@@ -566,6 +568,7 @@ void CLevelEditorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	m_MouseState.LeftDown = false;
+	m_MouseState.Draging = false;
 	SendMouseState(point, m_MouseState);
 
 	CDialogEx::OnLButtonUp(nFlags, point);
@@ -575,8 +578,14 @@ void CLevelEditorDlg::OnLButtonUp(UINT nFlags, CPoint point)
 void CLevelEditorDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
-  
-	SendMouseState(point, m_MouseState); 
+	TRACKMOUSEEVENT tme = { 0 };
+	tme.cbSize = sizeof(tme);
+	tme.dwFlags = TME_HOVER | TME_LEAVE;
+	tme.hwndTrack = m_hWnd;
+	tme.dwHoverTime = 50;  // HOVER_DEFAULT, or the hover timeout in milliseconds.
+	::TrackMouseEvent(&tme);
+	m_MouseState.Draging = true;
+	SendMouseState(point, m_MouseState);
 
 	CDialogEx::OnMouseMove(nFlags, point);
 }
@@ -619,4 +628,22 @@ void CLevelEditorDlg::OnChangeBrushstrengthtextbox()
 		value = 1;
 	}
 	m_BrushStrengthSlider->SetPos(value);
+}
+
+
+void CLevelEditorDlg::OnMouseHover(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	m_MouseState.Draging = false;
+	SendMouseState(point, m_MouseState);
+
+	CDialogEx::OnMouseHover(nFlags, point);
+}
+
+
+void CLevelEditorDlg::OnMouseLeave()
+{
+	// TODO: Add your message handler code here and/or call default
+
+	CDialogEx::OnMouseLeave();
 }
