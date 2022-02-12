@@ -19,6 +19,9 @@ cbuffer LightBuffer : register(b0)
 cbuffer ShaderParameters : register(b1)
 {
     float4 TextureUVScale;
+    float4 PickedPoint;
+    float4 BrushRadius;
+    float4 TerrainSize;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +54,16 @@ float4 main(PixelInputType input) : SV_TARGET
     // Multiply the texture pixel and the final light color to get the result.
     color *= textureColor;
 
+    float2 CurrentPixelPosition = 0;
+    CurrentPixelPosition.x = input.tex.x * TerrainSize.x;
+    CurrentPixelPosition.y = input.tex.y * TerrainSize.z;
+    float distanceToPixel = length(CurrentPixelPosition - PickedPoint.xz);
+    if (distanceToPixel <= BrushRadius.x)
+    {
+        color *= float4(0.0f, 1.0f, 1.0f, 1.0f);
+        color = saturate(color);
+    }
+    
     return color;
 }
 

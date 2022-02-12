@@ -87,6 +87,7 @@ private:
 	bool LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames );
 	void ShutdownHeightMap();
 	void Erode(int cycles, float dt);
+	float GetHeight(UINT x, UINT z);
 
 	uint32_t m_TerrainWidth;
 	uint32_t m_TerrainHeight;
@@ -121,8 +122,9 @@ private:
 	struct ShaderParametersBuffer
 	{
 		Vector4 TextureUVScale;
-		Vector3 HitPosition;
-		float	Radius;
+		Vector4 PickedPoint;
+		Vector4	BrushRadius;
+		Vector4 TerrainSize;
 	};
 
 	vector<ID3D11ShaderResourceView*>	m_TerrainTextureSrvLayers;

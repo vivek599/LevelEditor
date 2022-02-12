@@ -193,7 +193,10 @@ void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlM
 
 	ShaderParametersBuffer* dataPtr3 = (ShaderParametersBuffer*)mappedResource.pData;
 
-	dataPtr3->TextureUVScale = m_TerrainTextureUVScale;
+	dataPtr3->TextureUVScale	= m_TerrainTextureUVScale;
+	dataPtr3->PickedPoint		= Vector4(m_PickedPoint.x, m_PickedPoint.y, m_PickedPoint.z, 1.0f);
+	dataPtr3->BrushRadius		= Vector4(m_radiusMax);
+	dataPtr3->TerrainSize		= Vector4(m_TerrainWidth, 0.0f, m_TerrainHeight, 0.0f);
 
 	// Unlock the constant buffer.
 	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
@@ -324,35 +327,14 @@ bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
 			index4 = (m_TerrainHeight * (j + 1)) + (i + 1);  // Upper right.
 
 			// Upper left.
-			tv = m_HeightMap[index3].texture.y;
-			// Modify the texture coordinates to cover the top edge.
-			if (tv == 1.0f) 
-			{ 
-				tv = 0.0f; 
-			}
-
 			Vertices[index].position = m_HeightMap[index3].position;
-			Vertices[index].texture = Vector2(m_HeightMap[index3].texture.x, tv);
+			Vertices[index].texture = m_HeightMap[index3].texture;
 			Vertices[index].normal = m_HeightMap[index3].normal;
 			Indices[index] = index++;
 
 			// Upper right.
-			tu = m_HeightMap[index4].texture.x;
-			tv = m_HeightMap[index4].texture.y;
-
-			// Modify the texture coordinates to cover the top and right edge.
-			if (tu == 0.0f) 
-			{ 
-				tu = 1.0f; 
-			}
-
-			if (tv == 1.0f) 
-			{ 
-				tv = 0.0f; 
-			}
-
 			Vertices[index].position = m_HeightMap[index4].position;
-			Vertices[index].texture = Vector2(tu, tv);
+			Vertices[index].texture = m_HeightMap[index4].texture;
 			Vertices[index].normal = m_HeightMap[index4].normal;
 			Indices[index] = index++;
 
@@ -369,36 +351,14 @@ bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
 			Indices[index] = index++;
 
 			// Upper right.
-			tu = m_HeightMap[index4].texture.x;
-			tv = m_HeightMap[index4].texture.y;
-
-			// Modify the texture coordinates to cover the top and right edge.
-			if (tu == 0.0f) 
-			{ 
-				tu = 1.0f; 
-			}
-
-			if (tv == 1.0f) 
-			{ 
-				tv = 0.0f; 
-			}
-
 			Vertices[index].position = m_HeightMap[index4].position;
-			Vertices[index].texture = Vector2(tu, tv);
+			Vertices[index].texture = m_HeightMap[index4].texture;
 			Vertices[index].normal = m_HeightMap[index4].normal;
 			Indices[index] = index++;
 
 			// Bottom right.
-			tu = m_HeightMap[index2].texture.x;
-
-			// Modify the texture coordinates to cover the right edge.
-			if (tu == 0.0f) 
-			{ 
-				tu = 1.0f; 
-			}
-
 			Vertices[index].position = m_HeightMap[index2].position;
-			Vertices[index].texture = Vector2(tu, m_HeightMap[index2].texture.y);
+			Vertices[index].texture = m_HeightMap[index2].texture;
 			Vertices[index].normal = m_HeightMap[index2].normal;
 			Indices[index] = index++;
 		}
@@ -427,10 +387,11 @@ void ATerrain::Render(ARenderDevice* renderDevice)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Finanly set the constant buffer in the shader with the updated values.
-	context->VSSetConstantBuffers(0, 1, m_MatrixBuffer.GetAddressOf());
+	vector<ID3D11Buffer*> VSConstantbuffers = { m_MatrixBuffer.Get() };
+	context->VSSetConstantBuffers(0, VSConstantbuffers.size(), VSConstantbuffers.data());
 
-	ID3D11Buffer* buffers[] = { m_LightBuffer.Get(), m_ShaderParametersBuffer.Get() };
-	context->PSSetConstantBuffers(0, _countof(buffers), buffers );
+	vector<ID3D11Buffer*> PSConstantbuffers = { m_LightBuffer.Get(), m_ShaderParametersBuffer.Get() };
+	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data() );
 
 	// Set shader texture resource in the pixel shader.
 	context->PSSetShaderResources(0, m_TerrainTextureSrvLayers.size(), m_TerrainTextureSrvLayers.data());
@@ -482,6 +443,20 @@ uint32_t ATerrain::GetWidth() const
 uint32_t ATerrain::GetHeight() const
 {
 	return m_TerrainHeight;
+}
+
+float ATerrain::GetHeight(UINT x, UINT z)
+{
+	UINT index = (m_TerrainHeight * z) + x;
+	if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
+	{
+		return m_HeightMap[index].position.y;
+	}
+	else
+	{
+		throw "Invalid Coordinates!";
+		return 0.0f;
+	}
 }
 
 bool ATerrain::LoadHeightMapFromBMP(const wchar_t* heightMapFilePath)
@@ -980,24 +955,24 @@ void ATerrain::Flatten(float deltaTime)
 }
 
 void ATerrain::Smooth(float deltaTime)
-{
-	/*int x = m_PickedPoint.x;
+{ 
+	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
 	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
 	{
 		return;
 	}
 
+	int smoothRadius = 5;
 	m_bSculptingInProgress = true;
-	int smoothRadius = 5; 
-	int radiusMax = 50;
-	for (int i = -radiusMax; i < radiusMax; i++)
+	for (int i = -m_radiusMax; i < m_radiusMax; i++)
 	{
-		for (int j = -radiusMax; j < radiusMax; j++)
+		for (int j = -m_radiusMax; j < m_radiusMax; j++)
 		{
 			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
 			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
 			{
+				int samplesTaken = 0;
 				float avgY = 0.0f;
 				float radius = Vector2(i, j).Length();
 				for (int k = -smoothRadius; k < smoothRadius; k++)
@@ -1009,14 +984,26 @@ void ATerrain::Smooth(float deltaTime)
 						{
 							float radius2 = Vector2(k, l).Length();
 							avgY += radius2 > smoothRadius ? 0.0f : m_HeightMap[index2].position.y;
+							radius2 > smoothRadius ? samplesTaken : samplesTaken++;
 						}
 					}
 				}
-				avgY /= (smoothRadius * smoothRadius);
-				m_HeightMap[index].position.y = radius > radiusMax ? 0.0f : avgY;
+				avgY /= samplesTaken;
+
+				float adjustment = (m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f) * deltaTime * avgY * 0.1f;
+				if (m_HeightMap[index].position.y > avgY)
+				{
+					m_HeightMap[index].position.y -= (radius > m_radiusMax ? 0.0f : adjustment);
+				}
+				else
+				{
+					m_HeightMap[index].position.y += (radius > m_radiusMax ? 0.0f : adjustment);
+				}
 			}
 		}
-	}*/
+	}
+
+
 
 }
 
