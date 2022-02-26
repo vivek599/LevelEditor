@@ -36,15 +36,15 @@ public:
 	uint32_t GetWidth() const;
 	uint32_t GetHeight() const;
 	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
-	void Raise(float deltaTime);
-	void Lower(float deltaTime);
-	void Flatten(float deltaTime);
-	void Smooth(float deltaTime);
+	void Raise(ARenderDevice* renderDevice, float deltaTime);
+	void Lower(ARenderDevice* renderDevice, float deltaTime);
+	void Flatten(ARenderDevice* renderDevice, float deltaTime);
+	void Smooth(ARenderDevice* renderDevice, float deltaTime);
 	void SetBrushRadius(int val);
 	void SetBrushStrength(float val);
 	void ResetClosestPoint();
 	bool SculptingInProgress();
-	void ResetSculptingProgress();
+	void ResetSculptingProgress(ARenderDevice* renderDevice);
 private:
 
 	struct VertexType
@@ -127,12 +127,23 @@ private:
 		Vector4 TerrainSize;
 	};
 
+	struct SculptingParametersBuffer
+	{
+		Vector4 SculptMode;
+		Vector4 TerrainPosition;
+		Vector4 PickedPoint;
+		Vector4	BrushRadius;
+		Vector4 TerrainSize;
+		Vector4 DeltaTime;
+	};
+
 	vector<ID3D11ShaderResourceView*>	m_TerrainTextureSrvLayers;
 	vector<ID3D11Resource*>				m_TerrainTextureLayers;
 
 	ComPtr<ID3D11Buffer>	m_MatrixBuffer;
 	ComPtr<ID3D11Buffer>	m_LightBuffer;
 	ComPtr<ID3D11Buffer>	m_ShaderParametersBuffer;
+	ComPtr<ID3D11Buffer>	m_SculptingParametersBuffer;
 
 	Vector4 m_AmbientColor;
 	Vector4 m_DiffuseColor;
@@ -147,5 +158,9 @@ private:
 	Vector3 m_ClosestPoint = Vector3(-1.0f);
 	bool m_bSculptingInProgress = false;
 	bool m_bWireFrame;
+	void SendSculptingParams( ARenderDevice* renderDevice, float deltaTime, float raise, float lower, float flatten, float smooth);
+	unique_ptr<class ATexture> m_HeightMapOffsets;
+
+
 };
 

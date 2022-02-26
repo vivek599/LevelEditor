@@ -109,7 +109,7 @@ bool AGraphic::Update(float deltaTime)
 		}
 		else
 		{
-			m_Terrain->ResetSculptingProgress();
+			m_Terrain->ResetSculptingProgress(m_RenderDevice);
 		}
 	}
 
@@ -121,16 +121,16 @@ void AGraphic::SculptTerrain(float deltaTime)
 	switch (m_TerrainSculptmode)
 	{
 	case RAISE:
-		m_Terrain->Raise(deltaTime);
+		m_Terrain->Raise(m_RenderDevice, deltaTime);
 		break;
 	case LOWER:
-		m_Terrain->Lower(deltaTime);
+		m_Terrain->Lower(m_RenderDevice, deltaTime);
 		break;
 	case FLATTEN:
-		m_Terrain->Flatten(deltaTime);
+		m_Terrain->Flatten(m_RenderDevice, deltaTime);
 		break;
 	case SMOOTH:
-		m_Terrain->Smooth(deltaTime);
+		m_Terrain->Smooth(m_RenderDevice, deltaTime);
 		break;
 	default:
 		break;

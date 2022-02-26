@@ -2,6 +2,7 @@
 #include "ARenderDevice.h"
 #include "AShaderCache.h"
 #include "AQuadTree.h"
+#include "ATexture.h"
 
 ATerrain::ATerrain()
 {
@@ -128,16 +129,31 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, TerrainInitializationPara
 	m_VertexShader->CreateReflector();
 	m_VertexShader->CreateInputLayout();
 
+	m_HeightMapOffsets.reset(new ATexture( renderDevice));
+	m_HeightMapOffsets->CreateRWTexture2D(m_TerrainWidth, m_TerrainHeight, DXGI_FORMAT_R32_FLOAT);
+
+	float* pData = new float[m_TerrainWidth * m_TerrainHeight];
+	for (int j = 0; j < m_TerrainHeight; j++)
+	{
+		for (int i = 0; i < m_TerrainWidth; i++)
+		{
+			uint64_t index = (m_TerrainHeight * j) + i;
+			pData[index] = m_HeightMap[index].position.y;
+		}
+	}
+	m_HeightMapOffsets->LoadData(pData, size_t(m_TerrainWidth*m_TerrainHeight), 4);
+	SAFE_DELETE(pData);
+
 	return true;
 }
 
 void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix)
 {
 	//thread erodeThread([=]() {Erode(20, deltaTime); return 1; });
-
+	 
+	HRESULT hr = S_OK; 
 	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
 
-	HRESULT hr = S_OK; 
 	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
 
@@ -201,29 +217,30 @@ void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlM
 	// Unlock the constant buffer.
 	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
 
+	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 0);
 
-	SAFEDELETE(m_Vertices);
-	SAFEDELETE(m_Indices);
-	//erodeThread.join();
+	//SAFEDELETE(m_Vertices);
+	//SAFEDELETE(m_Indices);
+	////erodeThread.join();
 
-	bool result = InitGeometry(m_Vertices, m_Indices);
-	if (!result)
-	{
-		return;
-	}
+	//bool result = InitGeometry(m_Vertices, m_Indices);
+	//if (!result)
+	//{
+	//	return;
+	//}
 
-	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-	hr = context->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(hr))
-	{
-		return;
-	}
+	//ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	//hr = context->Map(m_VertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	//if (FAILED(hr))
+	//{
+	//	return;
+	//}
 
-	memcpy(mappedResource.pData, m_Vertices, m_VertexCount * sizeof(VertexType));
+	//memcpy(mappedResource.pData, m_Vertices, m_VertexCount * sizeof(VertexType));
 
-	context->Unmap(m_VertexBuffer.Get(), 0);
+	//context->Unmap(m_VertexBuffer.Get(), 0);
 
-	SAFEDELETE(m_Vertices);
+	//SAFEDELETE(m_Vertices);
 
 	if (HIWORD(GetAsyncKeyState('I')))
 	{
@@ -278,6 +295,21 @@ bool ATerrain::InitConstantBuffers(ID3D11Device* device)
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	hr = device->CreateBuffer(&shaderParamBufferDesc, nullptr, m_ShaderParametersBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	D3D11_BUFFER_DESC sculptingParamBufferDesc;
+	sculptingParamBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	sculptingParamBufferDesc.ByteWidth = sizeof(SculptingParametersBuffer);
+	sculptingParamBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	sculptingParamBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	sculptingParamBufferDesc.MiscFlags = 0;
+	sculptingParamBufferDesc.StructureByteStride = 0;
+
+	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
+	hr = device->CreateBuffer(&sculptingParamBufferDesc, nullptr, m_SculptingParametersBuffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
 		return false;
@@ -387,8 +419,13 @@ void ATerrain::Render(ARenderDevice* renderDevice)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Finanly set the constant buffer in the shader with the updated values.
-	vector<ID3D11Buffer*> VSConstantbuffers = { m_MatrixBuffer.Get() };
+	vector<ID3D11Buffer*> VSConstantbuffers = { m_MatrixBuffer.Get(), m_SculptingParametersBuffer.Get() };
 	context->VSSetConstantBuffers(0, VSConstantbuffers.size(), VSConstantbuffers.data());
+
+	//uav
+	vector<ID3D11UnorderedAccessView*> VSUavTextures = { m_HeightMapOffsets->GetUAV() };
+	UINT Indices[] = { 0 };
+	context->OMSetRenderTargetsAndUnorderedAccessViews(1, renderDevice->GetRenderTargetView().GetAddressOf(), renderDevice->GetDepthStencilView().Get(), 1, VSUavTextures.size(), VSUavTextures.data(), Indices);
 
 	vector<ID3D11Buffer*> PSConstantbuffers = { m_LightBuffer.Get(), m_ShaderParametersBuffer.Get() };
 	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data() );
@@ -868,6 +905,34 @@ Vector3 ATerrain::GetBestIntersectionPointLineDrawing(Ray ray)
 	return Vector3(-1.0f);
 }
 
+void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime, float raise, float lower, float flatten, float smooth)
+{
+	HRESULT hr = S_OK;
+
+	D3D11_MAPPED_SUBRESOURCE mappedResource = {};
+
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
+
+	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	hr = context->Map(m_SculptingParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	if (FAILED(hr))
+	{
+		return;
+	}
+
+	SculptingParametersBuffer* dataPtr = (SculptingParametersBuffer*)mappedResource.pData;
+
+	dataPtr->SculptMode = Vector4(raise, lower, flatten, smooth);
+	dataPtr->TerrainPosition = Vector4(0.0f);
+	dataPtr->PickedPoint = Vector4(m_PickedPoint.x, m_PickedPoint.y, m_PickedPoint.z, 1.0f);
+	dataPtr->BrushRadius = Vector4(m_radiusMax, m_strength, 0.0f, 0.0f);
+	dataPtr->TerrainSize = Vector4(m_TerrainWidth, 0.0f, m_TerrainHeight, 0.0f);
+	dataPtr->DeltaTime = Vector4(deltaTime);
+
+	// Unlock the constant buffer.
+	context->Unmap(m_SculptingParametersBuffer.Get(), 0);
+}
+
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 {
 	Ray ray(rayOrigin, rayDirection);
@@ -875,8 +940,11 @@ bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 	return true;
 }
 
-void ATerrain::Raise(float deltaTime)
+void ATerrain::Raise(ARenderDevice* renderDevice, float deltaTime)
 {
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, 1, 0, 0, 0);
+#if 1
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
 	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
@@ -898,10 +966,14 @@ void ATerrain::Raise(float deltaTime)
 			}
 		}
 	}
+#endif
 }
 
-void ATerrain::Lower(float deltaTime)
+void ATerrain::Lower(ARenderDevice* renderDevice, float deltaTime)
 {
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, 0, 1, 0, 0);
+#if 0
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
 	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
@@ -923,10 +995,14 @@ void ATerrain::Lower(float deltaTime)
 			}
 		}
 	}
+#endif
 }
 
-void ATerrain::Flatten(float deltaTime)
+void ATerrain::Flatten(ARenderDevice* renderDevice, float deltaTime)
 {
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, 0, 0, 1, 0);
+#if 0
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
 	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
@@ -952,10 +1028,14 @@ void ATerrain::Flatten(float deltaTime)
 			}
 		}
 	}
+#endif
 }
 
-void ATerrain::Smooth(float deltaTime)
+void ATerrain::Smooth(ARenderDevice* renderDevice, float deltaTime)
 { 
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 1);
+#if 0
 	int x = m_PickedPoint.x;
 	int z = m_PickedPoint.z;
 	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
@@ -1002,7 +1082,7 @@ void ATerrain::Smooth(float deltaTime)
 			}
 		}
 	}
-
+#endif
 
 
 }
@@ -1027,7 +1107,8 @@ bool ATerrain::SculptingInProgress()
 	return m_bSculptingInProgress;
 }
 
-void ATerrain::ResetSculptingProgress()
+void ATerrain::ResetSculptingProgress(ARenderDevice* renderDevice)
 {
 	m_bSculptingInProgress = false;
+	SendSculptingParams(renderDevice, 0.0f, 0, 0, 0, 0);
 }
