@@ -55,16 +55,15 @@ public:
 	ID3D11UnorderedAccessView*	GetUAV() const; 
 	ID3D11RenderTargetView*		GetRTV() const; 
 	 
-	ATextureType GetType();
-	bool IsUAV();
-	void CreateRWTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format);
-	bool CreateRWBuffer(UINT Width, UINT Height, DXGI_FORMAT Format, UINT Stride);
-	bool CreateBuffer(UINT Width, UINT Height, DXGI_FORMAT Format, UINT Stride);
-	void CreateTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format);
-	void CreateTexture1D(UINT Width, DXGI_FORMAT Format);
-	void CreateTexture3D(UINT Width, UINT Height, UINT Depth, DXGI_FORMAT Format);
-	void CreateRenderTarget2D(UINT Width, UINT Height, DXGI_FORMAT Format);
-	ID3D11Texture2D* GetResource2D() const;
+	bool						IsUAV();
+	void						CreateRWTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format);
+	bool						CreateRWBuffer(UINT Width, UINT Height, DXGI_FORMAT Format, UINT Stride);
+	bool						CreateBuffer(UINT Width, UINT Height, DXGI_FORMAT Format, UINT Stride);
+	void						CreateTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format);
+	void						CreateTexture1D(UINT Width, DXGI_FORMAT Format);
+	void						CreateTexture3D(UINT Width, UINT Height, UINT Depth, DXGI_FORMAT Format);
+	void						CreateRenderTarget2D(UINT Width, UINT Height, DXGI_FORMAT Format);
+	ID3D11Texture2D*			GetResource2D() const;
 };
  
 

@@ -4,13 +4,15 @@
 
 class TerrainInitializationParams;
 
-enum ESculptMode
+enum ESculptMode : UINT
 {
-	RAISE,
-	LOWER,
-	FLATTEN,
-	SMOOTH
-};
+	NONE		= 0,
+	RAISE		= 1,
+	LOWER		= 2,
+	FLATTEN		= 3,
+	SMOOTH		= 4,
+	ALPHAMAP	= 5
+};/*, float raise, float lower, float flatten, float smooth*/
 
 class AGraphic
 {
@@ -75,5 +77,7 @@ private:
 	bool m_MouseMoving;
 public:
 	void SetTerrainSculptMode(ESculptMode mode);
+	bool SetTerrainAlphaMap(wchar_t* p) const; 
+
 };
 

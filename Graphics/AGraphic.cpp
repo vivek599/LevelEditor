@@ -132,6 +132,9 @@ void AGraphic::SculptTerrain(float deltaTime)
 	case SMOOTH:
 		m_Terrain->Smooth(m_RenderDevice, deltaTime);
 		break;
+	case ALPHAMAP:
+		m_Terrain->AlphaMap(m_RenderDevice, deltaTime);
+		break;
 	default:
 		break;
 	}
@@ -256,6 +259,15 @@ void AGraphic::SetTerrainSculptMode(ESculptMode mode)
 	m_TerrainSculptmode = mode;
 }
 
+bool AGraphic::SetTerrainAlphaMap(wchar_t* p) const
+{
+	if (m_Terrain)
+	{
+		return m_Terrain->SetCurrentAlphaMap(m_RenderDevice, p);
+	}
+
+	return false;
+}
 
 
 

@@ -71,6 +71,7 @@ using namespace std::chrono;
 
 //#include <vld.h>
 #include "PNG/lodepng.h"
+#include "PNG/stb_image.h"
 
 #include "ACommonDefinitions.h"
 #include "AMathHeader.h"

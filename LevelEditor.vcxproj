@@ -217,6 +217,7 @@
     <ClInclude Include="Graphics\ATexture.h" />
     <ClInclude Include="Graphics\AMathHeader.h" />
     <ClInclude Include="Graphics\PNG\lodepng.h" />
+    <ClInclude Include="Graphics\PNG\stb_image.h" />
     <ClInclude Include="UI\CPictureControl.h" />
     <ClInclude Include="UI\framework.h" />
     <ClInclude Include="UI\LevelEditor.h" />
@@ -247,7 +248,9 @@
     <None Include="res\LevelEditor.rc2" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\AlphaMapLoaded.ico" />
     <Image Include="res\LevelEditor.ico" />
+    <Image Include="UI\res\AlphaMapLoaded.ico" />
     <Image Include="UI\res\LevelEditor.ico" />
   </ItemGroup>
   <ItemGroup>

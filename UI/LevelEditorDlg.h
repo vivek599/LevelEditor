@@ -35,6 +35,7 @@ public:
 // Implementation
 protected:
 	HICON m_hIcon;
+	HICON m_hIconAlphaMap;
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
@@ -47,6 +48,7 @@ protected:
 
 	CMenu				m_Menu;
 	CButton*			m_ButtonLoadHeightMap;
+	CButton*			m_ButtonLoadAlphaMap;
 	CButton*			m_ButtonErode;
 	CSliderCtrl*		m_BrushSizeSlider;
 	CEdit*				m_BrushSizeTextbox;
@@ -66,6 +68,7 @@ protected:
 
 	float				m_deltaTime;
 	int					m_frameCounter;
+	bool				m_AlphaMapLoaded = false;
 
 	unique_ptr<AGraphic> m_Graphic;	
 	
@@ -114,4 +117,5 @@ public:
 	afx_msg void OnChangeBrushstrengthtextbox();
 	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
 	afx_msg void OnMouseLeave();
+	afx_msg void OnBnClickedLoadalphamap();
 };

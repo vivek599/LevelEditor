@@ -4,6 +4,9 @@
 #include "AQuadTree.h"
 #include "ATexture.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "PNG/stb_image.h"
+
 ATerrain::ATerrain()
 {
 	m_HeightMap = nullptr;
@@ -264,7 +267,7 @@ void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlM
 	// Unlock the constant buffer.
 	context->Unmap(m_LightBuffer.Get(), 0);
 
-	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 0);
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::NONE);
 
 	//SAFEDELETE(m_Vertices);
 	//SAFEDELETE(m_Indices);
@@ -945,7 +948,7 @@ Vector3 ATerrain::GetBestIntersectionPointLineDrawing(Ray ray)
 	return Vector3(-1.0f);
 }
 
-void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime, float raise, float lower, float flatten, float smooth)
+void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime, UINT SculptMode)
 {
 	HRESULT hr = S_OK;
 
@@ -962,7 +965,7 @@ void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime,
 
 	ShaderParametersBuffer* dataPtr = (ShaderParametersBuffer*)mappedResource.pData;
 
-	dataPtr->SculptMode = Vector4(raise, lower, flatten, smooth);
+	dataPtr->SculptMode = XMUINT4(SculptMode, SculptMode, SculptMode, SculptMode);
 	dataPtr->TerrainPosition = Vector4(0.0f);
 	dataPtr->PickedPoint = Vector4(m_PickedPoint.x, m_PickedPoint.y, m_PickedPoint.z, 1.0f);
 	dataPtr->BrushParams = Vector4(m_radiusMax, m_strength, 0.0f, 0.0f);
@@ -1014,7 +1017,7 @@ void ATerrain::RenderSculptingQuad(ARenderDevice* renderDevice)
 	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data());
 
 	// Set shader texture resource in the pixel shader.
-	vector<ID3D11ShaderResourceView*> PSSrvs = { m_HeightMapFinal->GetSRV() };
+	vector<ID3D11ShaderResourceView*> PSSrvs = { m_HeightMapFinal->GetSRV(), m_AlphaMapTexture ? m_AlphaMapTexture->GetSRV(): nullptr };
 	context->PSSetShaderResources(0, PSSrvs.size(), PSSrvs.data());
 
 	// Set the vertex input layout.
@@ -1107,7 +1110,7 @@ bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
 void ATerrain::Raise(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
-	SendSculptingParams(renderDevice, deltaTime, 1, 0, 0, 0);
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::RAISE);
 	UpdateHeightMapTexture(renderDevice);
 	 
 }
@@ -1121,21 +1124,28 @@ void ATerrain::UpdateHeightMapTexture(ARenderDevice* renderDevice)
 void ATerrain::Lower(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
-	SendSculptingParams(renderDevice, deltaTime, 0, 1, 0, 0);
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::LOWER);
 	UpdateHeightMapTexture(renderDevice);
 }
 
 void ATerrain::Flatten(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
-	SendSculptingParams(renderDevice, deltaTime, 0, 0, 1, 0);
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::FLATTEN);
 	UpdateHeightMapTexture(renderDevice);
 }
 
 void ATerrain::Smooth(ARenderDevice* renderDevice, float deltaTime)
 { 
 	m_bSculptingInProgress = true;
-	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 1);
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::SMOOTH);
+	UpdateHeightMapTexture(renderDevice);
+}
+
+void ATerrain::AlphaMap(ARenderDevice* renderDevice, float deltaTime)
+{
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::ALPHAMAP);
 	UpdateHeightMapTexture(renderDevice);
 }
 
@@ -1164,9 +1174,41 @@ void ATerrain::ResetSculptingProgress(ARenderDevice* renderDevice)
 	if (m_bSculptingInProgress)
 	{
 		//copy sculpted texture to height map texture
-		//renderDevice->GetContext()->CopyResource(m_HeightMapFinal->GetResource2D(), m_HeightMapRenderTarget->GetResource2D());
-		//renderDevice->GetContext()->Flush();
-		SendSculptingParams(renderDevice, 0.0f, 0, 0, 0, 0);
+		SendSculptingParams(renderDevice, 0.0f, ESculptMode::NONE);
 		m_bSculptingInProgress = false;
+	}
+}
+
+bool ATerrain::SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath)
+{
+	if (m_AlphaMapTexture)
+	{
+		m_AlphaMapTexture.reset();
+		return false;
+	}
+	else
+	{
+		wstring fileNameW = wstring(filePath);
+		string fileNameA = string(fileNameW.begin(), fileNameW.end());
+		int channels = 0;
+		uint8_t* data = stbi_load(fileNameA.c_str(), (int*)&m_AlphaMapWidth, (int*)&m_AlphaMapHeight, &channels, 3);
+
+		int k = 0;
+		m_AlphaMapTexture.reset(new ATexture(renderDevice));
+		m_AlphaMapTexture->CreateTexture2D(m_AlphaMapWidth, m_AlphaMapHeight, DXGI_FORMAT_R32_FLOAT);
+		float* pData = new float[m_AlphaMapWidth * m_AlphaMapHeight];
+		for (int j = 0; j < m_AlphaMapHeight; j++)
+		{
+			for (int i = 0; i < m_AlphaMapWidth; i++)
+			{
+				uint64_t index = (m_AlphaMapHeight * j) + i;
+				pData[index] = data[k];
+				k += 3;
+			}
+		}
+		m_AlphaMapTexture->LoadData(pData, size_t(m_AlphaMapWidth * m_AlphaMapHeight), 4);
+		SAFE_DELETE(pData);
+		SAFE_DELETE(data);
+		return true;
 	}
 }

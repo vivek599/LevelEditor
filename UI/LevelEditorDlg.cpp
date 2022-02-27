@@ -98,6 +98,7 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_BRUSHSTRENGTHTEXTBOX, &CLevelEditorDlg::OnChangeBrushstrengthtextbox)
 	ON_WM_MOUSEHOVER()
 	ON_WM_MOUSELEAVE()
+	ON_BN_CLICKED(IDC_LOADALPHAMAP, &CLevelEditorDlg::OnBnClickedLoadalphamap)
 END_MESSAGE_MAP()
 
 
@@ -238,7 +239,6 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 
 
 
-
 }
 
 void CLevelEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
@@ -330,6 +330,10 @@ void CLevelEditorDlg::OnCbnSelendokComboBrushtype()
 	{
 		m_Graphic->SetTerrainSculptMode(ESculptMode::LOWER);
 	}
+	else if (strValue == "AlphaMap")
+	{
+		m_Graphic->SetTerrainSculptMode(ESculptMode::ALPHAMAP);
+	}
 
 }
 
@@ -348,6 +352,7 @@ bool CLevelEditorDlg::InitializeControls()
 	m_SliderSizeText		= (CStatic*)(GetDlgItem(IDC_STATIC_SZ));
 	m_SliderWeightText		= (CStatic*)(GetDlgItem(IDC_STATIC_WT));
 	m_ButtonLoadHeightMap	= (CButton*)(GetDlgItem(IDC_LOADHEIGHTMAP));
+	m_ButtonLoadAlphaMap	= (CButton*)(GetDlgItem(IDC_LOADALPHAMAP));
 	m_ButtonErode			= (CButton*)(GetDlgItem(IDC_BUTTON_ERODE));
 	m_BrushSizeSlider	= (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSIZESLIDER));
 	m_BrushSizeTextbox	= (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
@@ -372,7 +377,7 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushStrengthTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
-	m_BrushComboBox->SetCurSel(ESculptMode::RAISE);
+	m_BrushComboBox->SetCurSel(0);
 
 	m_FpsFont.CreateFont(
 		24,                        // nHeight
@@ -391,6 +396,8 @@ bool CLevelEditorDlg::InitializeControls()
 		_T("Agency FB"));                 // lpszFacename
 
 	m_FpsText->SetFont(&m_FpsFont);
+
+	m_hIconAlphaMap = AfxGetApp()->LoadIcon(IDR_ALPHAMAPICON);
 
 	return true;
 }
@@ -506,6 +513,7 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		int hspacing = 0;
 		int vspacing = 30;
 		m_ButtonLoadHeightMap->SetWindowPos(nullptr, cx - 250 - hspacing, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ButtonLoadAlphaMap->SetWindowPos(nullptr, cx - 150 - hspacing, 50, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_HeightMapFileName->SetWindowPos(nullptr, cx - 250 - hspacing, 50 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_BrushSizeTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
@@ -642,10 +650,45 @@ void CLevelEditorDlg::OnMouseHover(UINT nFlags, CPoint point)
 	CDialogEx::OnMouseHover(nFlags, point);
 }
 
-
 void CLevelEditorDlg::OnMouseLeave()
 {
 	// TODO: Add your message handler code here and/or call default
 
 	CDialogEx::OnMouseLeave();
+}
+
+void CLevelEditorDlg::OnBnClickedLoadalphamap()
+{
+	// TODO: Add your control notification handler code here
+	CFileDialog dlgFile(TRUE);
+
+	const int MAX_CFileDialog_FILE_COUNT = 99;
+	const int FILE_LIST_BUFFER_SIZE = ((MAX_CFileDialog_FILE_COUNT * (MAX_PATH + 1)) + 1);
+	CString fileName;
+	wchar_t* p = fileName.GetBuffer(FILE_LIST_BUFFER_SIZE);
+
+
+	OPENFILENAME& ofn = dlgFile.GetOFN();
+	ofn.Flags |= OFN_PATHMUSTEXIST;
+	ofn.Flags |= OFN_FILEMUSTEXIST;
+	ofn.lpstrFile = p;
+	ofn.nMaxFile = MAX_PATH + 1;
+	dlgFile.DoModal();
+	fileName.ReleaseBuffer();
+
+	
+	m_AlphaMapLoaded = m_Graphic->SetTerrainAlphaMap(p);
+	if (m_AlphaMapLoaded)
+	{
+		m_ButtonLoadAlphaMap->SetIcon(m_hIconAlphaMap);
+		m_ButtonLoadAlphaMap->SetWindowTextW(_T("AlphaMap"));
+	}
+	else
+	{
+		m_ButtonLoadAlphaMap->SetIcon(nullptr);
+		m_ButtonLoadAlphaMap->SetWindowTextW(_T("Load AlphaMap"));
+	}
+
+
+
 }

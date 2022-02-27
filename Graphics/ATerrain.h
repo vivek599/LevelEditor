@@ -45,11 +45,13 @@ public:
 	void Lower(ARenderDevice* renderDevice, float deltaTime);
 	void Flatten(ARenderDevice* renderDevice, float deltaTime);
 	void Smooth(ARenderDevice* renderDevice, float deltaTime);
+	void AlphaMap(ARenderDevice* renderDevice, float deltaTime);
 	void SetBrushRadius(int val);
 	void SetBrushStrength(float val);
 	void ResetClosestPoint();
 	bool SculptingInProgress();
 	void ResetSculptingProgress(ARenderDevice* renderDevice);
+	bool SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath);
 private:
 	struct QuadVertex
 	{
@@ -136,7 +138,7 @@ private:
 	struct ShaderParametersBuffer
 	{
 		Vector4 TextureUVScale;
-		Vector4 SculptMode;
+		XMUINT4 SculptMode;
 		Vector4 TerrainPosition;
 		Vector4 PickedPoint;
 		Vector4 BrushParams;
@@ -174,15 +176,31 @@ private:
 
 	Vector3 m_ClosestPoint = Vector3(-1.0f);
 	bool m_bSculptingInProgress = false;
-	bool m_bWireFrame;
-	void SendSculptingParams( ARenderDevice* renderDevice, float deltaTime, float raise, float lower, float flatten, float smooth);
+	bool m_bWireFrame;	
+	enum ESculptMode : UINT
+	{
+		NONE		= 0,
+		RAISE		= 1,
+		LOWER		= 2,
+		FLATTEN		= 3,
+		SMOOTH		= 4,
+		ALPHAMAP	= 5
+	};/*, float raise, float lower, float flatten, float smooth*/
+	void SendSculptingParams( ARenderDevice* renderDevice, float deltaTime, UINT SculptMode);
 	unique_ptr<class ATexture> m_HeightMapFinal;
 	unique_ptr<class ATexture> m_HeightMapRenderTarget;
+	unique_ptr<class ATexture> m_AlphaMapTexture;
+
+
 
 	ComPtr<ID3D11Texture2D> m_HeightMapStagingTexture;
 
 	void RenderSculptingQuad(ARenderDevice* renderDevice);
 	void CreateHeightMapStaging(ARenderDevice* renderDevice);
 	void UpdateHeightmapPixelData(ARenderDevice* renderDevice);
+
+	UINT m_AlphaMapWidth	= 0.0f;
+	UINT m_AlphaMapHeight	= 0.0f;
+
 };
 

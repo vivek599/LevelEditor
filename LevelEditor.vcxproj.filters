@@ -118,6 +118,9 @@
     <ClInclude Include="Graphics\AMathHeader.h">
       <Filter>Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics\PNG\stb_image.h">
+      <Filter>Graphics\LoadPNG</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Graphics">
@@ -138,6 +141,8 @@
       <Filter>UI</Filter>
     </Image>
     <Image Include="UI\res\LevelEditor.ico" />
+    <Image Include="res\AlphaMapLoaded.ico" />
+    <Image Include="UI\res\AlphaMapLoaded.ico" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\LevelEditor.rc2">
