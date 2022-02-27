@@ -228,6 +228,8 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 	params.heightMap = p;
 	params.pixelSHader = _T("../Data/Shaders/terrain_ps.hlsl");
 	params.vertexSHader = _T("../Data/Shaders/terrain_vs.hlsl");
+	params.sculptPixelSHader = _T("../Data/Shaders/terrain_ps_sculpt.hlsl");
+	params.sculptVertexSHader = _T("../Data/Shaders/terrain_vs_sculpt.hlsl");
 	params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
 
 	m_Graphic->InitializeTerrain(&params);

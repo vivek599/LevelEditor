@@ -156,5 +156,11 @@
     <FxCompile Include="BINx64\Data\Shaders\terrain_vs.hlsl">
       <Filter>Graphics\Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="BINx64\Data\Shaders\terrain_ps_sculpt.hlsl">
+      <Filter>Graphics\Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BINx64\Data\Shaders\terrain_vs_sculpt.hlsl">
+      <Filter>Graphics\Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -9,6 +9,8 @@ struct TerrainInitializationParams
 	const wchar_t* heightMap;
 	const wchar_t* pixelSHader;
 	const wchar_t* vertexSHader;
+	const wchar_t* sculptPixelSHader;
+	const wchar_t* sculptVertexSHader;
 	vector<const wchar_t*>	textureLayers;
 };
 
@@ -19,11 +21,11 @@ public:
 	~ATerrain();
 
 	bool Initialize(ARenderDevice* renderDevice, TerrainInitializationParams& params);
-
-
-	
+	 
 	void Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
 	void Render(ARenderDevice* renderDevice);
+
+	void RenderTerrain(ARenderDevice* renderDevice);
 
 	int GetIndexCount();
 
@@ -37,6 +39,9 @@ public:
 	uint32_t GetHeight() const;
 	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
 	void Raise(ARenderDevice* renderDevice, float deltaTime);
+
+	void UpdateHeightMapTexture(ARenderDevice* renderDevice);
+
 	void Lower(ARenderDevice* renderDevice, float deltaTime);
 	void Flatten(ARenderDevice* renderDevice, float deltaTime);
 	void Smooth(ARenderDevice* renderDevice, float deltaTime);
@@ -46,6 +51,11 @@ public:
 	bool SculptingInProgress();
 	void ResetSculptingProgress(ARenderDevice* renderDevice);
 private:
+	struct QuadVertex
+	{
+		Vector4 Pos;
+		Vector2 Tex;
+	};
 
 	struct VertexType
 	{
@@ -96,6 +106,7 @@ private:
 
 	ComPtr<ID3D11Buffer>	m_VertexBuffer;
 	ComPtr<ID3D11Buffer>	m_IndexBuffer;
+	ComPtr<ID3D11Buffer>	m_SculptVertexBuffer;
 
 	VertexType*				m_HeightMap;
 	VertexType*				m_Vertices;
@@ -103,6 +114,9 @@ private:
 
 	unique_ptr<class AShaderCache>	m_PixelShader;
 	unique_ptr<class AShaderCache>	m_VertexShader;
+
+	unique_ptr<class AShaderCache>	m_SculptPixelShader;
+	unique_ptr<class AShaderCache>	m_SculptVertexShader;
 
 	struct MatrixBufferType
 	{
@@ -122,9 +136,12 @@ private:
 	struct ShaderParametersBuffer
 	{
 		Vector4 TextureUVScale;
+		Vector4 SculptMode;
+		Vector4 TerrainPosition;
 		Vector4 PickedPoint;
-		Vector4	BrushRadius;
+		Vector4 BrushParams;
 		Vector4 TerrainSize;
+		Vector4 DeltaTime;
 	};
 
 	struct SculptingParametersBuffer
@@ -143,7 +160,6 @@ private:
 	ComPtr<ID3D11Buffer>	m_MatrixBuffer;
 	ComPtr<ID3D11Buffer>	m_LightBuffer;
 	ComPtr<ID3D11Buffer>	m_ShaderParametersBuffer;
-	ComPtr<ID3D11Buffer>	m_SculptingParametersBuffer;
 
 	Vector4 m_AmbientColor;
 	Vector4 m_DiffuseColor;
@@ -153,14 +169,20 @@ private:
 	Vector3 m_PickedPoint;
 	int m_radiusMax;
 	float m_strength;
-	Vector3 GetBestIntersectionPoint(Ray ray, BoundingBox& outBox);
+
 	Vector3 GetBestIntersectionPointLineDrawing(Ray ray);
+
 	Vector3 m_ClosestPoint = Vector3(-1.0f);
 	bool m_bSculptingInProgress = false;
 	bool m_bWireFrame;
 	void SendSculptingParams( ARenderDevice* renderDevice, float deltaTime, float raise, float lower, float flatten, float smooth);
-	unique_ptr<class ATexture> m_HeightMapOffsets;
+	unique_ptr<class ATexture> m_HeightMapFinal;
+	unique_ptr<class ATexture> m_HeightMapRenderTarget;
 
+	ComPtr<ID3D11Texture2D> m_HeightMapStagingTexture;
 
+	void RenderSculptingQuad(ARenderDevice* renderDevice);
+	void CreateHeightMapStaging(ARenderDevice* renderDevice);
+	void UpdateHeightmapPixelData(ARenderDevice* renderDevice);
 };
 

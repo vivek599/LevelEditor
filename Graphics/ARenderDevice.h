@@ -19,8 +19,9 @@ public:
 	ComPtr<ID3D11Device> GetDevice();
 	ComPtr<ID3D11DeviceContext> GetContext();
 
-	ComPtr<ID3D11RenderTargetView> GetRenderTargetView();
-	ComPtr<ID3D11DepthStencilView> GetDepthStencilView();
+	UINT							GetNumRTVs();
+	ComPtr<ID3D11RenderTargetView>	GetRenderTargetView();
+	ComPtr<ID3D11DepthStencilView>	GetDepthStencilView();
 
 	ID3D11RasterizerState*		GetRSWireFrame();
 	ID3D11RasterizerState*		GetRSCullBackFace();

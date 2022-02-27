@@ -119,18 +119,19 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, TerrainInitializationPara
 	}
 
 	//init shader
-	m_PixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
-	m_PixelShader->CompileShaderFromFile(params.pixelSHader);
-	m_PixelShader->CreateReflector();
-	m_PixelShader->CreateInputLayout();
-
 	m_VertexShader.reset(new AShaderCache(renderDevice, AShaderType::VERTEXSHADER));
 	m_VertexShader->CompileShaderFromFile(params.vertexSHader);
 	m_VertexShader->CreateReflector();
 	m_VertexShader->CreateInputLayout();
 
-	m_HeightMapOffsets.reset(new ATexture( renderDevice));
-	m_HeightMapOffsets->CreateRWTexture2D(m_TerrainWidth, m_TerrainHeight, DXGI_FORMAT_R32_FLOAT);
+	m_PixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
+	m_PixelShader->CompileShaderFromFile(params.pixelSHader);
+	m_PixelShader->CreateReflector();
+	m_PixelShader->CreateInputLayout();
+
+
+	m_HeightMapFinal.reset(new ATexture( renderDevice));
+	m_HeightMapFinal->CreateTexture2D(m_TerrainWidth, m_TerrainHeight, DXGI_FORMAT_R32_FLOAT);
 
 	float* pData = new float[m_TerrainWidth * m_TerrainHeight];
 	for (int j = 0; j < m_TerrainHeight; j++)
@@ -141,8 +142,71 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, TerrainInitializationPara
 			pData[index] = m_HeightMap[index].position.y;
 		}
 	}
-	m_HeightMapOffsets->LoadData(pData, size_t(m_TerrainWidth*m_TerrainHeight), 4);
+	m_HeightMapFinal->LoadData(pData, size_t(m_TerrainWidth*m_TerrainHeight), 4);
 	SAFE_DELETE(pData);
+
+	m_HeightMapRenderTarget.reset(new ATexture(renderDevice));
+	m_HeightMapRenderTarget->CreateRenderTarget2D(m_TerrainWidth, m_TerrainHeight, DXGI_FORMAT_R32_FLOAT);
+
+	m_SculptVertexShader.reset(new AShaderCache(renderDevice, AShaderType::VERTEXSHADER));
+	m_SculptVertexShader->CompileShaderFromFile(params.sculptVertexSHader);
+	m_SculptVertexShader->CreateReflector();
+	m_SculptVertexShader->CreateInputLayout();
+
+	m_SculptPixelShader.reset(new AShaderCache(renderDevice, AShaderType::PIXELSHADER));
+	m_SculptPixelShader->CompileShaderFromFile(params.sculptPixelSHader);
+	m_SculptPixelShader->CreateReflector();
+	m_SculptPixelShader->CreateInputLayout();
+
+	//vector<Vector4> SculptingQuad =
+	//{
+	//	//Vector4(-1.0f, 1.0f, 0.0f, 1.0f)* m_TerrainWidth * 0.5f,	//0
+	//	//Vector4( 1.0f, 1.0f, 0.0f, 1.0f)* m_TerrainWidth * 0.5f,	//1
+	//	//Vector4( 1.0f,-1.0f, 0.0f, 1.0f)* m_TerrainWidth * 0.5f,	//2
+	//	//Vector4(-1.0f,-1.0f, 0.0f, 1.0f)* m_TerrainWidth * 0.5f	//3
+
+	//	Vector4(0.0f, 0.0f, 1.0f, 1.0f)* m_TerrainWidth,	//0
+	//	Vector4(1.0f, 0.0f, 1.0f, 1.0f)* m_TerrainWidth,	//1
+	//	Vector4(0.0f, 0.0f, 0.0f, 1.0f)* m_TerrainWidth,	//3
+
+	//	Vector4(1.0f, 0.0f, 1.0f, 1.0f)* m_TerrainWidth,	//1
+	//	Vector4(1.0f, 0.0f, 0.0f, 1.0f)* m_TerrainWidth,	//2
+	//	Vector4(0.0f, 0.0f, 0.0f, 1.0f)* m_TerrainWidth		//3
+	//	//move terrain ?????
+	//};
+	 
+	vector<QuadVertex> SculptingQuad =
+	{
+		{Vector4(-1.0f, 1.0f, 0.0f, 1.0f), Vector2(0.0f, 0.0f)},	//0
+		{Vector4( 1.0f, 1.0f, 0.0f, 1.0f), Vector2(1.0f, 0.0f)},	//1
+		{Vector4(-1.0f,-1.0f, 0.0f, 1.0f), Vector2(0.0f, 1.0f)},	//3
+		 								  
+		{Vector4( 1.0f, 1.0f, 0.0f, 1.0f), Vector2(1.0f, 0.0f)},	//1
+		{Vector4( 1.0f,-1.0f, 0.0f, 1.0f), Vector2(1.0f, 1.0f)},	//2
+		{Vector4(-1.0f,-1.0f, 0.0f, 1.0f), Vector2(0.0f, 1.0f)}		//3
+		//move terrain ?????
+	};
+	// Set up the description of the static vertex buffer.
+	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	vertexBufferDesc.ByteWidth = sizeof(QuadVertex) * SculptingQuad.size();
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = 0;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+
+	// Give the subresource structure a pointer to the vertex data.
+	vertexData.pSysMem = SculptingQuad.data();
+	vertexData.SysMemPitch = 0;
+	vertexData.SysMemSlicePitch = 0;
+
+	// Now create the vertex buffer.
+	hr = device->CreateBuffer(&vertexBufferDesc, &vertexData, m_SculptVertexBuffer.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	CreateHeightMapStaging(renderDevice);
 
 	return true;
 }
@@ -199,23 +263,6 @@ void ATerrain::Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlM
 
 	// Unlock the constant buffer.
 	context->Unmap(m_LightBuffer.Get(), 0);
-
-	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-	hr = context->Map(m_ShaderParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-	if (FAILED(hr))
-	{
-		return;
-	}
-
-	ShaderParametersBuffer* dataPtr3 = (ShaderParametersBuffer*)mappedResource.pData;
-
-	dataPtr3->TextureUVScale	= m_TerrainTextureUVScale;
-	dataPtr3->PickedPoint		= Vector4(m_PickedPoint.x, m_PickedPoint.y, m_PickedPoint.z, 1.0f);
-	dataPtr3->BrushRadius		= Vector4(m_radiusMax);
-	dataPtr3->TerrainSize		= Vector4(m_TerrainWidth, 0.0f, m_TerrainHeight, 0.0f);
-
-	// Unlock the constant buffer.
-	context->Unmap(m_ShaderParametersBuffer.Get(), 0);
 
 	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 0);
 
@@ -295,21 +342,6 @@ bool ATerrain::InitConstantBuffers(ID3D11Device* device)
 
 	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
 	hr = device->CreateBuffer(&shaderParamBufferDesc, nullptr, m_ShaderParametersBuffer.ReleaseAndGetAddressOf());
-	if (FAILED(hr))
-	{
-		return false;
-	}
-
-	D3D11_BUFFER_DESC sculptingParamBufferDesc;
-	sculptingParamBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	sculptingParamBufferDesc.ByteWidth = sizeof(SculptingParametersBuffer);
-	sculptingParamBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	sculptingParamBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	sculptingParamBufferDesc.MiscFlags = 0;
-	sculptingParamBufferDesc.StructureByteStride = 0;
-
-	// Create the constant buffer pointer so we can access the vertex shader constant buffer from within this class.
-	hr = device->CreateBuffer(&sculptingParamBufferDesc, nullptr, m_SculptingParametersBuffer.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
 		return false;
@@ -401,13 +433,23 @@ bool ATerrain::InitGeometry(VertexType*& Vertices, uint32_t*& Indices)
 
 void ATerrain::Render(ARenderDevice* renderDevice)
 {
+
+	RenderSculptingQuad(renderDevice);
+
+	RenderTerrain(renderDevice);
+		
+	UpdateHeightmapPixelData(renderDevice);
+}
+
+void ATerrain::RenderTerrain(ARenderDevice* renderDevice)
+{
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
+
 	// Set vertex buffer stride and offset.
 	unsigned int stride = sizeof(VertexType);
 	unsigned int offset = 0;
 
-	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
-
-	context->RSSetState( m_bWireFrame? renderDevice->GetRSWireFrame() : renderDevice->GetRSCullBackFace());
+	context->RSSetState(m_bWireFrame ? renderDevice->GetRSWireFrame() : renderDevice->GetRSCullBackFace());
 
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	context->IASetVertexBuffers(0, 1, m_VertexBuffer.GetAddressOf(), &stride, &offset);
@@ -419,16 +461,14 @@ void ATerrain::Render(ARenderDevice* renderDevice)
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Finanly set the constant buffer in the shader with the updated values.
-	vector<ID3D11Buffer*> VSConstantbuffers = { m_MatrixBuffer.Get(), m_SculptingParametersBuffer.Get() };
+	vector<ID3D11Buffer*> VSConstantbuffers = { m_MatrixBuffer.Get()};
 	context->VSSetConstantBuffers(0, VSConstantbuffers.size(), VSConstantbuffers.data());
 
-	//uav
-	vector<ID3D11UnorderedAccessView*> VSUavTextures = { m_HeightMapOffsets->GetUAV() };
-	UINT Indices[] = { 0 };
-	context->OMSetRenderTargetsAndUnorderedAccessViews(1, renderDevice->GetRenderTargetView().GetAddressOf(), renderDevice->GetDepthStencilView().Get(), 1, VSUavTextures.size(), VSUavTextures.data(), Indices);
+	vector<ID3D11ShaderResourceView*> VSSrvs = { m_HeightMapFinal->GetSRV() };
+	context->VSSetShaderResources(0, VSSrvs.size(), VSSrvs.data());
 
 	vector<ID3D11Buffer*> PSConstantbuffers = { m_LightBuffer.Get(), m_ShaderParametersBuffer.Get() };
-	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data() );
+	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data());
 
 	// Set shader texture resource in the pixel shader.
 	context->PSSetShaderResources(0, m_TerrainTextureSrvLayers.size(), m_TerrainTextureSrvLayers.data());
@@ -914,23 +954,147 @@ void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime,
 	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
 
 	ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
-	hr = context->Map(m_SculptingParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+	hr = context->Map(m_ShaderParametersBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
 	if (FAILED(hr))
 	{
 		return;
 	}
 
-	SculptingParametersBuffer* dataPtr = (SculptingParametersBuffer*)mappedResource.pData;
+	ShaderParametersBuffer* dataPtr = (ShaderParametersBuffer*)mappedResource.pData;
 
 	dataPtr->SculptMode = Vector4(raise, lower, flatten, smooth);
 	dataPtr->TerrainPosition = Vector4(0.0f);
 	dataPtr->PickedPoint = Vector4(m_PickedPoint.x, m_PickedPoint.y, m_PickedPoint.z, 1.0f);
-	dataPtr->BrushRadius = Vector4(m_radiusMax, m_strength, 0.0f, 0.0f);
+	dataPtr->BrushParams = Vector4(m_radiusMax, m_strength, 0.0f, 0.0f);
 	dataPtr->TerrainSize = Vector4(m_TerrainWidth, 0.0f, m_TerrainHeight, 0.0f);
 	dataPtr->DeltaTime = Vector4(deltaTime);
+	dataPtr->TextureUVScale = m_TerrainTextureUVScale;
 
 	// Unlock the constant buffer.
-	context->Unmap(m_SculptingParametersBuffer.Get(), 0);
+	context->Unmap(m_ShaderParametersBuffer.Get(), 0); 	
+	
+}
+
+void ATerrain::RenderSculptingQuad(ARenderDevice* renderDevice)
+{
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
+
+	unsigned int stride = sizeof(QuadVertex);
+	unsigned int offset = 0;
+
+	Viewport quadViewport;
+	quadViewport.width = (float)m_TerrainWidth;
+	quadViewport.height = (float)m_TerrainHeight;
+	quadViewport.minDepth = 0.0f;
+	quadViewport.maxDepth = 1.0f;
+	quadViewport.x = 0.0f;
+	quadViewport.y = 0.0f;
+
+	D3D11_VIEWPORT oldViewport = {};
+	UINT numViewport = 1;
+	context->RSGetViewports(&numViewport, &oldViewport);
+	context->RSSetViewports(1, quadViewport.Get11());
+
+	context->RSSetState(renderDevice->GetRSNoCullFace());
+
+	ID3D11RenderTargetView* RTVs = nullptr;
+	ID3D11DepthStencilView* DSVs = nullptr;
+	context->OMGetRenderTargets(renderDevice->GetNumRTVs(), &RTVs, &DSVs);
+
+	vector<ID3D11RenderTargetView*> SculptingRTV = { m_HeightMapRenderTarget->GetRTV() };
+	context->OMSetRenderTargets(SculptingRTV.size(), SculptingRTV.data(), nullptr);
+
+	// Set the vertex buffer to active in the input assembler so it can be rendered.
+	context->IASetVertexBuffers(0, 1, m_SculptVertexBuffer.GetAddressOf(), &stride, &offset);
+
+	// Set the type of primitive that should be rendered from this vertex buffer, in this case a line list.
+	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	vector<ID3D11Buffer*> PSConstantbuffers = { m_ShaderParametersBuffer.Get() };
+	context->PSSetConstantBuffers(0, PSConstantbuffers.size(), PSConstantbuffers.data());
+
+	// Set shader texture resource in the pixel shader.
+	vector<ID3D11ShaderResourceView*> PSSrvs = { m_HeightMapFinal->GetSRV() };
+	context->PSSetShaderResources(0, PSSrvs.size(), PSSrvs.data());
+
+	// Set the vertex input layout.
+	context->IASetInputLayout(m_SculptVertexShader->GetInputLayout().Get());
+
+	// Set the vertex and pixel shaders that will be used to render this triangle.
+	context->VSSetShader(m_SculptVertexShader->GetVertexShader().Get(), nullptr, 0);
+	context->PSSetShader(m_SculptPixelShader->GetPixelShader().Get(), nullptr, 0);
+
+	// Set the sampler state in the pixel shader.
+	context->PSSetSamplers(0, 1, renderDevice->GetSampleRepeat());
+
+	// Render the triangle.
+	context->Draw(6, 0);
+	context->Flush();
+
+	context->OMSetRenderTargets(renderDevice->GetNumRTVs(), &RTVs, DSVs);
+	context->RSSetViewports(numViewport, &oldViewport);
+
+}
+
+void ATerrain::CreateHeightMapStaging(ARenderDevice* renderDevice)
+{
+	D3D11_TEXTURE2D_DESC HeightMapTextureDesc = {};
+	m_HeightMapFinal->GetResource2D()->GetDesc(&HeightMapTextureDesc);
+
+	// Otherwise, create a staging texture from the non-MSAA source
+	HeightMapTextureDesc.BindFlags = 0;
+	//m_HeightMapTextureDesc.MiscFlags &= D3D11_RESOURCE_MISC_TEXTURECUBE;
+	HeightMapTextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	HeightMapTextureDesc.Usage = D3D11_USAGE_STAGING;
+
+	HRESULT hr = renderDevice->GetDevice()->CreateTexture2D(&HeightMapTextureDesc, 0, m_HeightMapStagingTexture.ReleaseAndGetAddressOf());
+	if (FAILED(hr))
+	{
+		throw "Create HeightMapStagingTexture Failed!";
+	}
+}
+
+void ATerrain::UpdateHeightmapPixelData(ARenderDevice* renderDevice)
+{
+	if (!m_bSculptingInProgress)
+	{
+		return;
+	}
+
+	ID3D11DeviceContext* context = renderDevice->GetContext().Get();
+
+	context->CopyResource(m_HeightMapStagingTexture.Get(), m_HeightMapFinal->GetResource2D());
+
+	// Map my "captureTexture" resource to access the pixel data
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	HRESULT hr = context->Map(m_HeightMapStagingTexture.Get(), 0, D3D11_MAP_READ, 0, &mapped);
+
+	// Cast the pixel data to a byte array essentially
+	const float* SrcPixels = reinterpret_cast<const float*>(mapped.pData);
+	if (!SrcPixels)
+	{
+		context->Unmap(m_HeightMapStagingTexture.Get(), 0);
+		return;// E_POINTER;
+	}
+
+	D3D11_TEXTURE2D_DESC HeightMapTextureDesc = {};
+	m_HeightMapStagingTexture->GetDesc(&HeightMapTextureDesc);
+
+	// Loop through all pixels in texture and copy to output buffer
+	for (UINT z = 0; z < HeightMapTextureDesc.Height; z++)
+	{
+		for (UINT x = 0; x < HeightMapTextureDesc.Width; x++)
+		{
+			UINT index = z * HeightMapTextureDesc.Width + x;
+
+			float R = SrcPixels[index];	// Red
+
+			m_HeightMap[index].position.y = R;
+		}
+	}
+
+	// Unmap the texture & clean up
+	context->Unmap(m_HeightMapStagingTexture.Get(), 0);
 }
 
 bool ATerrain::RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection)
@@ -944,147 +1108,35 @@ void ATerrain::Raise(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
 	SendSculptingParams(renderDevice, deltaTime, 1, 0, 0, 0);
-#if 1
-	int x = m_PickedPoint.x;
-	int z = m_PickedPoint.z;
-	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
-	{
-		return;
-	}
+	UpdateHeightMapTexture(renderDevice);
 	 
-	m_bSculptingInProgress = true;
-	for (int i = -m_radiusMax; i < m_radiusMax; i++)
-	{
-		for (int j = -m_radiusMax; j < m_radiusMax; j++)
-		{
-			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
-			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
-			{
-				float radius = Vector2(i, j).Length();
-				//m_HeightMap[index].position.y += radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
-				m_HeightMap[index].position.y += (radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f) * deltaTime * 10.0f;
-			}
-		}
-	}
-#endif
+}
+ 
+void ATerrain::UpdateHeightMapTexture(ARenderDevice* renderDevice)
+{
+	renderDevice->GetContext()->CopyResource(m_HeightMapFinal->GetResource2D(), m_HeightMapRenderTarget->GetResource2D());
+	renderDevice->GetContext()->Flush();
 }
 
 void ATerrain::Lower(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
 	SendSculptingParams(renderDevice, deltaTime, 0, 1, 0, 0);
-#if 0
-	int x = m_PickedPoint.x;
-	int z = m_PickedPoint.z;
-	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
-	{
-		return;
-	}
-	 
-	m_bSculptingInProgress = true;
-	for (int i = -m_radiusMax; i < m_radiusMax; i++)
-	{
-		for (int j = -m_radiusMax; j < m_radiusMax; j++)
-		{
-			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
-			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
-			{
-				float radius = Vector2(i, j).Length();
-				//m_HeightMap[index].position.y -= radius > radiusMax ? 0.0f : strength * SmotherStep(radius, radiusMax, radiusMax - radius);
-				m_HeightMap[index].position.y -= (radius > m_radiusMax ? 0.0f : m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f)* deltaTime * 10.0f;
-			}
-		}
-	}
-#endif
+	UpdateHeightMapTexture(renderDevice);
 }
 
 void ATerrain::Flatten(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
 	SendSculptingParams(renderDevice, deltaTime, 0, 0, 1, 0);
-#if 0
-	int x = m_PickedPoint.x;
-	int z = m_PickedPoint.z;
-	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
-	{
-		return;
-	}
-	 
-	m_bSculptingInProgress = true;
-	m_PickedPoint.y = m_HeightMap[m_TerrainHeight * z + x].position.y;
-
-	for (int i = -m_radiusMax; i < m_radiusMax; i++)
-	{
-		for (int j = -m_radiusMax; j < m_radiusMax; j++)
-		{
-			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
-			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
-			{
-				float radius = Vector2(i, j).Length();
-				if (radius < m_radiusMax)
-				{
-					m_HeightMap[index].position.y = m_PickedPoint.y;
-				}
-			}
-		}
-	}
-#endif
+	UpdateHeightMapTexture(renderDevice);
 }
 
 void ATerrain::Smooth(ARenderDevice* renderDevice, float deltaTime)
 { 
 	m_bSculptingInProgress = true;
 	SendSculptingParams(renderDevice, deltaTime, 0, 0, 0, 1);
-#if 0
-	int x = m_PickedPoint.x;
-	int z = m_PickedPoint.z;
-	if (x < 0 || z < 0 || x > m_TerrainWidth - 1 || z > m_TerrainHeight - 1)
-	{
-		return;
-	}
-
-	int smoothRadius = 5;
-	m_bSculptingInProgress = true;
-	for (int i = -m_radiusMax; i < m_radiusMax; i++)
-	{
-		for (int j = -m_radiusMax; j < m_radiusMax; j++)
-		{
-			uint64_t index = (m_TerrainHeight * (z + j)) + (x + i);
-			if (index >= 0 && index <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
-			{
-				int samplesTaken = 0;
-				float avgY = 0.0f;
-				float radius = Vector2(i, j).Length();
-				for (int k = -smoothRadius; k < smoothRadius; k++)
-				{
-					for (int l = -smoothRadius; l < smoothRadius; l++)
-					{
-						uint64_t index2 = (m_TerrainHeight * (z + j + l)) + (x + i + k);
-						if (index2 >= 0 && index2 <= (m_TerrainWidth - 1) * (m_TerrainHeight - 1))
-						{
-							float radius2 = Vector2(k, l).Length();
-							avgY += radius2 > smoothRadius ? 0.0f : m_HeightMap[index2].position.y;
-							radius2 > smoothRadius ? samplesTaken : samplesTaken++;
-						}
-					}
-				}
-				avgY /= samplesTaken;
-
-				float adjustment = (m_strength * (cosf(XM_PI * radius / float(m_radiusMax)) + 1.0f) * 0.5f) * deltaTime * avgY * 0.1f;
-				if (m_HeightMap[index].position.y > avgY)
-				{
-					m_HeightMap[index].position.y -= (radius > m_radiusMax ? 0.0f : adjustment);
-				}
-				else
-				{
-					m_HeightMap[index].position.y += (radius > m_radiusMax ? 0.0f : adjustment);
-				}
-			}
-		}
-	}
-#endif
-
-
+	UpdateHeightMapTexture(renderDevice);
 }
 
 void ATerrain::SetBrushRadius(int val)
@@ -1109,6 +1161,12 @@ bool ATerrain::SculptingInProgress()
 
 void ATerrain::ResetSculptingProgress(ARenderDevice* renderDevice)
 {
-	m_bSculptingInProgress = false;
-	SendSculptingParams(renderDevice, 0.0f, 0, 0, 0, 0);
+	if (m_bSculptingInProgress)
+	{
+		//copy sculpted texture to height map texture
+		//renderDevice->GetContext()->CopyResource(m_HeightMapFinal->GetResource2D(), m_HeightMapRenderTarget->GetResource2D());
+		//renderDevice->GetContext()->Flush();
+		SendSculptingParams(renderDevice, 0.0f, 0, 0, 0, 0);
+		m_bSculptingInProgress = false;
+	}
 }

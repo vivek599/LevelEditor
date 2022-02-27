@@ -494,6 +494,7 @@ void ATexture::CreateTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 	m_Type = ATEX_2D;
 	m_Width = Width;
 	m_Height = Height;
+	m_Format = Format;
 	if (m_Resource2D)
 	{
 		return;
@@ -502,9 +503,9 @@ void ATexture::CreateTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 	D3D11_TEXTURE2D_DESC Desc;
 	ZeroMemory(&Desc, sizeof(D3D11_TEXTURE2D_DESC));
 	Desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	Desc.Format = Format;
-	Desc.Height = Height;
 	Desc.Width = Width;
+	Desc.Height = Height;
+	Desc.Format = Format;
 	Desc.ArraySize = 1;
 	Desc.MipLevels = 1;
 	Desc.SampleDesc.Count = 1;
@@ -528,7 +529,8 @@ void ATexture::CreateTexture2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = Format;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 0;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
 	hr = m_Device->CreateShaderResourceView(m_Resource2D.Get(), &srvDesc, m_pSRV.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
@@ -570,7 +572,8 @@ void ATexture::CreateTexture1D(UINT Width, DXGI_FORMAT Format)
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
 	srvDesc.Format = m_Format;
 	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
-	srvDesc.Texture1D.MipLevels = 0;
+	srvDesc.Texture1D.MipLevels = 1;
+	srvDesc.Texture1D.MostDetailedMip = 0;
 	hr = m_Device->CreateShaderResourceView(m_Resource1D.Get(), &srvDesc, m_pSRV.ReleaseAndGetAddressOf());
 	if (FAILED(hr))
 	{
@@ -589,9 +592,15 @@ void ATexture::CreateTexture3D(UINT Width, UINT Height, UINT Depth, DXGI_FORMAT 
 
 void ATexture::CreateRenderTarget2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 {
+	if (m_Resource2D)
+	{
+		return;
+	}
+
 	m_Type = ATEX_RT_2D;
 	m_Width = Width;
 	m_Height = Height;
+	m_Format = Format;
 
 	// Create texture
 	D3D11_TEXTURE2D_DESC desc;
@@ -616,6 +625,7 @@ void ATexture::CreateRenderTarget2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 		SRVDesc.Format = Format;
 		SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		SRVDesc.Texture2D.MipLevels = 1;
+		SRVDesc.Texture2D.MostDetailedMip = 0;
 
 		hr = m_Device->CreateShaderResourceView(m_Resource2D.Get(), &SRVDesc, m_pSRV.ReleaseAndGetAddressOf());
 		if (FAILED(hr))
@@ -640,4 +650,8 @@ void ATexture::CreateRenderTarget2D(UINT Width, UINT Height, DXGI_FORMAT Format)
 	}
 }
 
+ID3D11Texture2D* ATexture::GetResource2D() const
+{
+	return m_Resource2D.Get();
+}
 

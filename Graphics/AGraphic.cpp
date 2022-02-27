@@ -144,7 +144,7 @@ bool AGraphic::Render()
 	if (m_ResizeSuccess)
 	{
 		m_DeviceContext->RSSetState(m_RenderDevice->GetRSCullBackFace());
-		m_DeviceContext->OMSetRenderTargets(1, m_RenderDevice->GetRenderTargetView().GetAddressOf(), m_RenderDevice->GetDepthStencilView().Get());
+		m_DeviceContext->OMSetRenderTargets(m_RenderDevice->GetNumRTVs(), m_RenderDevice->GetRenderTargetView().GetAddressOf(), m_RenderDevice->GetDepthStencilView().Get());
 		m_DeviceContext->RSSetViewports(1, m_Viewport.Get11());
 	}
 	else

@@ -19,9 +19,12 @@ cbuffer LightBuffer : register(b0)
 cbuffer ShaderParameters : register(b1)
 {
     float4 TextureUVScale;
+    float4 SculptMode;
+    float4 TerrainPosition;
     float4 PickedPoint;
-    float4 BrushRadius;
+    float4 BrushParams;
     float4 TerrainSize;
+    float4 DeltaTime;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +61,7 @@ float4 main(PixelInputType input) : SV_TARGET
     CurrentPixelPosition.x = input.tex.x * TerrainSize.x;
     CurrentPixelPosition.y = input.tex.y * TerrainSize.z;
     float distanceToPixel = length(CurrentPixelPosition - PickedPoint.xz);
-    if (distanceToPixel <= BrushRadius.x)
+    if (distanceToPixel <= BrushParams.x)
     {
         color *= float4(0.0f, 1.0f, 1.0f, 1.0f);
         color = saturate(color);

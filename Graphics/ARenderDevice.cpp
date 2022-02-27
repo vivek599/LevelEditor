@@ -157,6 +157,11 @@ ComPtr<ID3D11DeviceContext> ARenderDevice::GetContext()
 	return m_DeviceContext;
 } 
 
+UINT ARenderDevice::GetNumRTVs()
+{
+	return 1;
+}
+
 ComPtr<ID3D11RenderTargetView> ARenderDevice::GetRenderTargetView()
 {
 	return m_RenderTargetView;
