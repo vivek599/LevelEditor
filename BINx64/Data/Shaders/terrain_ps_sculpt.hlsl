@@ -131,7 +131,8 @@ float main(PixelInputType input) : SV_TARGET
             input.tex.x < AlphaTexCoordMax.x &&
             input.tex.y < AlphaTexCoordMax.y)
         {
-            return Sculpt(input);
+            float sculptval = Sculpt(input);
+            return sculptval < 5.0f ? HeightMapTexture.Sample(SampleType, input.tex) : sculptval;
         }
         else
             return HeightMapTexture.Sample(SampleType, input.tex);
