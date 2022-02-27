@@ -1159,11 +1159,6 @@ void ATerrain::SetBrushStrength(float val)
 	m_strength = val;
 }
 
-void ATerrain::ResetClosestPoint()
-{
-	m_ClosestPoint = Vector3(-1.0f);
-}
-
 bool ATerrain::SculptingInProgress()
 {
 	return m_bSculptingInProgress;

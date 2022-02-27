@@ -20,38 +20,35 @@ public:
 	ATerrain();
 	~ATerrain();
 
-	bool Initialize(ARenderDevice* renderDevice, TerrainInitializationParams& params);
-	 
-	void Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
-	void Render(ARenderDevice* renderDevice);
+	bool										Initialize(ARenderDevice* renderDevice, TerrainInitializationParams& params);
 
-	void RenderTerrain(ARenderDevice* renderDevice);
+	void										Update(ARenderDevice* renderDevice, float deltaTime, Matrix worlMatrix, Matrix viewMatrix, Matrix projMatrix);
+	void										Render(ARenderDevice* renderDevice);
 
-	int GetIndexCount();
+	void										RenderTerrain(ARenderDevice* renderDevice);
 
-	void SetAmbientColor( Vector4 val );
-	void SetDiffuseColor( Vector4 val );
-	void SetLightDirection( Vector3 val );
+	int  										GetIndexCount();
 
-	void SetTextureUVScale(float val);
+	void										SetAmbientColor( Vector4 val );
+	void										SetDiffuseColor( Vector4 val );
+	void										SetLightDirection( Vector3 val );
 
-	uint32_t GetWidth() const;
-	uint32_t GetHeight() const;
-	bool RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
-	void Raise(ARenderDevice* renderDevice, float deltaTime);
+	void										SetTextureUVScale(float val);
 
-	void UpdateHeightMapTexture(ARenderDevice* renderDevice);
-
-	void Lower(ARenderDevice* renderDevice, float deltaTime);
-	void Flatten(ARenderDevice* renderDevice, float deltaTime);
-	void Smooth(ARenderDevice* renderDevice, float deltaTime);
-	void AlphaMap(ARenderDevice* renderDevice, float deltaTime);
-	void SetBrushRadius(int val);
-	void SetBrushStrength(float val);
-	void ResetClosestPoint();
-	bool SculptingInProgress();
-	void ResetSculptingProgress(ARenderDevice* renderDevice);
-	bool SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath);
+	uint32_t									GetWidth() const;
+	uint32_t									GetHeight() const;
+	bool										RayTerrainIntersect(Vector3 rayOrigin, Vector3 rayDirection);
+	void										Raise(ARenderDevice* renderDevice, float deltaTime);
+	void										Lower(ARenderDevice* renderDevice, float deltaTime);
+	void										Flatten(ARenderDevice* renderDevice, float deltaTime);
+	void										Smooth(ARenderDevice* renderDevice, float deltaTime);
+	void										AlphaMap(ARenderDevice* renderDevice, float deltaTime);
+	void										UpdateHeightMapTexture(ARenderDevice* renderDevice);
+	void										SetBrushRadius(int val);
+	void										SetBrushStrength(float val);
+	bool										SculptingInProgress();
+	void										ResetSculptingProgress(ARenderDevice* renderDevice);
+	bool										SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath); 
 private:
 	struct QuadVertex
 	{
@@ -89,17 +86,22 @@ private:
 	float m_MinVol				= 0.01;
 	float m_Friction			= 0.05;
 
-	bool InitGeometry(VertexType*& Vertices, uint32_t*& Indices);
-	bool InitConstantBuffers(ID3D11Device* device);
-	bool LoadHeightMapFromBMP(const wchar_t* heightMapFilePath);
-	bool LoadHeightMapFromPNG(const wchar_t* heightMapFilePath);
-	void NormalizeHeightMap();
-	bool CalculateNormals();
-	void CalculateTextureCoordinates();
-	bool LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames );
-	void ShutdownHeightMap();
-	void Erode(int cycles, float dt);
-	float GetHeight(UINT x, UINT z);
+	bool										InitGeometry(VertexType*& Vertices, uint32_t*& Indices);
+	bool										InitConstantBuffers(ID3D11Device* device);
+	bool										LoadHeightMapFromBMP(const wchar_t* heightMapFilePath);
+	bool										LoadHeightMapFromPNG(const wchar_t* heightMapFilePath);
+	void										NormalizeHeightMap();
+	bool										CalculateNormals();
+	void										CalculateTextureCoordinates();
+	bool										LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames);
+	void										ShutdownHeightMap();
+	void										Erode(int cycles, float dt);
+	float										GetHeight(UINT x, UINT z);
+	Vector3										GetBestIntersectionPointLineDrawing(Ray ray);
+	void										SendSculptingParams(ARenderDevice* renderDevice, float deltaTime, UINT SculptMode);
+	void										RenderSculptingQuad(ARenderDevice* renderDevice);
+	void										CreateHeightMapStaging(ARenderDevice* renderDevice);
+	void										UpdateHeightmapPixelData(ARenderDevice* renderDevice);
 
 	uint32_t m_TerrainWidth;
 	uint32_t m_TerrainHeight;
@@ -171,10 +173,10 @@ private:
 	Vector3 m_PickedPoint;
 	int m_radiusMax;
 	float m_strength;
+	UINT m_AlphaMapWidth = 0.0f;
+	UINT m_AlphaMapHeight = 0.0f;
 
-	Vector3 GetBestIntersectionPointLineDrawing(Ray ray);
 
-	Vector3 m_ClosestPoint = Vector3(-1.0f);
 	bool m_bSculptingInProgress = false;
 	bool m_bWireFrame;	
 	enum ESculptMode : UINT
@@ -186,21 +188,12 @@ private:
 		SMOOTH		= 4,
 		ALPHAMAP	= 5
 	};/*, float raise, float lower, float flatten, float smooth*/
-	void SendSculptingParams( ARenderDevice* renderDevice, float deltaTime, UINT SculptMode);
 	unique_ptr<class ATexture> m_HeightMapFinal;
 	unique_ptr<class ATexture> m_HeightMapRenderTarget;
 	unique_ptr<class ATexture> m_AlphaMapTexture;
-
-
-
 	ComPtr<ID3D11Texture2D> m_HeightMapStagingTexture;
 
-	void RenderSculptingQuad(ARenderDevice* renderDevice);
-	void CreateHeightMapStaging(ARenderDevice* renderDevice);
-	void UpdateHeightmapPixelData(ARenderDevice* renderDevice);
 
-	UINT m_AlphaMapWidth	= 0.0f;
-	UINT m_AlphaMapHeight	= 0.0f;
 
 };
 
