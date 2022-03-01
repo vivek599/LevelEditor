@@ -113,7 +113,7 @@ float Sculpt(PixelInputType input)
 float main(PixelInputType input) : SV_TARGET 
 {  
     float dist = length(int2(PickedPoint.xz) - int2(input.tex * TerrainSize.x));
-    if (SculptMode.x == 3)//Flatten
+    if (SculptMode.x == 3 || SculptMode.x == 4)//Flatten or Smooth
     {
         if (dist <= BrushParams.x)
             return Sculpt(input);
