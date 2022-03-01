@@ -31,14 +31,14 @@ float3 GetVertexNormal(VertexInputType input)
 	float h1 = heightMapTextureFinal.Load(int3(loc1, 0), 0);
 	float h2 = heightMapTextureFinal.Load(int3(loc2, 0), 0);
 	
-	float3 v0 = float3(loc0.x, h0, loc0.z)
-	float3 v1 = float3(loc1.x, h1, loc1.z)
-	float3 v2 = float3(loc2.x, h2, loc2.z)
+	float3 v0 = float3(loc0.x, h0, loc0.y);
+	float3 v1 = float3(loc1.x, h1, loc1.y);
+    float3 v2 = float3(loc2.x, h2, loc2.y);
 	
 	float3 v10 = v1 - v0;
 	float3 v20 = v2 - v0;
 	
-	return normalize(cross(v10, v20));
+	return normalize(cross(v20, v10));
 }
 
 PixelInputType main(VertexInputType input, uint id : SV_VertexID )
