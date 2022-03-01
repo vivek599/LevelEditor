@@ -63,7 +63,8 @@ float Sculpt(PixelInputType input)
                     float2 smoothingPos = VertexTexCoord + float2(k, l)/TerrainSize.x;
                     float radiusLocal = length(int2(k, l));
                     avgY += radiusLocal > smoothRadius ? 0.0f : HeightMapTexture.Sample(SampleType, smoothingPos);
-                    radiusLocal > smoothRadius ? samplesTaken : samplesTaken++;
+                    //radiusLocal > smoothRadius ? samplesTaken : samplesTaken++;
+                    samplesTaken += (radiusLocal > smoothRadius ? 0 : 1);
                 }
             }
             avgY /= samplesTaken;
