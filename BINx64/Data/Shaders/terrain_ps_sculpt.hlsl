@@ -53,7 +53,7 @@ float Sculpt(PixelInputType input)
             float2 VertexTexCoord = input.tex;
             VertexTexCoord.y = 1.0f - VertexTexCoord.y;
             
-            int smoothRadius = 1;
+            int smoothRadius = 2;
             int samplesTaken = 0;
             float avgY = 0.0f;
             for (int k = -smoothRadius; k < smoothRadius; k++)
@@ -67,8 +67,10 @@ float Sculpt(PixelInputType input)
                 }
             }
             avgY /= samplesTaken;
-
-            float localHeight = HeightMapTexture.Sample(SampleType, VertexTexCoord);
+            
+            SculptOffset = avgY;
+            
+            /*float localHeight = HeightMapTexture.Sample(SampleType, VertexTexCoord);
             //float adjustment = BrushParams.y * smoothstep(0, BrushParams.x, BrushParams.x - dist) * DeltaTime.x * 10.0f;
             float adjustment = smoothstep(0, BrushParams.x, BrushParams.x - dist) * DeltaTime.x * 10.0f;
             if (localHeight > avgY)
@@ -78,7 +80,7 @@ float Sculpt(PixelInputType input)
             else
             {
                 SculptOffset += adjustment;
-            } 
+            } */
         }
 
     }
