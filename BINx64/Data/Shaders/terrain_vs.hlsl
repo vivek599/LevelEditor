@@ -21,6 +21,31 @@ struct PixelInputType
 
 Texture2D<float> heightMapTextureFinal : register(t0);
 
+float3 GetVertexNormal(VertexInputType input)
+{
+	int2 loc0 = input.position.xz;
+	
+	loc0.x += 1;
+	int2 loc1 = loc0;
+	
+	loc0.x -= 1;
+	loc0.z += 1;
+	int2 loc2 = loc0;
+	
+	float h0 = heightMapTextureFinal.Load(int3(input.position.xz, 0), 0);
+	float h1 = heightMapTextureFinal.Load(int3(loc1, 0), 0);
+	float h2 = heightMapTextureFinal.Load(int3(loc2, 0), 0);
+	
+	float3 v0 = float3(input.position.x, h0, input.position.z)
+	float3 v1 = float3(loc1.x, h1,loc1.z)
+	float3 v2 = float3(loc2.x, h2,loc2.z)
+	
+	float3 v10 = v1 - v0;
+	float3 v20 = v2 - v0;
+	
+	return normalize(cross(v10, v20));
+}
+
 PixelInputType main(VertexInputType input, uint id : SV_VertexID )
 {
     PixelInputType output;
@@ -39,7 +64,8 @@ PixelInputType main(VertexInputType input, uint id : SV_VertexID )
     output.tex = input.tex;
 
     // Calculate the normal vector against the world matrix only.
-    output.normal = mul(input.normal, (float3x3)worldMatrix);
+    //output.normal = mul(input.normal, (float3x3)worldMatrix);
+    output.normal = mul(GetVertexNormal(input), (float3x3)worldMatrix);
 
     // Normalize the normal vector.
     output.normal = normalize(output.normal);
