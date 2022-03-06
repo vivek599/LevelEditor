@@ -1,3 +1,5 @@
+#include "FastNoiseLite.hlsl"
+
 struct PixelInputType
 {
     float4 position : SV_POSITION;
@@ -17,6 +19,10 @@ cbuffer ShaderParameters : register(b0)
     float4 BrushParams;
     float4 TerrainSize;
     float4 DeltaTime;
+    float  NoiseSeed; 
+    float  NoiseScale; 
+    float  NoiseFrequency;
+    float  NoiseOctaves; 
 };
 
 float Sculpt(PixelInputType input)
@@ -24,7 +30,7 @@ float Sculpt(PixelInputType input)
     float SculptOffset = 0.0f;
      
     float dist = length(int2(PickedPoint.xz) - int2(input.tex * TerrainSize.x));
-    
+      
     if (SculptMode.x == 1)//Raise
     {
         if (dist <= BrushParams.x)
@@ -86,6 +92,19 @@ float Sculpt(PixelInputType input)
             SculptOffset += AlphaMapTexture.Sample(SampleType, alphatex);
         }
     }
+    else if (SculptMode.x == 6)//Noise
+    {
+        if (dist <= BrushParams.x)
+        {
+            fnl_state noise     = fnlCreateState(NoiseSeed);
+            noise.noise_type    = FNL_NOISE_OPENSIMPLEX2;
+            noise.frequency     = NoiseFrequency;
+            noise.octaves       = NoiseOctaves;
+            noise.fractal_type  = FNL_FRACTAL_FBM;
+            
+            SculptOffset = NoiseScale * fnlGetNoise2D(noise, input.tex.x * TerrainSize.x, input.tex.y * TerrainSize.x);
+        }
+    }
     else
     {
         
@@ -97,7 +116,7 @@ float Sculpt(PixelInputType input)
 float main(PixelInputType input) : SV_TARGET 
 {  
     float dist = length(int2(PickedPoint.xz) - int2(input.tex * TerrainSize.x));
-    if (SculptMode.x == 3 || SculptMode.x == 4)//Flatten or Smooth
+    if (SculptMode.x == 3 || SculptMode.x == 4 || SculptMode.x == 6)//Flatten or Smooth or Noise
     {
         if (dist <= BrushParams.x)
             return Sculpt(input);

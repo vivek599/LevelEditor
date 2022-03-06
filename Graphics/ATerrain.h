@@ -43,12 +43,16 @@ public:
 	void										Flatten(ARenderDevice* renderDevice, float deltaTime);
 	void										Smooth(ARenderDevice* renderDevice, float deltaTime);
 	void										AlphaMap(ARenderDevice* renderDevice, float deltaTime);
+	void										Noise(ARenderDevice* renderDevice, float deltaTime);
 	void										UpdateHeightMapTexture(ARenderDevice* renderDevice);
 	void										SetBrushRadius(int val);
 	void										SetBrushStrength(float val);
 	bool										SculptingInProgress();
 	void										ResetSculptingProgress(ARenderDevice* renderDevice);
 	bool										SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath); 
+	void SetNoiseScale(int Scale);
+	void SetNoiseFreq(int Freq);
+	void SetNoiseSeed(int Seed);
 private:
 	struct QuadVertex
 	{
@@ -146,16 +150,10 @@ private:
 		Vector4 BrushParams;
 		Vector4 TerrainSize;
 		Vector4 DeltaTime;
-	};
-
-	struct SculptingParametersBuffer
-	{
-		Vector4 SculptMode;
-		Vector4 TerrainPosition;
-		Vector4 PickedPoint;
-		Vector4	BrushRadius;
-		Vector4 TerrainSize;
-		Vector4 DeltaTime;
+		float  NoiseSeed;
+		float  NoiseScale;
+		float  NoiseFrequency;
+		float  NoiseOctaves;
 	};
 
 	vector<ID3D11ShaderResourceView*>	m_TerrainTextureSrvLayers;
@@ -175,7 +173,9 @@ private:
 	float m_strength;
 	UINT m_AlphaMapWidth = 0.0f;
 	UINT m_AlphaMapHeight = 0.0f;
-
+	int		m_NoiseScale;
+	float	m_NoiseFreq;
+	int		m_NoiseSeed;
 
 	bool m_bSculptingInProgress = false;
 	bool m_bWireFrame;	
@@ -186,7 +186,8 @@ private:
 		LOWER		= 2,
 		FLATTEN		= 3,
 		SMOOTH		= 4,
-		ALPHAMAP	= 5
+		ALPHAMAP	= 5,
+		NOISE		= 6
 	};/*, float raise, float lower, float flatten, float smooth*/
 	unique_ptr<class ATexture> m_HeightMapFinal;
 	unique_ptr<class ATexture> m_HeightMapRenderTarget;
@@ -195,5 +196,6 @@ private:
 
 
 
+	int m_NoiseOctaves;
 };
 

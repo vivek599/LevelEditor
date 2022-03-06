@@ -118,25 +118,31 @@ bool AGraphic::Update(float deltaTime)
 
 void AGraphic::SculptTerrain(float deltaTime)
 {
-	switch (m_TerrainSculptmode)
+	if (m_Terrain)
 	{
-	case RAISE:
-		m_Terrain->Raise(m_RenderDevice, deltaTime);
-		break;
-	case LOWER:
-		m_Terrain->Lower(m_RenderDevice, deltaTime);
-		break;
-	case FLATTEN:
-		m_Terrain->Flatten(m_RenderDevice, deltaTime);
-		break;
-	case SMOOTH:
-		m_Terrain->Smooth(m_RenderDevice, deltaTime);
-		break;
-	case ALPHAMAP:
-		m_Terrain->AlphaMap(m_RenderDevice, deltaTime);
-		break;
-	default:
-		break;
+		switch (m_TerrainSculptmode)
+		{
+		case RAISE:
+			m_Terrain->Raise(m_RenderDevice, deltaTime);
+			break;
+		case LOWER:
+			m_Terrain->Lower(m_RenderDevice, deltaTime);
+			break;
+		case FLATTEN:
+			m_Terrain->Flatten(m_RenderDevice, deltaTime);
+			break;
+		case SMOOTH:
+			m_Terrain->Smooth(m_RenderDevice, deltaTime);
+			break;
+		case ALPHAMAP:
+			m_Terrain->AlphaMap(m_RenderDevice, deltaTime);
+			break;
+		case NOISE:
+			m_Terrain->Noise(m_RenderDevice, deltaTime);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -251,6 +257,30 @@ void AGraphic::SetSculptStrenght(int strength)
 	if (m_Terrain)
 	{
 		m_Terrain->SetBrushStrength(strength);
+	}
+}
+
+void AGraphic::SetSculptNoiseScale(int Scale)
+{
+	if (m_Terrain)
+	{
+		m_Terrain->SetNoiseScale(Scale);
+	}
+}
+
+void AGraphic::SetSculptNoiseFreq(int Freq)
+{
+	if (m_Terrain)
+	{
+		m_Terrain->SetNoiseFreq(Freq);
+	}
+}
+
+void AGraphic::SetSculptNoiseSeed(int Seed)
+{
+	if (m_Terrain)
+	{
+		m_Terrain->SetNoiseSeed(Seed);
 	}
 }
 

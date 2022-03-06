@@ -11,7 +11,8 @@ enum ESculptMode : UINT
 	LOWER		= 2,
 	FLATTEN		= 3,
 	SMOOTH		= 4,
-	ALPHAMAP	= 5
+	ALPHAMAP	= 5,
+	NOISE		= 6
 };/*, float raise, float lower, float flatten, float smooth*/
 
 class AGraphic
@@ -39,6 +40,9 @@ public:
 	void SetMouseState(int mouseX, int mouseY, bool mouseDown, bool mouseMoving);
 	void SetSculptRadius(int radius);
 	void SetSculptStrenght(int strength);
+	void SetSculptNoiseScale(int Scale);
+	void SetSculptNoiseFreq(int Freq);
+	void SetSculptNoiseSeed(int Seed);
 private:
 
 	Matrix m_ProjectionMatrix;
@@ -77,7 +81,7 @@ private:
 	bool m_MouseMoving;
 public:
 	void SetTerrainSculptMode(ESculptMode mode);
-	bool SetTerrainAlphaMap(wchar_t* p) const; 
+	bool SetTerrainAlphaMap(wchar_t* p) const;
 
 };
 

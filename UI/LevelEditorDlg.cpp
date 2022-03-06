@@ -99,6 +99,10 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_WM_MOUSEHOVER()
 	ON_WM_MOUSELEAVE()
 	ON_BN_CLICKED(IDC_LOADALPHAMAP, &CLevelEditorDlg::OnBnClickedLoadalphamap)
+	ON_BN_CLICKED(IDC_BUTTON_NOISE_RNDMZ, &CLevelEditorDlg::OnBnClickedButtonNoiseRndmz)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_SEED, &CLevelEditorDlg::OnDeltaposSpinSeed)
+	ON_EN_CHANGE(IDC_TEXTBOX_NSCALE, &CLevelEditorDlg::OnEnChangeTextboxNscale)
+	ON_EN_CHANGE(IDC_TEXTBOX_NFREQ, &CLevelEditorDlg::OnEnChangeTextboxNfreq)
 END_MESSAGE_MAP()
 
 
@@ -124,8 +128,7 @@ BOOL CLevelEditorDlg::OnInitDialog()
 		CRect rect;
 		m_RenderBox->GetWindowRect(rect);
 		m_RenderBox->ScreenToClient(&rect);
-		m_Graphic.reset(new AGraphic( m_RenderBox->m_hWnd,rect.Width(), rect.Height(), false, false));
-
+		m_Graphic.reset(new AGraphic( m_RenderBox->m_hWnd,rect.Width(), rect.Height(), false, false)); 
 	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -236,7 +239,9 @@ void CLevelEditorDlg::OnBnClickedLoadheightmap()
 	m_Graphic->InitializeTerrain(&params);
 	m_Graphic->SetTextureUVScale(1);
 	m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
-
+	m_Graphic->SetSculptNoiseScale(1);
+	m_Graphic->SetSculptNoiseFreq(200);
+	m_Graphic->SetSculptNoiseSeed(1337);
 
 
 }
@@ -257,6 +262,20 @@ void CLevelEditorDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		m_BrushStrengthTextbox->SetWindowTextW(m_BrushStrengthSliderVal.GetBuffer());
 		UpdateData(FALSE);
 		m_Graphic->SetSculptStrenght(m_BrushStrengthSlider->GetPos());
+	}
+	else if (pScrollBar == (CScrollBar*)m_NoiseScaleSlider)
+	{
+		m_NoiseScaleSliderVal.Format(_T("%d"), m_NoiseScaleSlider->GetPos());
+		m_NoiseScaleTextBox->SetWindowTextW(m_NoiseScaleSliderVal.GetBuffer());
+		UpdateData(FALSE);
+		m_Graphic->SetSculptNoiseScale(m_NoiseScaleSlider->GetPos());
+	}
+	else if (pScrollBar == (CScrollBar*)m_NoiseFreqSlider)
+	{
+		m_NoiseFreqSliderVal.Format(_T("%d"), m_NoiseFreqSlider->GetPos());
+		m_NoiseFreqTextBox->SetWindowTextW(m_NoiseFreqSliderVal.GetBuffer());
+		UpdateData(FALSE);
+		m_Graphic->SetSculptNoiseFreq(m_NoiseFreqSlider->GetPos());
 	}
 	else 
 	{
@@ -334,6 +353,10 @@ void CLevelEditorDlg::OnCbnSelendokComboBrushtype()
 	{
 		m_Graphic->SetTerrainSculptMode(ESculptMode::ALPHAMAP);
 	}
+	else if (strValue == "Noise")
+	{
+		m_Graphic->SetTerrainSculptMode(ESculptMode::NOISE);
+	}
 
 }
 
@@ -363,21 +386,51 @@ bool CLevelEditorDlg::InitializeControls()
 	m_BrushTypeText		= (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL);
 	m_RenderBox			= (CPictureControl*)GetDlgItem(IDC_RENDERBOX);
 	m_FpsText			= (CStatic*)GetDlgItem(IDC_STATIC_FPS);
-	m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
-
+	m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE); 
 	m_FpsText->LockWindowUpdate();
+
+	m_NoiseScaleText	= (CStatic*)GetDlgItem(IDC_STATIC_NSCALE);
+	m_NoiseFreqText		= (CStatic*)GetDlgItem(IDC_STATIC_NFREQ);
+	m_NoiseSeedText		= (CStatic*)GetDlgItem(IDC_STATIC_NSEED);
+	m_ButtonNoiseSeedRandomize = (CButton*)(GetDlgItem(IDC_BUTTON_NOISE_RNDMZ));
+	m_NoiseScaleTextBox		= (CEdit*)GetDlgItem(IDC_TEXTBOX_NSCALE);;
+	m_NoiseFreqTextBox		= (CEdit*)GetDlgItem(IDC_TEXTBOX_NFREQ);;
+	m_NoiseSeedTextBox		= (CEdit*)GetDlgItem(IDC_TEXTBOX_NSEED);;
+	m_NoiseSeedSpin			= (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SEED);;
+	m_NoiseScaleSlider		= (CSliderCtrl*)(GetDlgItem(IDC_SLIDER_NSCALE));
+	m_NoiseFreqSlider		= (CSliderCtrl*)(GetDlgItem(IDC_SLIDER_NFREQ));
 
 	m_BrushSizeSlider->SetRange(1, 100, TRUE);
 	m_BrushSizeSlider->SetPos(0);
+	m_BrushSizeSlider->SetPageSize(1);
 	m_BrushSizeSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushSizeTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
 	m_BrushStrengthSlider->SetRange(1, 100, TRUE);
 	m_BrushStrengthSlider->SetPos(0);
+	m_BrushStrengthSlider->SetPageSize(1);
 	m_BrushStrengthSliderVal.Format(_T("%d"), m_BrushSizeSlider->GetPos());
 	m_BrushStrengthTextbox->SetWindowTextW(m_BrushSizeSliderVal.GetBuffer());
 
 	m_BrushComboBox->SetCurSel(0);
+
+	m_NoiseScaleSlider->SetRange(1, RAND_MAX, TRUE);
+	m_NoiseScaleSlider->SetPos(0);
+	m_NoiseScaleSliderVal.Format(_T("%d"), m_NoiseScaleSlider->GetPos());
+	m_NoiseScaleTextBox->SetWindowTextW(m_NoiseScaleSliderVal.GetBuffer());
+
+	m_NoiseFreqSlider->SetRange(-1000, 1000, TRUE);
+	m_NoiseFreqSlider->SetPos(200);
+	m_NoiseFreqSlider->SetTicFreq(1);
+	m_NoiseFreqSliderVal.Format(_T("%d"), m_NoiseFreqSlider->GetPos());
+	m_NoiseFreqTextBox->SetWindowTextW(m_NoiseFreqSliderVal.GetBuffer());
+
+	m_NoiseSeedSpin->SetRange(0, RAND_MAX);
+	m_NoiseSeedSpin->SetPos(1337);
+	m_NoiseSeedSpin->SetBuddy(m_NoiseSeedTextBox);
+	CString windowtext;
+	windowtext.Format(_T("%d"), 1337);
+	m_NoiseSeedTextBox->SetWindowTextW(windowtext);
 
 	m_FpsFont.CreateFont(
 		24,                        // nHeight
@@ -527,6 +580,25 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 		m_BrushTypeText->SetWindowPos(nullptr, cx - 250 - hspacing, 145 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ButtonErode->SetWindowPos(nullptr, cx - 250 - hspacing, 170 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ErodeIterationText->SetWindowPos(nullptr, cx - 190 - hspacing, 173 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_NoiseScaleText->SetWindowPos(nullptr, cx - 250 - hspacing, 210 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseScaleSlider->SetWindowPos(nullptr, cx - 190 - hspacing, 205 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseScaleTextBox->SetWindowPos(nullptr, cx - 80 - hspacing, 205 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_NoiseFreqText->SetWindowPos(nullptr, cx - 250 - hspacing, 240 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseFreqSlider->SetWindowPos(nullptr, cx - 190 - hspacing, 235 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseFreqTextBox->SetWindowPos(nullptr, cx - 80 - hspacing, 235 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_NoiseSeedText->SetWindowPos(nullptr, cx - 250 - hspacing, 270 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseSeedTextBox->SetWindowPos(nullptr, cx - 185 - hspacing, 265 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseSeedSpin->SetWindowPos(nullptr, cx - 120 - hspacing, 265 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_ButtonNoiseSeedRandomize->SetWindowPos(nullptr, cx - 90 - hspacing, 265 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		
+		
+
+
+
+
 
 		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
@@ -691,4 +763,81 @@ void CLevelEditorDlg::OnBnClickedLoadalphamap()
 
 
 
+}
+
+
+void CLevelEditorDlg::OnBnClickedButtonNoiseRndmz()
+{
+	// TODO: Add your control notification handler code here
+	m_NoiseSeedSpin->SetPos(rand());
+	UpdateData(FALSE);
+}
+
+
+void CLevelEditorDlg::OnDeltaposSpinSeed(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	// TODO: Add your control notification handler code here
+
+	if (pNMUpDown->hdr.hwndFrom == m_NoiseSeedSpin->GetSafeHwnd())
+	{
+		UpdateData(FALSE);
+		m_Graphic->SetSculptNoiseSeed(pNMUpDown->iPos);
+	}
+
+	*pResult = 0;
+}
+
+
+void CLevelEditorDlg::OnEnChangeTextboxNscale()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	CString text;
+	m_NoiseScaleTextBox->GetWindowTextW(text);
+	int value = StrToIntW(text.GetBuffer());
+	if (value > RAND_MAX)
+	{
+		value = RAND_MAX;
+	}
+	else if (value < 0)
+	{
+		value = 0;
+	}
+	m_NoiseScaleSlider->SetPos(value);
+	if (m_Graphic)
+	{
+		m_Graphic->SetSculptNoiseScale(value);
+	}
+}
+
+
+void CLevelEditorDlg::OnEnChangeTextboxNfreq()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	CString text;
+	m_NoiseFreqTextBox->GetWindowTextW(text);
+	int value = StrToIntW(text.GetBuffer());
+	if (value > 1000)
+	{
+		value = 1000;
+	}
+	else if (value < -1000)
+	{
+		value = -1000;
+	}
+	m_NoiseFreqSlider->SetPos(value);
+	if (m_Graphic)
+	{
+		m_Graphic->SetSculptNoiseFreq(value);
+	}
 }

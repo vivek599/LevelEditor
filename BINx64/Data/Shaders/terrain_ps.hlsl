@@ -25,6 +25,10 @@ cbuffer ShaderParameters : register(b1)
     float4 BrushParams;
     float4 TerrainSize;
     float4 DeltaTime;
+    float NoiseSeed;
+    float NoiseScale;
+    float NoiseFrequency;
+    float NoiseOctaves;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

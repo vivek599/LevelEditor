@@ -79,7 +79,7 @@ bool AShaderCache::CompileVSFromFile(const wchar_t* filepath)
 #if _DEBUG
 	shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "vs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "vs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -111,7 +111,7 @@ bool AShaderCache::CompileHSFromFile(const wchar_t* filepath)
 #if _DEBUG
 	shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "hs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "hs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -143,7 +143,7 @@ bool AShaderCache::CompileDSFromFile(const wchar_t* filepath)
 #if _DEBUG
 	shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ds_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ds_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -175,7 +175,7 @@ bool AShaderCache::CompileGSFromFile(const wchar_t* filepath)
 #if _DEBUG
 	shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "gs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "gs_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -209,7 +209,7 @@ bool AShaderCache::CompilePSFromFile(const wchar_t* filepath)
 	shaderFlags |= D3DCOMPILE_DEBUG;
 #endif
 
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "ps_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "ps_5_0", shaderFlags, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr))
 	{
 		if (m_ErrorMsg)
@@ -237,7 +237,7 @@ bool AShaderCache::CompileCSFromFile(const wchar_t* filepath)
 {
 	HRESULT hr = S_OK;
 
-	hr = D3DCompileFromFile(filepath, nullptr, nullptr, "main", "cs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
+	hr = D3DCompileFromFile(filepath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main", "cs_5_0", D3D10_SHADER_ENABLE_STRICTNESS, 0, &m_ByteCode, &m_ErrorMsg);
 	if (FAILED(hr)) 
 	{
 		if (m_ErrorMsg)

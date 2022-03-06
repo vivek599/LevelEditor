@@ -12,7 +12,7 @@ ATerrain::ATerrain()
 	m_HeightMap = nullptr;
 	m_radiusMax = 1;
 	m_strength = 1;
-
+	m_NoiseOctaves = 8;
 
 }
 
@@ -972,6 +972,10 @@ void ATerrain::SendSculptingParams(ARenderDevice* renderDevice, float deltaTime,
 	dataPtr->TerrainSize = Vector4(m_TerrainWidth, 0.0f, m_TerrainHeight, 0.0f);
 	dataPtr->DeltaTime = Vector4(deltaTime);
 	dataPtr->TextureUVScale = m_TerrainTextureUVScale;
+	dataPtr->NoiseScale = m_NoiseScale;
+	dataPtr->NoiseFrequency = m_NoiseFreq;
+	dataPtr->NoiseSeed = m_NoiseSeed;
+	dataPtr->NoiseOctaves = m_NoiseOctaves;
 
 	// Unlock the constant buffer.
 	context->Unmap(m_ShaderParametersBuffer.Get(), 0); 	
@@ -1149,6 +1153,13 @@ void ATerrain::AlphaMap(ARenderDevice* renderDevice, float deltaTime)
 	UpdateHeightMapTexture(renderDevice);
 }
 
+void ATerrain::Noise(ARenderDevice* renderDevice, float deltaTime)
+{
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::NOISE);
+	UpdateHeightMapTexture(renderDevice);
+}
+
 void ATerrain::SetBrushRadius(int val)
 {
 	m_radiusMax = val;
@@ -1206,4 +1217,22 @@ bool ATerrain::SetCurrentAlphaMap(ARenderDevice* renderDevice, wchar_t* filePath
 		SAFE_DELETE(data);
 		return true;
 	}
+}
+
+void ATerrain::SetNoiseScale(int Scale)
+{
+	m_NoiseScale = Scale;
+}
+
+void ATerrain::SetNoiseFreq(int Freq)
+{
+	if (Freq != 0)
+	{
+		m_NoiseFreq = 1.0f/float(Freq);
+	}
+}
+
+void ATerrain::SetNoiseSeed(int Seed)
+{
+	m_NoiseSeed = Seed;
 }

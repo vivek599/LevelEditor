@@ -66,6 +66,20 @@ protected:
 	CString				m_BrushSizeSliderVal;
 	CString				m_BrushStrengthSliderVal;
 
+	CStatic*			m_NoiseScaleText;
+	CStatic*			m_NoiseFreqText;
+	CStatic*			m_NoiseSeedText;
+	CButton*			m_ButtonNoiseSeedRandomize;
+	CEdit*				m_NoiseScaleTextBox;
+	CEdit*				m_NoiseFreqTextBox;
+	CEdit*				m_NoiseSeedTextBox;
+	CSpinButtonCtrl*	m_NoiseSeedSpin;
+	CSliderCtrl*		m_NoiseScaleSlider;
+	CSliderCtrl*		m_NoiseFreqSlider;
+	CString				m_NoiseScaleSliderVal;
+	CString				m_NoiseFreqSliderVal;
+	CString				m_NoiseSeedSpinVal;
+
 	float				m_deltaTime;
 	int					m_frameCounter;
 	bool				m_AlphaMapLoaded = false;
@@ -118,4 +132,8 @@ public:
 	afx_msg void OnMouseHover(UINT nFlags, CPoint point);
 	afx_msg void OnMouseLeave();
 	afx_msg void OnBnClickedLoadalphamap();
+	afx_msg void OnBnClickedButtonNoiseRndmz();
+	afx_msg void OnDeltaposSpinSeed(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEnChangeTextboxNscale();
+	afx_msg void OnEnChangeTextboxNfreq();
 };
