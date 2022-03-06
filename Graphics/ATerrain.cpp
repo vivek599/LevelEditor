@@ -35,9 +35,6 @@ bool ATerrain::Initialize(ARenderDevice* renderDevice, TerrainInitializationPara
 		return false;
 	}
 
-	// Normalize the height of the height map.
-	NormalizeHeightMap();
-
 	// Calculate the normals for the terrain data.
 	result = CalculateNormals();
 	if (!result)
@@ -674,18 +671,6 @@ bool ATerrain::LoadHeightMapFromPNG(const wchar_t* heightMapFilePath)
 	}
 
 	return true;
-}
-
-void ATerrain::NormalizeHeightMap()
-{
-	return;
-	for (uint32_t j = 0; j < m_TerrainHeight; j++)
-	{
-		for (uint32_t i = 0; i < m_TerrainWidth; i++)
-		{
-			m_HeightMap[(m_TerrainHeight * j) + i].position.y /= 768.0f;
-		}
-	} 
 }
 
 bool ATerrain::CalculateNormals()

@@ -94,7 +94,6 @@ private:
 	bool										InitConstantBuffers(ID3D11Device* device);
 	bool										LoadHeightMapFromBMP(const wchar_t* heightMapFilePath);
 	bool										LoadHeightMapFromPNG(const wchar_t* heightMapFilePath);
-	void										NormalizeHeightMap();
 	bool										CalculateNormals();
 	void										CalculateTextureCoordinates();
 	bool										LoadTexture(ID3D11Device* device, vector<const wchar_t*>& textureFilenames);
