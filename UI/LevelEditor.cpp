@@ -87,7 +87,7 @@ BOOL CLevelEditorApp::InitInstance()
 	m_dlg->ModifyStyle(0, WS_CLIPCHILDREN);
 	m_pMainWnd = m_dlg;
 
-	m_dlg->ShowWindow(SW_SHOW);
+	m_dlg->ShowWindow(SW_SHOWMAXIMIZED);
 
 
 	//// Delete the shell manager created above.

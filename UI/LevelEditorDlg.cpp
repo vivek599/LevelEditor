@@ -414,7 +414,7 @@ bool CLevelEditorDlg::InitializeControls()
 
 	m_BrushComboBox->SetCurSel(0);
 
-	m_NoiseScaleSlider->SetRange(1, RAND_MAX, TRUE);
+	m_NoiseScaleSlider->SetRange(1, 4096, TRUE);
 	m_NoiseScaleSlider->SetPos(0);
 	m_NoiseScaleSliderVal.Format(_T("%d"), m_NoiseScaleSlider->GetPos());
 	m_NoiseScaleTextBox->SetWindowTextW(m_NoiseScaleSliderVal.GetBuffer());
@@ -800,9 +800,9 @@ void CLevelEditorDlg::OnEnChangeTextboxNscale()
 	CString text;
 	m_NoiseScaleTextBox->GetWindowTextW(text);
 	int value = StrToIntW(text.GetBuffer());
-	if (value > RAND_MAX)
+	if (value > 4096)
 	{
-		value = RAND_MAX;
+		value = 4096;
 	}
 	else if (value < 0)
 	{

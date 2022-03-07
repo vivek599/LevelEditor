@@ -54,22 +54,23 @@ float Sculpt(PixelInputType input)
     }
     else if (SculptMode.x == 4)//Smooth
     {
+        const float offset5[5] = { 0.0f, 1.0f, 2.0f, 3.0f, 4.0f };
+        const float weight5[5] = {0.2270270270f, 0.1945945946f, 0.1216216216f, 0.0540540541f, 0.0162162162f};
+        
         if (dist <= BrushParams.x)
         {
-            int smoothRadius = 1;
-            int samplesTaken = 0;
-            float avgY = 0.0f;
-            for (int k = -smoothRadius; k < smoothRadius; k++)
+            float avgY = HeightMapTexture.Sample(SampleType, input.tex) * weight5[0];
+            for (int i = 1; i < 5; i++)
             {
-                for (int l = -smoothRadius; l < smoothRadius; l++)
-                {
-                    float2 smoothingPos = input.tex + float2(k, l) / TerrainSize.x;
-                    float radiusLocal = length(int2(k, l));
-                    avgY += radiusLocal > smoothRadius ? 0.0f : HeightMapTexture.Sample(SampleType, smoothingPos);
-                    samplesTaken += (radiusLocal > smoothRadius ? 0 : 1);
-                }
+                float offsetX = offset5[i] / TerrainSize.x;
+                float offsetY = offset5[i] / TerrainSize.x;
+                
+                avgY += HeightMapTexture.Sample(SampleType, input.tex + float2(offsetX, 0.0f )) * weight5[i] * 0.5f;
+                avgY += HeightMapTexture.Sample(SampleType, input.tex - float2(offsetX, 0.0f)) * weight5[i] * 0.5f;
+                
+                avgY += HeightMapTexture.Sample(SampleType, input.tex + float2(0.0f, offsetY)) * weight5[i] * 0.5f;
+                avgY += HeightMapTexture.Sample(SampleType, input.tex - float2(0.0f, offsetY)) * weight5[i] * 0.5f;
             }
-            avgY /= samplesTaken;
             
             SculptOffset = avgY;
         }
