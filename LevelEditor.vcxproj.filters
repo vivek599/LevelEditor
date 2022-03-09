@@ -50,6 +50,9 @@
     <ClCompile Include="Graphics\AQuadTree.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="UI\SculptPanelDlg.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -120,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="Graphics\PNG\stb_image.h">
       <Filter>Graphics\LoadPNG</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\SculptPanelDlg.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
