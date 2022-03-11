@@ -40,6 +40,7 @@
 #define IDC_TAB_MODE                    1026
 #define IDC_RADIO1                      1030
 #define IDC_BUTTON1                     1031
+#define IDC_BUTTON_TEST                 1031
 #define ID_FILE_EXIT                    32771
 #define ID_EDIT_CUT32772                32772
 #define ID_EDIT_COPY32773               32773
@@ -51,7 +52,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         32777
 #define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101

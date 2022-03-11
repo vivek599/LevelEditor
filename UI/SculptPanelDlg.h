@@ -27,6 +27,7 @@ public:
 	afx_msg void OnDeltaposSpinSeed(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnEnChangeTextboxNscale();
 	afx_msg void OnEnChangeTextboxNfreq();
+	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 
 	bool InitializeControls();
 	bool InitGraphic(class AGraphic* Graphic);

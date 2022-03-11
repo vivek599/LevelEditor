@@ -12,6 +12,7 @@ public:
 	virtual ~PaintPanelDlg();
 
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 
 	bool InitializeControls();
 
@@ -25,5 +26,5 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButtonTest();
 };

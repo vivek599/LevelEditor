@@ -56,7 +56,7 @@ bool SculptPanelDlg::InitializeControls()
 	m_BrushSizeTextbox = (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
 	m_BrushStrengthSlider = (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSTRENGTHSLIDER));
 	m_BrushStrengthTextbox = (CEdit*)GetDlgItem(IDC_BRUSHSTRENGTHTEXTBOX);
-	m_BrushComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_BRUSHTYPE);
+	m_BrushComboBox = (CComboBox*)GetDlgItem(IDC_COMBO_BRUSHTYPE); 
 	m_HeightMapFileName = (CEdit*)GetDlgItem(IDC_HMFILENAME);
 	m_BrushTypeText = (CStatic*)GetDlgItem(IDC_STATIC_BRUSHTYPELEBAL); 
 
@@ -103,8 +103,16 @@ bool SculptPanelDlg::InitializeControls()
 	windowtext.Format(_T("%d"), 1337);
 	m_NoiseSeedTextBox->SetWindowTextW(windowtext);
 
+	m_BrushComboBox->InsertString(0, _T("Raise"));
+	m_BrushComboBox->InsertString(1, _T("Lower"));
+	m_BrushComboBox->InsertString(2, _T("Flatten"));
+	m_BrushComboBox->InsertString(3, _T("Smooth"));
+	m_BrushComboBox->InsertString(4, _T("AlphaMap"));
+	m_BrushComboBox->InsertString(5, _T("Noise"));
+	m_BrushComboBox->SetCurSel(0);
+
 	m_FpsFont.CreateFont(
-		24,                        // nHeight
+		36,                        // nHeight
 		0,                         // nWidth
 		0,                         // nEscapement
 		0,                         // nOrientation
@@ -155,26 +163,28 @@ void SculptPanelDlg::OnBnClickedLoadheightmap()
 	ofn.Flags |= OFN_FILEMUSTEXIST;
 	ofn.lpstrFile = p;
 	ofn.nMaxFile = MAX_PATH + 1;
-	dlgFile.DoModal();
+	if (dlgFile.DoModal() == IDOK)
+	{
+		m_HeightMapFileName->SetWindowTextW(p);
+
+		TerrainInitializationParams params;
+		params.heightMap = p;
+		params.pixelSHader = _T("../Data/Shaders/terrain_ps.hlsl");
+		params.vertexSHader = _T("../Data/Shaders/terrain_vs.hlsl");
+		params.sculptPixelSHader = _T("../Data/Shaders/terrain_ps_sculpt.hlsl");
+		params.sculptVertexSHader = _T("../Data/Shaders/terrain_vs_sculpt.hlsl");
+		params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
+
+		m_Graphic->InitializeTerrain(&params);
+		m_Graphic->SetTextureUVScale(1);
+		m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
+		m_Graphic->SetSculptNoiseScale(1);
+		m_Graphic->SetSculptNoiseFreq(200);
+		m_Graphic->SetSculptNoiseSeed(1337);
+	}
+
 	fileName.ReleaseBuffer();
 
-	m_HeightMapFileName->SetWindowTextW(p);
-
-
-	TerrainInitializationParams params;
-	params.heightMap = p;
-	params.pixelSHader = _T("../Data/Shaders/terrain_ps.hlsl");
-	params.vertexSHader = _T("../Data/Shaders/terrain_vs.hlsl");
-	params.sculptPixelSHader = _T("../Data/Shaders/terrain_ps_sculpt.hlsl");
-	params.sculptVertexSHader = _T("../Data/Shaders/terrain_vs_sculpt.hlsl");
-	params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
-
-	m_Graphic->InitializeTerrain(&params);
-	m_Graphic->SetTextureUVScale(1);
-	m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
-	m_Graphic->SetSculptNoiseScale(1);
-	m_Graphic->SetSculptNoiseFreq(200);
-	m_Graphic->SetSculptNoiseSeed(1337);
 
 
 }
@@ -246,40 +256,34 @@ void SculptPanelDlg::OnCbnSelendokComboBrushtype()
 	CString strValue;
 	if (m_BrushComboBox)
 	{
-		int sel = m_BrushComboBox->GetCurSel();
-		if (sel >= 0)
+		ESculptMode selection = (ESculptMode)m_BrushComboBox->GetCurSel();
+		switch (selection)
 		{
-			m_BrushComboBox->GetLBText(sel, strValue);
+		case ESculptMode::NONE: 
+			break;
+		case ESculptMode::RAISE: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
+			break;
+		case ESculptMode::LOWER: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::LOWER);
+			break;
+		case ESculptMode::FLATTEN: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::FLATTEN);
+			break;
+		case ESculptMode::SMOOTH: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::SMOOTH);
+			break;
+		case ESculptMode::ALPHAMAP: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::ALPHAMAP);
+			break;
+		case ESculptMode::NOISE: 
+			m_Graphic->SetTerrainSculptMode(ESculptMode::NOISE);
+			break;
+		default:
+			break;
 		}
 	}
-
-	if (strValue == "Smooth")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::SMOOTH);
-	}
-	else if (strValue == "Flatten")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::FLATTEN);
-	}
-	else if (strValue == "Raise")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
-	}
-	else if (strValue == "Lower")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::LOWER);
-	}
-	else if (strValue == "AlphaMap")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::ALPHAMAP);
-	}
-	else if (strValue == "Noise")
-	{
-		m_Graphic->SetTerrainSculptMode(ESculptMode::NOISE);
-	}
-
 }
-
 
 void SculptPanelDlg::OnBnClickedButtonErode()
 {
@@ -325,24 +329,26 @@ void SculptPanelDlg::OnBnClickedLoadalphamap()
 	ofn.Flags |= OFN_FILEMUSTEXIST;
 	ofn.lpstrFile = p;
 	ofn.nMaxFile = MAX_PATH + 1;
-	dlgFile.DoModal();
+
+	if (dlgFile.DoModal() == IDOK)
+	{
+		if (m_Graphic)
+		{
+			m_AlphaMapLoaded = m_Graphic->SetTerrainAlphaMap(p);
+			if (m_AlphaMapLoaded)
+			{
+				m_ButtonLoadAlphaMap->SetIcon(m_hIconAlphaMap);
+				m_ButtonLoadAlphaMap->SetWindowTextW(_T("AlphaMap"));
+			}
+			else
+			{
+				m_ButtonLoadAlphaMap->SetIcon(nullptr);
+				m_ButtonLoadAlphaMap->SetWindowTextW(_T("Load AlphaMap"));
+			}
+		}
+	}
+
 	fileName.ReleaseBuffer();
-
-
-	m_AlphaMapLoaded = m_Graphic->SetTerrainAlphaMap(p);
-	if (m_AlphaMapLoaded)
-	{
-		m_ButtonLoadAlphaMap->SetIcon(m_hIconAlphaMap);
-		m_ButtonLoadAlphaMap->SetWindowTextW(_T("AlphaMap"));
-	}
-	else
-	{
-		m_ButtonLoadAlphaMap->SetIcon(nullptr);
-		m_ButtonLoadAlphaMap->SetWindowTextW(_T("Load AlphaMap"));
-	}
-
-
-
 }
 
 
@@ -361,8 +367,8 @@ void SculptPanelDlg::OnDeltaposSpinSeed(NMHDR* pNMHDR, LRESULT* pResult)
 
 	if (pNMUpDown->hdr.hwndFrom == m_NoiseSeedSpin->GetSafeHwnd())
 	{
-		UpdateData(FALSE);
 		m_Graphic->SetSculptNoiseSeed(pNMUpDown->iPos);
+		UpdateData(FALSE);
 	}
 
 	*pResult = 0;
@@ -420,6 +426,19 @@ void SculptPanelDlg::OnEnChangeTextboxNfreq()
 	{
 		m_Graphic->SetSculptNoiseFreq(value);
 	}
+}
+
+BOOL SculptPanelDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->hwnd == this->m_hWnd && pMsg->message == WM_KEYDOWN)
+	{
+		if (pMsg->wParam == VK_RETURN || pMsg->wParam == VK_ESCAPE)
+		{
+			return TRUE;                // Do not process further
+		}
+	}
+
+	return CWnd::PreTranslateMessage(pMsg);
 }
 
 void SculptPanelDlg::OnSize(UINT nType, int cx, int cy)
