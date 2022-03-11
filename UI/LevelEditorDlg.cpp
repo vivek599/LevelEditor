@@ -10,6 +10,7 @@
 #include "../Graphics/ACommonIncludes.h"
 #include "../Graphics/AGraphic.h"
 #include "SculptPanelDlg.h"
+#include "PaintPanelDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,7 +60,8 @@ CLevelEditorDlg::CLevelEditorDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_LEVELEDITOR_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
-	m_ControlsInitialized = false;
+	m_ControlsInitializedSculpt = false;
+	m_ControlsInitializedPaint = false;
 	m_frameCounter		= 0;
 	m_MouseState.LeftDown = false;
 }
@@ -71,7 +73,6 @@ BEGIN_MESSAGE_MAP(CLevelEditorDlg, CDialogEx)
 	ON_COMMAND(ID_FILE_EXIT, &CLevelEditorDlg::OnFileExit)
 	ON_BN_CLICKED(IDCANCEL, &CLevelEditorDlg::OnBnClickedCancel)
 	ON_COMMAND(ID_HELP_ABOUT, &CLevelEditorDlg::OnHelpAbout)
-	ON_WM_HSCROLL()
 	ON_WM_SIZE()
 	ON_WM_ERASEBKGND()
 	ON_WM_GETMINMAXINFO()
@@ -87,11 +88,7 @@ END_MESSAGE_MAP()
 // CLevelEditorDlg message handlers
 void CLevelEditorDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialogEx::DoDataExchange(pDX);
-	if (m_SculptDialog)
-	{
-		m_SculptDialog->DoDataExchange(pDX);
-	}
+	CDialogEx::DoDataExchange(pDX); 
 }
 
 BOOL CLevelEditorDlg::OnInitDialog()
@@ -116,20 +113,26 @@ BOOL CLevelEditorDlg::OnInitDialog()
 	m_FpsText->LockWindowUpdate();
 
 	m_ModeTabs = (CTabCtrl*)(GetDlgItem(IDC_TAB_MODE));
+	m_ModeTabs->SetOwner(this);
 	m_ModeTabs->InsertItem(0, _T("Sculpt"));
 	m_ModeTabs->InsertItem(1, _T("Paint"));
 	m_ModeTabs->SetCurSel(0);
 	m_ModeTabs->SetMinTabWidth(100);
-	m_ModeTabs->SetParent(this);
 
 	m_SculptDialog.reset(new SculptPanelDlg(m_ModeTabs));
 	m_SculptDialog->Create(IDD_DIALOG_SCULPT, m_ModeTabs);
+	m_SculptDialog->OnInitDialog();
+
+	m_PaintDialog.reset(new PaintPanelDlg(m_ModeTabs));
+	m_PaintDialog->Create(IDD_DIALOG_PAINT, m_ModeTabs);
+	m_PaintDialog->OnInitDialog();
 
 	//m_FpsText->SetFont(&m_FpsFont);
 
-	m_ControlsInitialized = m_SculptDialog->InitializeControls();
+	m_ControlsInitializedSculpt = m_SculptDialog->InitializeControls();
+	m_ControlsInitializedPaint = m_PaintDialog->InitializeControls();
 
-	if (m_ControlsInitialized)
+	if (m_ControlsInitializedSculpt && m_ControlsInitializedPaint)
 	{
 		CRect rect;
 		m_RenderBox->GetWindowRect(rect);
@@ -337,16 +340,22 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
 
-	if (m_ControlsInitialized)
+	if (m_ControlsInitializedSculpt && m_ControlsInitializedPaint)
 	{ 
 		m_ModeTabs->SetWindowPos(nullptr, cx - 265, 50, 250, 480, SWP_NOZORDER);
 
 		CRect rcClient, rcWindow;
 		m_SculptDialog->OnSize(nType, cx, cy);
+		m_PaintDialog->OnSize(nType, cx, cy);
 		m_ModeTabs->GetClientRect(rcClient);
 		m_ModeTabs->AdjustRect(FALSE, rcClient);
 		m_SculptDialog->MoveWindow(rcClient);
 		m_SculptDialog->ShowWindow(SW_SHOW);
+
+		m_PaintDialog->MoveWindow(rcClient);
+		m_PaintDialog->ShowWindow(SW_HIDE);
+
+
 		 
 		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
@@ -459,10 +468,12 @@ void CLevelEditorDlg::OnTcnSelchangeTabMode(NMHDR* pNMHDR, LRESULT* pResult)
 	if (m_ModeTabs->GetCurSel() == 0)
 	{
 		m_SculptDialog->ShowWindow(SW_SHOW); 
+		m_PaintDialog->ShowWindow(SW_HIDE);
 	}
 	else if(m_ModeTabs->GetCurSel() == 1)
 	{
 		m_SculptDialog->ShowWindow(SW_HIDE);
+		m_PaintDialog->ShowWindow(SW_SHOW);
 	}
 
 	*pResult = 0;

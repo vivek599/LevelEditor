@@ -26,28 +26,19 @@ SculptPanelDlg::~SculptPanelDlg()
 
 }
 
-void SculptPanelDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-LRESULT SculptPanelDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-	return CDialogEx::WindowProc(message, wParam, lParam);
-}
-
 BEGIN_MESSAGE_MAP(SculptPanelDlg, CDialogEx)
+	ON_WM_HSCROLL()
 	ON_WM_SIZE()
-	ON_BN_CLICKED(IDC_LOADHEIGHTMAP, &SculptPanelDlg::OnBnClickedLoadheightmap)
-	ON_EN_CHANGE(IDC_BRUSHSIZETEXTBOX, &SculptPanelDlg::OnEnChangeBrushsizetextbox)
 	ON_CBN_SELENDOK(IDC_COMBO_BRUSHTYPE, &SculptPanelDlg::OnCbnSelendokComboBrushtype)
+	ON_BN_CLICKED(IDC_LOADHEIGHTMAP, &SculptPanelDlg::OnBnClickedLoadheightmap)
 	ON_BN_CLICKED(IDC_BUTTON_ERODE, &SculptPanelDlg::OnBnClickedButtonErode)
-	ON_EN_CHANGE(IDC_BRUSHSTRENGTHTEXTBOX, &SculptPanelDlg::OnChangeBrushstrengthtextbox)
 	ON_BN_CLICKED(IDC_LOADALPHAMAP, &SculptPanelDlg::OnBnClickedLoadalphamap)
 	ON_BN_CLICKED(IDC_BUTTON_NOISE_RNDMZ, &SculptPanelDlg::OnBnClickedButtonNoiseRndmz)
-	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_SEED, &SculptPanelDlg::OnDeltaposSpinSeed)
+	ON_EN_CHANGE(IDC_BRUSHSTRENGTHTEXTBOX, &SculptPanelDlg::OnChangeBrushstrengthtextbox)
+	ON_EN_CHANGE(IDC_BRUSHSIZETEXTBOX, &SculptPanelDlg::OnEnChangeBrushsizetextbox)
 	ON_EN_CHANGE(IDC_TEXTBOX_NSCALE, &SculptPanelDlg::OnEnChangeTextboxNscale)
 	ON_EN_CHANGE(IDC_TEXTBOX_NFREQ, &SculptPanelDlg::OnEnChangeTextboxNfreq)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_SEED, &SculptPanelDlg::OnDeltaposSpinSeed)
 END_MESSAGE_MAP()
 
 
@@ -140,7 +131,12 @@ bool SculptPanelDlg::InitGraphic(AGraphic* Graphic)
 {
 	m_Graphic = Graphic;
 	return true;
-}  
+}
+
+void SculptPanelDlg::DoDataExchange(CDataExchange* pDX)
+{
+	CDialogEx::DoDataExchange(pDX);
+}
 
 void SculptPanelDlg::OnBnClickedLoadheightmap()
 {

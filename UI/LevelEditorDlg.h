@@ -40,9 +40,11 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
-	bool							m_ControlsInitialized;
+	bool							m_ControlsInitializedSculpt;
+	bool							m_ControlsInitializedPaint;
 
 	unique_ptr<class SculptPanelDlg>	m_SculptDialog;
+	unique_ptr<class PaintPanelDlg>		m_PaintDialog;
 	CTabCtrl*						m_ModeTabs;
 	CStatic*						m_FpsText;
 

@@ -222,6 +222,7 @@
     <ClInclude Include="UI\framework.h" />
     <ClInclude Include="UI\LevelEditor.h" />
     <ClInclude Include="UI\LevelEditorDlg.h" />
+    <ClInclude Include="UI\PaintPanelDlg.h" />
     <ClInclude Include="UI\resource.h" />
     <ClInclude Include="UI\SculptPanelDlg.h" />
     <ClInclude Include="UI\targetver.h" />
@@ -244,6 +245,7 @@
     <ClCompile Include="UI\CPictureControl.cpp" />
     <ClCompile Include="UI\LevelEditor.cpp" />
     <ClCompile Include="UI\LevelEditorDlg.cpp" />
+    <ClCompile Include="UI\PaintPanelDlg.cpp" />
     <ClCompile Include="UI\SculptPanelDlg.cpp" />
   </ItemGroup>
   <ItemGroup>

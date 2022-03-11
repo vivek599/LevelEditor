@@ -10,6 +10,7 @@
 #define IDR_MENU1                       129
 #define IDR_ALPHAMAPICON                132
 #define IDD_DIALOG_SCULPT               133
+#define IDD_DIALOG_PAINT                137
 #define IDC_RENDERBOX                   1000
 #define IDC_LOADHEIGHTMAP               1001
 #define IDC_HMFILENAME                  1002
@@ -37,6 +38,8 @@
 #define IDC_SPIN_SEED                   1024
 #define IDC_BUTTON_NOISE_RNDMZ          1025
 #define IDC_TAB_MODE                    1026
+#define IDC_RADIO1                      1030
+#define IDC_BUTTON1                     1031
 #define ID_FILE_EXIT                    32771
 #define ID_EDIT_CUT32772                32772
 #define ID_EDIT_COPY32773               32773
@@ -48,9 +51,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        137
+#define _APS_NEXT_RESOURCE_VALUE        139
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1030
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
