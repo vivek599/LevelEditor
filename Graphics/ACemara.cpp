@@ -51,9 +51,9 @@ bool ACemara::Update(float deltaTime)
 {
 	m_ViewMatrix = XMMatrixLookAtLH(m_Eye, m_LookAt, m_Up);
 
-	float multiplier = HIWORD(GetAsyncKeyState(VK_LSHIFT)) ? 20.0f : 5.0f;
+	float multiplier = HIWORD(GetAsyncKeyState(VK_LSHIFT)) ? 30.0f : 5.0f;
 	const float movementSpeed = deltaTime * 5.0f * multiplier;
-	const float rotationSpeed = deltaTime * 0.25f;
+	const float rotationSpeed = deltaTime * 0.1f * multiplier;
 	POINT point;
 	GetCursorPos(&point);
 	static POINT oldPoint = point;

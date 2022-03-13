@@ -107,7 +107,7 @@ BOOL CLevelEditorDlg::OnInitDialog()
 	m_Menu.LoadMenuW(MAKEINTRESOURCE(IDR_MENU1));
 	this->SetMenu(&m_Menu);
 
-	m_RenderBox = (CPictureControl*)GetDlgItem(IDC_RENDERBOX);
+	m_RenderBox = (CStatic*)GetDlgItem(IDC_RENDERBOX);
 	m_FpsText = (CStatic*)GetDlgItem(IDC_STATIC_FPS);
 	m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
 	m_FpsText->LockWindowUpdate();

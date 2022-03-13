@@ -31,9 +31,6 @@
     <ClCompile Include="UI\LevelEditorDlg.cpp">
       <Filter>UI</Filter>
     </ClCompile>
-    <ClCompile Include="UI\CPictureControl.cpp">
-      <Filter>UI</Filter>
-    </ClCompile>
     <ClCompile Include="Graphics\AGraphic.cpp">
       <Filter>Graphics</Filter>
     </ClCompile>
@@ -101,9 +98,6 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\targetver.h">
-      <Filter>UI</Filter>
-    </ClInclude>
-    <ClInclude Include="UI\CPictureControl.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\AGraphic.h">

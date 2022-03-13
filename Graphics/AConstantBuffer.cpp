@@ -1,12 +1,12 @@
 #include "AConstantBuffer.h"
 #include "ARenderDevice.h"
 
-void AConstantBuffer::CreateBuffer()
+void AConstantBuffer::CreateBuffer(size_t Size, EShaderVisibility visibility)
 {
 	D3D11_BUFFER_DESC bufferDesc;
 
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	bufferDesc.ByteWidth = (UINT)m_BufferSize;
+	bufferDesc.ByteWidth = m_BufferSize = (UINT)Size;
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	bufferDesc.MiscFlags = 0;
@@ -19,12 +19,11 @@ void AConstantBuffer::CreateBuffer()
 	}
 }
 
-AConstantBuffer::AConstantBuffer(ARenderDevice* renderDevice, AShaderVisibility visibility) :
-	m_Visibility(visibility),
+AConstantBuffer::AConstantBuffer(ARenderDevice* renderDevice) : 
 	m_Device(renderDevice->GetDevice()),
 	m_DeviceContext(renderDevice->GetContext())
 { 
-	CreateBuffer();
+
 }
 
 AConstantBuffer::~AConstantBuffer()
@@ -58,7 +57,7 @@ ComPtr<ID3D11Buffer> AConstantBuffer::GetBuffer()
 	return m_Buffer;
 }
 
-AShaderVisibility AConstantBuffer::GetVisibility()
+EShaderVisibility AConstantBuffer::GetVisibility()
 {
 	return m_Visibility;
 } 

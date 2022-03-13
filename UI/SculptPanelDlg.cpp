@@ -5,7 +5,6 @@
 #include "LevelEditor.h"
 #include "SculptPanelDlg.h"
 #include "afxdialogex.h"
-#include "CPictureControl.h"
 #include "../Graphics/ACommonIncludes.h"
 #include "../Graphics/AGraphic.h"
 #include "../Graphics/ATerrain.h"
@@ -256,7 +255,7 @@ void SculptPanelDlg::OnCbnSelendokComboBrushtype()
 	CString strValue;
 	if (m_BrushComboBox)
 	{
-		ESculptMode selection = (ESculptMode)m_BrushComboBox->GetCurSel();
+		auto selection = m_BrushComboBox->GetCurSel() + 1;
 		switch (selection)
 		{
 		case ESculptMode::NONE: 

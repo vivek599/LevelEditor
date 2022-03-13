@@ -50,7 +50,7 @@ protected:
 
 	CMenu							m_Menu;
 	
-	class CPictureControl*			m_RenderBox;
+	CStatic*			m_RenderBox;
 
 	float				m_deltaTime;
 	int					m_frameCounter;

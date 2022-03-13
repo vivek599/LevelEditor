@@ -218,7 +218,6 @@
     <ClInclude Include="Graphics\AMathHeader.h" />
     <ClInclude Include="Graphics\PNG\lodepng.h" />
     <ClInclude Include="Graphics\PNG\stb_image.h" />
-    <ClInclude Include="UI\CPictureControl.h" />
     <ClInclude Include="UI\framework.h" />
     <ClInclude Include="UI\LevelEditor.h" />
     <ClInclude Include="UI\LevelEditorDlg.h" />
@@ -242,7 +241,6 @@
     <ClCompile Include="Graphics\ATexture.cpp" />
     <ClCompile Include="Graphics\PNG\lodepng.cpp" />
     <ClCompile Include="Source.cpp" />
-    <ClCompile Include="UI\CPictureControl.cpp" />
     <ClCompile Include="UI\LevelEditor.cpp" />
     <ClCompile Include="UI\LevelEditorDlg.cpp" />
     <ClCompile Include="UI\PaintPanelDlg.cpp" />

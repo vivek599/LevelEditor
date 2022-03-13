@@ -71,22 +71,22 @@ void ARenderSystem::SetConstantBuffers(vector <shared_ptr<AConstantBuffer> >& co
 	{
 		BITMASK_SWITCH(constantBuffers[i]->GetVisibility())
 		{
-		case VSVISIBLE:
+		case VISIBLE_VERTEX:
 			m_DeviceContext->VSSetConstantBuffers(cbuf[0]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
-		case HSVISIBLE:
+		case VISIBLE_HULL:
 			m_DeviceContext->HSSetConstantBuffers(cbuf[1]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
-		case DSVISIBLE:
+		case VISIBLE_DOMAIN:
 			m_DeviceContext->DSSetConstantBuffers(cbuf[2]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
-		case GSVISIBLE:
+		case VISIBLE_GEOMETRY:
 			m_DeviceContext->GSSetConstantBuffers(cbuf[3]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
-		case PSVISIBLE:
+		case VISIBLE_PIXEL:
 			m_DeviceContext->PSSetConstantBuffers(cbuf[4]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
-		case CSVISIBLE:
+		case VISIBLE_COMPUTE:
 			m_DeviceContext->CSSetConstantBuffers(cbuf[5]++, 1, constantBuffers[i]->GetBuffer().GetAddressOf());
 			break;
 		}
