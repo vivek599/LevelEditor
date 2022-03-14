@@ -140,6 +140,9 @@ void AGraphic::SculptTerrain(float deltaTime)
 		case NOISE:
 			m_Terrain->Noise(m_RenderDevice, deltaTime);
 			break;
+		case HOLES:
+			m_Terrain->Holes(m_RenderDevice, deltaTime);
+			break;
 		default:
 			break;
 		}

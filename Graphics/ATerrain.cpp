@@ -913,18 +913,32 @@ Vector3 ATerrain::GetBestIntersectionPointLineDrawing(Ray ray)
 			uint64_t index2 = m_TerrainHeight * (z + 1) + (x + 1);
 			uint64_t index3 = m_TerrainHeight * (z + 1) + x;
 
-			const Vector3& v0 = Vector3(m_HeightMap[index0].position);
-			const Vector3& v1 = Vector3(m_HeightMap[index1].position);
-			const Vector3& v2 = Vector3(m_HeightMap[index2].position);
-			const Vector3& v3 = Vector3(m_HeightMap[index3].position);
+			Vector3& v0 = Vector3(m_HeightMap[index0].position);
+			Vector3& v1 = Vector3(m_HeightMap[index1].position);
+			Vector3& v2 = Vector3(m_HeightMap[index2].position);
+			Vector3& v3 = Vector3(m_HeightMap[index3].position);
 
 			float fDist = 0.0f;
 			if (ray.Intersects(v0, v1, v3, fDist))
 			{
+				if (v0.y == float(0xDEADBEEF) || v1.y == float(0xDEADBEEF) || v3.y == float(0xDEADBEEF) )
+				{
+					v0.y = 0.0f;
+					v1.y = 0.0f;
+					v3.y = 0.0f;
+					return Vector3(-1.0f);
+				}
 				return v0;
 			}
 			else if (ray.Intersects(v1, v2, v3, fDist))
 			{
+				if (v1.y == float(0xDEADBEEF) || v2.y == float(0xDEADBEEF) || v3.y == float(0xDEADBEEF))
+				{
+					v1.y = 0.0f;
+					v2.y = 0.0f;
+					v3.y = 0.0f;
+					return Vector3(-1.0f);
+				}
 				return v1;
 			}
 		}
@@ -1142,6 +1156,13 @@ void ATerrain::Noise(ARenderDevice* renderDevice, float deltaTime)
 {
 	m_bSculptingInProgress = true;
 	SendSculptingParams(renderDevice, deltaTime, ESculptMode::NOISE);
+	UpdateHeightMapTexture(renderDevice);
+}
+
+void ATerrain::Holes(ARenderDevice* renderDevice, float deltaTime)
+{
+	m_bSculptingInProgress = true;
+	SendSculptingParams(renderDevice, deltaTime, ESculptMode::HOLES);
 	UpdateHeightMapTexture(renderDevice);
 }
 

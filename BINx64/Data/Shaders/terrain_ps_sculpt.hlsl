@@ -106,6 +106,13 @@ float Sculpt(PixelInputType input)
             SculptOffset = NoiseScale * fnlGetNoise2D(noise, input.tex.x * TerrainSize.x, input.tex.y * TerrainSize.x);
         }
     }
+    else if (SculptMode.x == 7)//Holes
+    {
+        if (dist <= BrushParams.x)
+        {
+            SculptOffset = float(0xDEADBEEF);
+        }
+    }
     else
     {
         
@@ -117,7 +124,7 @@ float Sculpt(PixelInputType input)
 float main(PixelInputType input) : SV_TARGET 
 {  
     float dist = length(int2(PickedPoint.xz) - int2(input.tex * TerrainSize.x));
-    if (SculptMode.x == 3 || SculptMode.x == 4 || SculptMode.x == 6)//Flatten or Smooth or Noise
+    if (SculptMode.x == 3 || SculptMode.x == 4 || SculptMode.x == 6 || SculptMode.x == 7)//Flatten or Smooth or Noise or Holes
     {
         if (dist <= BrushParams.x)
             return Sculpt(input);

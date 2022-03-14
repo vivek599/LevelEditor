@@ -44,6 +44,7 @@ public:
 	void										Smooth(ARenderDevice* renderDevice, float deltaTime);
 	void										AlphaMap(ARenderDevice* renderDevice, float deltaTime);
 	void										Noise(ARenderDevice* renderDevice, float deltaTime);
+	void										Holes(ARenderDevice* renderDevice, float deltaTime);
 	void										UpdateHeightMapTexture(ARenderDevice* renderDevice);
 	void										SetBrushRadius(int val);
 	void										SetBrushStrength(float val);
@@ -188,7 +189,8 @@ private:
 		FLATTEN		= 3,
 		SMOOTH		= 4,
 		ALPHAMAP	= 5,
-		NOISE		= 6
+		NOISE		= 6,
+		HOLES		= 7
 	};/*, float raise, float lower, float flatten, float smooth*/
 	unique_ptr<class ATexture> m_HeightMapFinal;
 	unique_ptr<class ATexture> m_HeightMapRenderTarget;

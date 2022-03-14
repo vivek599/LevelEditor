@@ -116,6 +116,7 @@ bool SculptPanelDlg::InitializeControls()
 	m_BrushComboBox->InsertString(3, _T("Smooth"));
 	m_BrushComboBox->InsertString(4, _T("AlphaMap"));
 	m_BrushComboBox->InsertString(5, _T("Noise"));
+	m_BrushComboBox->InsertString(6, _T("Holes"));
 	m_BrushComboBox->SetCurSel(0);
 
 	m_FpsFont.CreateFont(
@@ -273,8 +274,6 @@ void SculptPanelDlg::OnCbnSelendokComboBrushtype()
 		auto selection = m_BrushComboBox->GetCurSel() + 1;
 		switch (selection)
 		{
-		case ESculptMode::NONE: 
-			break;
 		case ESculptMode::RAISE: 
 			m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);
 			break;
@@ -293,7 +292,13 @@ void SculptPanelDlg::OnCbnSelendokComboBrushtype()
 		case ESculptMode::NOISE: 
 			m_Graphic->SetTerrainSculptMode(ESculptMode::NOISE);
 			break;
+		case ESculptMode::HOLES:
+			m_Graphic->SetTerrainSculptMode(ESculptMode::HOLES);
+			break;
+
+		case ESculptMode::NONE:
 		default:
+			m_Graphic->SetTerrainSculptMode(ESculptMode::NONE);
 			break;
 		}
 	}

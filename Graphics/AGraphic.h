@@ -12,7 +12,8 @@ enum ESculptMode : UINT
 	FLATTEN		= 3,
 	SMOOTH		= 4,
 	ALPHAMAP	= 5,
-	NOISE		= 6
+	NOISE		= 6,
+	HOLES		= 7
 };/*, float raise, float lower, float flatten, float smooth*/
 
 class AGraphic
