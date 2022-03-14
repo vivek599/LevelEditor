@@ -53,6 +53,7 @@ public:
 	void SetNoiseScale(int Scale);
 	void SetNoiseFreq(int Freq);
 	void SetNoiseSeed(int Seed);
+	void SetNoiseOctaves(int Octaves);
 private:
 	struct QuadVertex
 	{
@@ -175,6 +176,7 @@ private:
 	int		m_NoiseScale;
 	float	m_NoiseFreq;
 	int		m_NoiseSeed;
+	int		m_NoiseOctaves;
 
 	bool m_bSculptingInProgress = false;
 	bool m_bWireFrame;	
@@ -195,6 +197,5 @@ private:
 
 
 
-	int m_NoiseOctaves;
 };
 

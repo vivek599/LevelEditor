@@ -6,7 +6,6 @@
 #include "LevelEditor.h"
 #include "LevelEditorDlg.h"
 #include "afxdialogex.h"
-#include "../ui/CPictureControl.h"
 #include "../Graphics/ACommonIncludes.h"
 #include "../Graphics/AGraphic.h"
 #include "SculptPanelDlg.h"

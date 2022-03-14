@@ -276,6 +276,14 @@ void AGraphic::SetSculptNoiseFreq(int Freq)
 	}
 }
 
+void AGraphic::SetSculptNoiseOctaves(int Octaves)
+{
+	if (m_Terrain)
+	{
+		m_Terrain->SetNoiseOctaves(Octaves);
+	}
+}
+
 void AGraphic::SetSculptNoiseSeed(int Seed)
 {
 	if (m_Terrain)

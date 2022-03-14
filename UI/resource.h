@@ -33,11 +33,15 @@
 #define IDC_TEXTBOX_NFREQ               1018
 #define IDC_STATIC_NSCALE               1019
 #define IDC_STATIC_NFREQ                1020
+#define IDC_SLIDER_NOCTAVES             1021
 #define IDC_TEXTBOX_NSEED               1022
 #define IDC_STATIC_NSEED                1023
 #define IDC_SPIN_SEED                   1024
 #define IDC_BUTTON_NOISE_RNDMZ          1025
 #define IDC_TAB_MODE                    1026
+#define IDC_TEXTBOX_NOCTAVES            1026
+#define IDC_STATIC_NOCTAVESTXT          1027
+#define IDC_STATIC_NOCTAVES             1027
 #define IDC_RADIO1                      1030
 #define IDC_BUTTON1                     1031
 #define IDC_BUTTON_TEST                 1031

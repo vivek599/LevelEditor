@@ -38,6 +38,7 @@ BEGIN_MESSAGE_MAP(SculptPanelDlg, CDialogEx)
 	ON_EN_CHANGE(IDC_TEXTBOX_NSCALE, &SculptPanelDlg::OnEnChangeTextboxNscale)
 	ON_EN_CHANGE(IDC_TEXTBOX_NFREQ, &SculptPanelDlg::OnEnChangeTextboxNfreq)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN_SEED, &SculptPanelDlg::OnDeltaposSpinSeed)
+	ON_EN_CHANGE(IDC_TEXTBOX_NOCTAVES, &SculptPanelDlg::OnEnChangeTextboxNoctaves)
 END_MESSAGE_MAP()
 
 
@@ -61,14 +62,17 @@ bool SculptPanelDlg::InitializeControls()
 
 	m_NoiseScaleText = (CStatic*)GetDlgItem(IDC_STATIC_NSCALE);
 	m_NoiseFreqText = (CStatic*)GetDlgItem(IDC_STATIC_NFREQ);
+	m_NoiseOctavesText = (CStatic*)GetDlgItem(IDC_STATIC_NOCTAVES);
 	m_NoiseSeedText = (CStatic*)GetDlgItem(IDC_STATIC_NSEED);
 	m_ButtonNoiseSeedRandomize = (CButton*)(GetDlgItem(IDC_BUTTON_NOISE_RNDMZ));
-	m_NoiseScaleTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NSCALE);;
-	m_NoiseFreqTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NFREQ);;
-	m_NoiseSeedTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NSEED);;
-	m_NoiseSeedSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SEED);;
+	m_NoiseScaleTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NSCALE);
+	m_NoiseFreqTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NFREQ);
+	m_NoiseOctavesTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NOCTAVES);
+	m_NoiseSeedTextBox = (CEdit*)GetDlgItem(IDC_TEXTBOX_NSEED);
+	m_NoiseSeedSpin = (CSpinButtonCtrl*)GetDlgItem(IDC_SPIN_SEED);
 	m_NoiseScaleSlider = (CSliderCtrl*)(GetDlgItem(IDC_SLIDER_NSCALE));
 	m_NoiseFreqSlider = (CSliderCtrl*)(GetDlgItem(IDC_SLIDER_NFREQ));
+	m_NoiseOctavesSlider = (CSliderCtrl*)(GetDlgItem(IDC_SLIDER_NOCTAVES));
 
 	m_BrushSizeSlider->SetRange(1, 100, TRUE);
 	m_BrushSizeSlider->SetPos(0);
@@ -91,9 +95,13 @@ bool SculptPanelDlg::InitializeControls()
 
 	m_NoiseFreqSlider->SetRange(-1000, 1000, TRUE);
 	m_NoiseFreqSlider->SetPos(200);
-	m_NoiseFreqSlider->SetTicFreq(1);
 	m_NoiseFreqSliderVal.Format(_T("%d"), m_NoiseFreqSlider->GetPos());
 	m_NoiseFreqTextBox->SetWindowTextW(m_NoiseFreqSliderVal.GetBuffer());
+
+	m_NoiseOctavesSlider->SetRange(1, 16, TRUE);
+	m_NoiseOctavesSlider->SetPos(8);
+	m_NoiseOctavesSliderVal.Format(_T("%d"), m_NoiseOctavesSlider->GetPos());
+	m_NoiseOctavesTextBox->SetWindowTextW(m_NoiseOctavesSliderVal.GetBuffer());
 
 	m_NoiseSeedSpin->SetRange(0, RAND_MAX);
 	m_NoiseSeedSpin->SetPos(1337);
@@ -211,6 +219,13 @@ void SculptPanelDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		m_NoiseScaleTextBox->SetWindowTextW(m_NoiseScaleSliderVal.GetBuffer());
 		UpdateData(FALSE);
 		m_Graphic->SetSculptNoiseScale(m_NoiseScaleSlider->GetPos());
+	}
+	else if (pScrollBar == (CScrollBar*)m_NoiseOctavesSlider)
+	{
+		m_NoiseOctavesSliderVal.Format(_T("%d"), m_NoiseOctavesSlider->GetPos());
+		m_NoiseOctavesTextBox->SetWindowTextW(m_NoiseOctavesSliderVal.GetBuffer());
+		UpdateData(FALSE);
+		m_Graphic->SetSculptNoiseOctaves(m_NoiseOctavesSlider->GetPos());
 	}
 	else if (pScrollBar == (CScrollBar*)m_NoiseFreqSlider)
 	{
@@ -482,6 +497,10 @@ void SculptPanelDlg::OnSize(UINT nType, int cx, int cy)
 		m_ButtonNoiseSeedRandomize->SetWindowPos(nullptr, cx - 90 - hspacing, 235 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
 
+		m_NoiseOctavesText->SetWindowPos(nullptr, cx - 250 - hspacing, 270 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseOctavesSlider->SetWindowPos(nullptr, cx - 190 - hspacing, 265 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_NoiseOctavesTextBox->SetWindowPos(nullptr, cx - 80 - hspacing, 265 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
 		m_SliderSizeText->RedrawWindow(nullptr);
 		m_SliderWeightText->RedrawWindow(nullptr);
 		m_BrushStrengthSlider->RedrawWindow(nullptr);
@@ -492,4 +511,31 @@ void SculptPanelDlg::OnSize(UINT nType, int cx, int cy)
 
 
 
+}
+
+
+void SculptPanelDlg::OnEnChangeTextboxNoctaves()
+{
+	// TODO:  If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialogEx::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+
+	// TODO:  Add your control notification handler code here
+	CString text;
+	m_NoiseOctavesTextBox->GetWindowTextW(text);
+	int value = StrToIntW(text.GetBuffer());
+	if (value > 16)
+	{
+		value = 16;
+	}
+	else if (value < 0)
+	{
+		value = 0;
+	}
+	m_NoiseOctavesSlider->SetPos(value);
+	if (m_Graphic)
+	{
+		m_Graphic->SetSculptNoiseOctaves(value);
+	}
 }

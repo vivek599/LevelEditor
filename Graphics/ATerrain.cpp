@@ -1221,3 +1221,8 @@ void ATerrain::SetNoiseSeed(int Seed)
 {
 	m_NoiseSeed = Seed;
 }
+
+void ATerrain::SetNoiseOctaves(int Octaves)
+{
+	m_NoiseOctaves = Octaves;
+}

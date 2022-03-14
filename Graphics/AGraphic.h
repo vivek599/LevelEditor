@@ -42,6 +42,7 @@ public:
 	void SetSculptStrenght(int strength);
 	void SetSculptNoiseScale(int Scale);
 	void SetSculptNoiseFreq(int Freq);
+	void SetSculptNoiseOctaves(int Octaves);
 	void SetSculptNoiseSeed(int Seed);
 private:
 

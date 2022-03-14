@@ -63,17 +63,22 @@ private:
 
 	CStatic* m_NoiseScaleText;
 	CStatic* m_NoiseFreqText;
+	CStatic* m_NoiseOctavesText;
 	CStatic* m_NoiseSeedText;
 	CButton* m_ButtonNoiseSeedRandomize;
 	CEdit* m_NoiseScaleTextBox;
 	CEdit* m_NoiseFreqTextBox;
+	CEdit* m_NoiseOctavesTextBox;
 	CEdit* m_NoiseSeedTextBox;
 	CSpinButtonCtrl* m_NoiseSeedSpin;
 	CSliderCtrl* m_NoiseScaleSlider;
 	CSliderCtrl* m_NoiseFreqSlider;
+	CSliderCtrl* m_NoiseOctavesSlider;
 	CString				m_NoiseScaleSliderVal;
 	CString				m_NoiseFreqSliderVal;
+	CString				m_NoiseOctavesSliderVal;
 	CString				m_NoiseSeedSpinVal;
 public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnEnChangeTextboxNoctaves();
 };

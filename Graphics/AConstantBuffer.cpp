@@ -5,6 +5,8 @@ void AConstantBuffer::CreateBuffer(size_t Size, EShaderVisibility visibility)
 {
 	D3D11_BUFFER_DESC bufferDesc;
 
+	m_Visibility = visibility;
+
 	bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 	bufferDesc.ByteWidth = m_BufferSize = (UINT)Size;
 	bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
