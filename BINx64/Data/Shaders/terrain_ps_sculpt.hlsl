@@ -110,7 +110,8 @@ float Sculpt(PixelInputType input)
     {
         if (dist <= BrushParams.x)
         {
-            SculptOffset = float(0xDEADBEEF);
+            float NaN = 0.0f/0.0f;
+            SculptOffset = NaN;
         }
     }
     else

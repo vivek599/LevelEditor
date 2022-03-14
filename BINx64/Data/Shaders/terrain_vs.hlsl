@@ -50,14 +50,8 @@ PixelInputType main(VertexInputType input, uint id : SV_VertexID )
     
     input.position.y = heightMapTextureFinal.Load(int3(input.position.xz, 0), 0);
     
-    if (input.position.y == float(0xDEADBEEF))
-    {
-        float NaN = 0.0f/0.0f;
-        input.position.y = NaN;
-    }
-    
     // Calculate the position of the vertex against the world, view, and projection matrices.
-        output.position = mul(input.position, worldMatrix);
+    output.position = mul(input.position, worldMatrix);
     output.position = mul(output.position, viewMatrix);
     output.position = mul(output.position, projectionMatrix);
 
