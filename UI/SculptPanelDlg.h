@@ -27,6 +27,8 @@ public:
 	afx_msg void OnDeltaposSpinSeed(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnEnChangeTextboxNscale();
 	afx_msg void OnEnChangeTextboxNfreq();
+	afx_msg void OnEnChangeTextboxNoctaves();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg BOOL PreTranslateMessage(MSG* pMsg);
 
 	bool InitializeControls();
@@ -77,8 +79,5 @@ private:
 	CString				m_NoiseScaleSliderVal;
 	CString				m_NoiseFreqSliderVal;
 	CString				m_NoiseOctavesSliderVal;
-	CString				m_NoiseSeedSpinVal;
-public:
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnEnChangeTextboxNoctaves();
+	CString				m_NoiseSeedSpinVal; 
 };
