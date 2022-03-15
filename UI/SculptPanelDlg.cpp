@@ -386,8 +386,10 @@ void SculptPanelDlg::OnBnClickedLoadalphamap()
 void SculptPanelDlg::OnBnClickedButtonNoiseRndmz()
 {
 	// TODO: Add your control notification handler code here
-	m_NoiseSeedSpin->SetPos(rand());
+	int random = rand();
+	m_NoiseSeedSpin->SetPos(random);
 	UpdateData(FALSE);
+	m_Graphic->SetSculptNoiseSeed(random);
 }
 
 
