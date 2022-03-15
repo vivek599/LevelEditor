@@ -8,7 +8,6 @@
 #include "../Graphics/ACommonIncludes.h"
 #include "../Graphics/AGraphic.h"
 #include "../Graphics/ATerrain.h"
-
 // SculptPanelDlg dialog
 
 IMPLEMENT_DYNAMIC(SculptPanelDlg, CDialogEx)
@@ -51,6 +50,7 @@ bool SculptPanelDlg::InitializeControls()
 	m_SliderWeightText = (CStatic*)(GetDlgItem(IDC_STATIC_WT));
 	m_ButtonLoadHeightMap = (CButton*)(GetDlgItem(IDC_LOADHEIGHTMAP));
 	m_ButtonLoadAlphaMap = (CButton*)(GetDlgItem(IDC_LOADALPHAMAP));
+	m_TerrainParamText = (CStatic*)GetDlgItem(IDC_STATIC_TERRAIN_PARAMS);
 	m_ButtonErode = (CButton*)(GetDlgItem(IDC_BUTTON_ERODE));
 	m_BrushSizeSlider = (CSliderCtrl*)(GetDlgItem(IDC_BRUSHSIZESLIDER));
 	m_BrushSizeTextbox = (CEdit*)GetDlgItem(IDC_BRUSHSIZETEXTBOX);
@@ -173,8 +173,6 @@ void SculptPanelDlg::OnBnClickedLoadheightmap()
 	ofn.nMaxFile = MAX_PATH + 1;
 	if (dlgFile.DoModal() == IDOK)
 	{
-		m_HeightMapFileName->SetWindowTextW(p);
-
 		TerrainInitializationParams params;
 		params.heightMap = p;
 		params.pixelSHader = _T("../Data/Shaders/terrain_ps.hlsl");
@@ -189,6 +187,20 @@ void SculptPanelDlg::OnBnClickedLoadheightmap()
 		m_Graphic->SetSculptNoiseScale(1);
 		m_Graphic->SetSculptNoiseFreq(200);
 		m_Graphic->SetSculptNoiseSeed(1337);
+
+		int Width = 0;
+		int Height = 0;
+		int Comp = 0;
+
+		wstring wchar_str(p);
+		string char_str(wchar_str.begin(), wchar_str.end());
+		stbi_info(char_str.c_str(),&Width, &Height, &Comp);
+
+		m_HeightMapFileName->SetWindowTextW(p);
+		CString TerrainText;
+		TerrainText.Format( _T("Terrain: %dx%d"), Width, Height);
+		m_TerrainParamText->SetWindowTextW(TerrainText.GetBuffer());
+	
 	}
 
 	fileName.ReleaseBuffer();
@@ -475,9 +487,11 @@ void SculptPanelDlg::OnSize(UINT nType, int cx, int cy)
 		m_ButtonLoadHeightMap->SetWindowPos(nullptr, cx - 250 - hspacing, 10, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_ButtonLoadAlphaMap->SetWindowPos(nullptr, cx - 150 - hspacing, 10, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_HeightMapFileName->SetWindowPos(nullptr, cx - 250 - hspacing, 0 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 30 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_BrushSizeTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 30 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-		m_SliderSizeText->SetWindowPos(nullptr, cx - 252 - hspacing, 35 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+
+		m_TerrainParamText->SetWindowPos(nullptr, cx - 252 - hspacing, 30 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushSizeSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 50 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_BrushSizeTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 50 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		m_SliderSizeText->SetWindowPos(nullptr, cx - 252 - hspacing, 55 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
 		m_BrushStrengthSlider->SetWindowPos(nullptr, cx - 217 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 		m_BrushStrengthTextbox->SetWindowPos(nullptr, cx - 68 - hspacing, 80 + vspacing, 0, 0, SWP_NOSIZE | SWP_NOZORDER);

@@ -49,6 +49,7 @@ private:
 	CButton* m_ButtonLoadHeightMap;
 	CButton* m_ButtonLoadAlphaMap;
 	CButton* m_ButtonErode;
+	CStatic* m_TerrainParamText;
 	CSliderCtrl* m_BrushSizeSlider;
 	CEdit* m_BrushSizeTextbox;
 	CSliderCtrl* m_BrushStrengthSlider;
