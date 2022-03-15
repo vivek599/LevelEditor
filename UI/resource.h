@@ -11,6 +11,7 @@
 #define IDR_ALPHAMAPICON                132
 #define IDD_DIALOG_SCULPT               133
 #define IDD_DIALOG_PAINT                137
+#define IDD_DIALOG_PAINT_LAYER          140
 #define IDC_RENDERBOX                   1000
 #define IDC_LOADHEIGHTMAP               1001
 #define IDC_HMFILENAME                  1002
@@ -40,11 +41,19 @@
 #define IDC_BUTTON_NOISE_RNDMZ          1025
 #define IDC_TAB_MODE                    1026
 #define IDC_TEXTBOX_NOCTAVES            1026
-#define IDC_STATIC_NOCTAVESTXT          1027
 #define IDC_STATIC_NOCTAVES             1027
 #define IDC_RADIO1                      1030
 #define IDC_BUTTON1                     1031
 #define IDC_BUTTON_TEST                 1031
+#define IDC_MOVE_LAYER_UP               1031
+#define IDC_MOVE_LAYER_DOWN             1032
+#define IDC_STATIC_TEXTURE_PREVIEW      1033
+#define IDC_BUTTON_TEXTURE_ROUGHNESS    1034
+#define IDC_BUTTON_TEXTURE_NORMAL       1035
+#define IDC_BUTTON_TEXTURE_AO           1036
+#define IDC_BUTTON_TEXTURE_ALBEDO       1037
+#define IDC_BUTTON_TEXTURE_DISP         1038
+#define IDC_BUTTON_TEXTURE_SPECULAR     1039
 #define ID_FILE_EXIT                    32771
 #define ID_EDIT_CUT32772                32772
 #define ID_EDIT_COPY32773               32773
@@ -56,9 +65,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        140
+#define _APS_NEXT_RESOURCE_VALUE        142
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1032
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

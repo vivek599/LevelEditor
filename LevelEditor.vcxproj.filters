@@ -53,6 +53,9 @@
     <ClCompile Include="UI\PaintPanelDlg.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="UI\PaintLayer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ADXTime.h">
@@ -125,6 +128,9 @@
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="UI\PaintPanelDlg.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\PaintLayer.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
