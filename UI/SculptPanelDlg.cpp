@@ -90,6 +90,8 @@ bool SculptPanelDlg::InitializeControls()
 
 	m_NoiseScaleSlider->SetRange(1, 4096, TRUE);
 	m_NoiseScaleSlider->SetPos(0);
+	m_NoiseScaleSlider->SetLineSize(4096);
+	m_NoiseScaleSlider->SetPageSize(1);
 	m_NoiseScaleSliderVal.Format(_T("%d"), m_NoiseScaleSlider->GetPos());
 	m_NoiseScaleTextBox->SetWindowTextW(m_NoiseScaleSliderVal.GetBuffer());
 
