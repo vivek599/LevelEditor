@@ -17,3 +17,11 @@ Brush Radius is configurable.
 
 ## Mode Under Development
 1.  [ ] **TODO**      : Integrate Terrain Color Layers for Grass, Snow, Rocks and more as well as splat maps for paths and roads.
+
+## Future Development
+3.  [ ] **TODO**      : Integrate Road-Bridges network.
+4.  [ ] **TODO**      : Integrate Level-Map Export File Option.
+5.  [ ] **TODO**      : Forward Plus Lighting model.
+6.  [ ] **TODO**      : LOD and Geomipmaping.
+7.  [ ] **TODO**      : Animations.
+8.  [ ] **TODO**      : Collision Detection and Object Selection.
