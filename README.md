@@ -16,4 +16,4 @@ Can load a Bitmap Image as base Height map with Terrain Dimension matched to tha
 Brush Radius is configurable.
 
 ## Mode Under Development
-1.  [ ] **TODO**      : Integrate Terrain Color Layers for Grass, Snow, Rocks as well as splat maps for paths and roads.
+1.  [ ] **TODO**      : Integrate Terrain Color Layers for Grass, Snow, Rocks and more as well as splat maps for paths and roads.
