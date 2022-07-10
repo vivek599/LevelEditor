@@ -183,6 +183,15 @@ void SculptPanelDlg::OnBnClickedLoadheightmap()
 		params.sculptVertexSHader = _T("../Data/Shaders/terrain_vs_sculpt.hlsl");
 		params.textureLayers.push_back(_T("../Data/Textures/Grass0130_1.jpg"));
 
+		wstring filePath(params.heightMap);
+		auto ext = filePath.substr(filePath.find_last_of('.')+1);
+		transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+		if (ext != L"bmp")
+		{
+			::MessageBox(NULL, L"Load Only BMP images!", NULL, MB_OK);
+			return;
+		}
+
 		m_Graphic->InitializeTerrain(&params);
 		m_Graphic->SetTextureUVScale(1);
 		m_Graphic->SetTerrainSculptMode(ESculptMode::RAISE);

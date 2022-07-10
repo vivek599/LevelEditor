@@ -341,7 +341,7 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 
 	if (m_ControlsInitializedSculpt && m_ControlsInitializedPaint)
 	{ 
-		m_ModeTabs->SetWindowPos(nullptr, cx - 265, 50, 250, 480, SWP_NOZORDER);
+		m_ModeTabs->SetWindowPos(nullptr, cx - 365, 50, 350, 480, SWP_NOZORDER);
 
 		CRect rcClient, rcWindow;
 		m_SculptDialog->OnSize(nType, cx, cy);
@@ -356,7 +356,7 @@ void CLevelEditorDlg::OnSize(UINT nType, int cx, int cy)
 
 
 		 
-		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 300, cy - 100, SWP_NOZORDER);
+		m_RenderBox->SetWindowPos(&wndBottom, 25, 50, cx - 395, cy - 100, SWP_NOZORDER);
 		//m_FpsText->SetWindowPos(&wndTop, 35, 10, 0, 0, SWP_NOSIZE);
 
 		CRect rect;

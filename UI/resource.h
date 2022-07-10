@@ -46,7 +46,9 @@
 #define IDC_BUTTON1                     1031
 #define IDC_BUTTON_TEST                 1031
 #define IDC_MOVE_LAYER_UP               1031
+#define IDC_BUTTON_ADDLAYER             1031
 #define IDC_MOVE_LAYER_DOWN             1032
+#define IDC_MOVE_LAYER_REMOVE           1033
 #define IDC_BUTTON_TEXTURE_ROUGHNESS    1034
 #define IDC_BUTTON_TEXTURE_NORMAL       1035
 #define IDC_SCROLLBAR_LAYERS            1035
@@ -55,6 +57,10 @@
 #define IDC_BUTTON_TEXTURE_ALBEDO       1037
 #define IDC_BUTTON_TEXTURE_DISP         1038
 #define IDC_BUTTON_TEXTURE_SPECULAR     1039
+#define IDC_EDIT_LAYER_HEIGHT_MAX       1040
+#define IDC_EDIT_LAYER_HEIGHT_MIN       1042
+#define IDC_EDIT_LAYER_SLOPE_MAX        1043
+#define IDC_EDIT_LAYER_SLOPE_MIN        1044
 #define ID_FILE_EXIT                    32771
 #define ID_EDIT_CUT32772                32772
 #define ID_EDIT_COPY32773               32773
@@ -66,9 +72,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        142
+#define _APS_NEXT_RESOURCE_VALUE        143
 #define _APS_NEXT_COMMAND_VALUE         32777
-#define _APS_NEXT_CONTROL_VALUE         1037
+#define _APS_NEXT_CONTROL_VALUE         1041
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -25,6 +25,9 @@ protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
+
+private:
+	vector<unique_ptr<class PaintLayer>>	m_PaintLayers;
 public:
-	afx_msg void OnBnClickedButtonTest();
+	afx_msg void OnBnClickedButtonAddlayer();
 };

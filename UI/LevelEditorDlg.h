@@ -4,7 +4,6 @@
 
 #pragma once
 
-#include <memory>
 
 class AGraphic;
 using namespace std;

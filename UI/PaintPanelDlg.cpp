@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "LevelEditor.h"
 #include "PaintPanelDlg.h"
+#include "PaintLayer.h"
 #include "afxdialogex.h"
 
 
@@ -65,15 +66,31 @@ void PaintPanelDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(PaintPanelDlg, CDialogEx)
 	ON_WM_SIZE()
 	ON_WM_HSCROLL()
-	ON_BN_CLICKED(IDC_BUTTON_TEST, &PaintPanelDlg::OnBnClickedButtonTest)
+	ON_BN_CLICKED(IDC_BUTTON_ADDLAYER, &PaintPanelDlg::OnBnClickedButtonAddlayer)
 END_MESSAGE_MAP()
 
 
 // PaintPanelDlg message handlers
-
-
-void PaintPanelDlg::OnBnClickedButtonTest()
+void PaintPanelDlg::OnBnClickedButtonAddlayer()
 {
 	// TODO: Add your control notification handler code here
-	//MessageBox(_T("Help, Something went wrong."), _T("Error"), MB_ICONERROR | MB_OK);
+	m_PaintLayers.emplace_back(new PaintLayer(this));
+	m_PaintLayers.back()->Create(IDD_DIALOG_PAINT_LAYER, this);
+	m_PaintLayers.back()->OnInitDialog();
+	CRect tabRect;
+	this->GetClientRect(tabRect);
+	tabRect.left	+= 20;
+	tabRect.top		+= 50;
+	CRect layerRect;
+	m_PaintLayers.front()->GetClientRect(layerRect);
+	for (int layeri = 0; layeri < m_PaintLayers.size(); layeri++)
+	{
+		layerRect.top		= tabRect.top + layeri * 100;
+		layerRect.bottom	= layerRect.top + 100;
+		layerRect.left		= tabRect.left;
+		layerRect.right		= tabRect.right;
+
+		//m_PaintLayers[layeri]->SetWindowPos(nullptr, layerRect.left, layerRect.top, layerRect.right, layerRect.bottom, 0);
+		m_PaintLayers[layeri]->MoveWindow(layerRect, 1);
+	}
 }
